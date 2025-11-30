@@ -1,15 +1,15 @@
-"""Database enumerations and table definitions.
+"""Events and Checkins table definitions, queries, and dataclasss.
 
-## Students
-Student names, email addresses, and graduation year.
+## Contents
+* EventType: An enumeration of typical FRC team events.
+* Event: A dataclass that represents an FRC event.
+* Checkin: A dataclass that represents a student attending an FRC event.
+* Sqlite adapter and converter functions: Configure Sqlite to automatically
+    convert between text data in the event_type, event_date, and timestamp
+    columns and EventType, date, and datetime objects.
 
-## Checkins
-Student IDs and datetimes that students check into the attendance system.
-
-## Events
-Event dates and types.
-
-The day_of_week field is an integer ranging from 1 (Monday) to 7 (Sunday).
+## Notes
+1. The day_of_week field is an integer ranging from 1 (Monday) to 7 (Sunday).
 """
 
 import dataclasses
@@ -17,12 +17,11 @@ import datetime
 import enum
 import sqlite3
 
-from typing import Optional, TYPE_CHECKING
+from typing import ClassVar, Optional, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
     from irsattend.model import database
-
 
 class EventType(enum.StrEnum):
     """Types of events at which we take attendance."""
@@ -65,17 +64,6 @@ sqlite3.register_converter("event_date", convert_event_date)
 sqlite3.register_converter("timestamp", convert_timestamp)
 
 
-EVENT_TABLE_SCHEMA = """
-CREATE TABLE IF NOT EXISTS events (
-     event_date TEXT NOT NULL,
-    day_of_week INT GENERATED ALWAYS AS (strftime('%u', event_date)) VIRTUAL,
-     event_type TEXT NOT NULL,
-    description TEXT,
-    PRIMARY KEY (event_date, event_type) ON CONFLICT IGNORE
-);
-"""
-
-
 class EventUpateError(Exception):
     """Raised when an event update fails."""
     pass
@@ -88,6 +76,16 @@ class Event:
     event_date: datetime.date
     event_type: EventType
     description: Optional[str]
+
+    table_def: ClassVar[str] = """
+        CREATE TABLE IF NOT EXISTS events (
+            event_date TEXT NOT NULL,
+           day_of_week INT GENERATED ALWAYS AS (strftime('%u', event_date)) VIRTUAL,
+            event_type TEXT NOT NULL,
+           description TEXT,
+           PRIMARY KEY (event_date, event_type) ON CONFLICT IGNORE
+        );
+    """
 
     def __init__(
         self,
@@ -307,31 +305,31 @@ class Event:
         self.event_date = new_date
 
 
-CHECKINS_TABLE_SCHEMA = """
-CREATE TABLE IF NOT EXISTS checkins (
-       checkin_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       student_id TEXT NOT NULL,
-       event_date TEXT GENERATED ALWAYS AS (date(timestamp)) VIRTUAL,
-      day_of_week INT GENERATED ALWAYS AS (strftime('%u', event_date)) VIRTUAL,
-       event_type TEXT,
-        timestamp TEXT NOT NULL,
-      FOREIGN KEY (student_id) REFERENCES students (student_id),
-      FOREIGN KEY (event_date, event_type) REFERENCES events (event_date, event_type)
-                  DEFERRABLE INITIALLY DEFERRED,
-       CONSTRAINT single_event_constraint UNIQUE(student_id, event_date, event_type)
-);
-"""
-# DEFERRABLE INITIALLY DEFERRED allows queries to create foreign key violations within
-# a transaction, as long as the violations are fixed before the end of the transaction.
-# See section 4.2 of https://sqlite.org/foreignkeys.html
-
-
 @dataclasses.dataclass
 class Checkin:
     checkin_id: int
     student_id: str
     event_type: EventType
     timestamp: datetime.datetime
+
+    table_def: ClassVar[str] = """
+        CREATE TABLE IF NOT EXISTS checkins (
+            checkin_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT NOT NULL,
+            event_date TEXT GENERATED ALWAYS AS (date(timestamp)) VIRTUAL,
+           day_of_week INT GENERATED ALWAYS AS (strftime('%u', event_date)) VIRTUAL,
+            event_type TEXT,
+             timestamp TEXT NOT NULL,
+           FOREIGN KEY (student_id) REFERENCES students (student_id),
+           FOREIGN KEY (event_date, event_type)
+                       REFERENCES events (event_date, event_type)
+                       DEFERRABLE INITIALLY DEFERRED,
+            CONSTRAINT single_event_constraint UNIQUE(student_id, event_date, event_type)
+        );
+    """
+    # DEFERRABLE INITIALLY DEFERRED allows queries to create foreign key violations
+    # within a transaction, as long as the violations are fixed before the end of the
+    # transaction. See section 4.2 of https://sqlite.org/foreignkeys.html
 
     def __init__(
         self,
@@ -475,3 +473,4 @@ class Checkin:
             "event_type": self.event_type,
             "timestamp": self.timestamp.isoformat(),
         }
+

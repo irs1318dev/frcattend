@@ -6,9 +6,8 @@ import pathlib
 import textual
 from textual import app, containers, reactive, widgets
 
-from irsattend import config
+from irsattend import config, model
 from irsattend.features import excel
-from irsattend.model import database
 import irsattend.view
 from irsattend.view import (
     attendance_screen,
@@ -204,12 +203,12 @@ class IRSAttend(app.App):
             return
         match export_path.suffix.lower():
             case ".json":
-                dbase = database.DBase(config.settings.db_path)
+                dbase = model.DBase(config.settings.db_path)
                 with open(export_path.with_suffix(".json"), "wt") as jfile:
                     json.dump(dbase.to_dict(), jfile, indent=2)
                 self.message = "Exporting JSON file."
             case ".xlsx":
-                dbase = database.DBase(config.settings.db_path)
+                dbase = model.DBase(config.settings.db_path)
                 excel.write(dbase, export_path.with_suffix(".xlsx"))
             case _:
                 self.message = "Incorrect file type"
@@ -235,7 +234,7 @@ class IRSAttend(app.App):
             case ".json":
                 with open(import_path, "rt") as jfile:
                     imported_data = json.load(jfile)
-                dbase = database.DBase(config.settings.db_path)
+                dbase = model.DBase(config.settings.db_path)
                 dbase.load_from_dict(imported_data)
 
     @textual.on(widgets.Button.Pressed, "#main-select-settings")
@@ -286,7 +285,7 @@ class IRSAttend(app.App):
             case "main-select-database-file":
                 self._select_database(message.path)
             case "main-create-database-file":
-                database.DBase(message.path, create_new=True)
+                model.DBase(message.path, create_new=True)
                 self._select_database(message.path)
             case "main-export-data-file":
                 self._export_database_to_file(message.path)

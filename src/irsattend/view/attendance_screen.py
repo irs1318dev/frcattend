@@ -2,14 +2,13 @@
 
 from textual import app, binding, screen, widgets
 
-from irsattend import config
-from irsattend.model import database
+from irsattend import config, model
 
 
 class AttendanceScreen(screen.Screen):
     """Add, delete, and edit students."""
 
-    dbase: database.DBase
+    dbase:model.DBase
     """Connection to Sqlite Database."""
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
@@ -19,8 +18,8 @@ class AttendanceScreen(screen.Screen):
         """Initialize the databae connection."""
         super().__init__()
         if config.settings.db_path is None:
-            raise database.DBaseError("No database file selected.")
-        self.dbase = database.DBase(config.settings.db_path)
+            raise model.DBaseError("No database file selected.")
+        self.dbase = model.DBase(config.settings.db_path)
 
     def compose(self) -> app.ComposeResult:
         """Add the datatable and other controls to the screen."""

@@ -6,7 +6,7 @@ import shutil
 
 import segno
 
-from irsattend.model import database, students_mod
+from irsattend import model
 
 
 class QrError(Exception):
@@ -23,7 +23,7 @@ def _clear_folder_contents(folder_path: pathlib.Path) -> None:
 
 
 def generate_all_qr_codes(
-    qr_folder: pathlib.Path, dbase: database.DBase
+    qr_folder: pathlib.Path, dbase: model.DBase
 ) -> Iterator[tuple[str, int | bool]]:
     """Generate QR codes for all students in database.
 
@@ -36,7 +36,7 @@ def generate_all_qr_codes(
         qr_folder.mkdir(parents=True)
     else:
         _clear_folder_contents(qr_folder)
-    _students = students_mod.Student.get_all(dbase)
+    _students = model.Student.get_all(dbase)
     yield ("quantity-students", len(_students))
     for student in _students:
         try:

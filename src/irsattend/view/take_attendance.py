@@ -11,9 +11,8 @@ import textual
 from textual import app, containers, message, screen, widgets
 from textual.widgets import option_list
 
-from irsattend import config
+from irsattend import config, model
 import irsattend.view
-from irsattend.model import database, events_mod, students_mod
 from irsattend.view import pw_dialog
 
 
@@ -22,13 +21,13 @@ class ScanScreen(screen.Screen):
 
     CSS_PATH = [irsattend.view.CSS_FOLDER / "take_attendance.tcss"]
 
-    dbase: database.DBase
+    dbase: model.DBase
     """Sqlte database connection object."""
-    _students: dict[str, students_mod.Student]
+    _students: dict[str, model.Student]
     """Mapping of student IDs to student records."""
     log_widget: widgets.RichLog
     """Displays checking results."""
-    event_type: events_mod.EventType
+    event_type: model.EventType
     """Type of event at which we're taking attendance."""
     _checkedin_students: set[str]
     """Recently scanned student IDs."""
@@ -48,11 +47,11 @@ class ScanScreen(screen.Screen):
         #
         super().__init__()
         if config.settings.db_path is None:
-            raise database.DBaseError("No database file selected.")
-        self.dbase = database.DBase(config.settings.db_path)
+            raise model.DBaseError("No database file selected.")
+        self.dbase = model.DBase(config.settings.db_path)
         self._students = {
             student.student_id: student
-            for student in students_mod.Student.get_all(self.dbase)
+            for student in model.Student.get_all(self.dbase)
         }
 
     class QrCodeFound(message.Message):
@@ -75,7 +74,7 @@ class ScanScreen(screen.Screen):
         )
 
     def set_event_type_and_start_scanning(
-        self, event_type: Optional[events_mod.EventType]
+        self, event_type: Optional[model.EventType]
     ) -> None:
         """Set the event type"""
         if event_type is None:
@@ -85,7 +84,7 @@ class ScanScreen(screen.Screen):
         self.dbase.add_event(event_type)
         # Prevent codes from being scanned more than once for same event.
         self._checkedin_students = set(
-            events_mod.Checkin.get_checkedin_students(
+            model.Checkin.get_checkedin_students(
                 self.dbase, datetime.date.today(), event_type
             )
         )
@@ -136,7 +135,7 @@ class ScanScreen(screen.Screen):
         else:
             self._checkedin_students.add(student_id)
             timestamp = datetime.datetime.now()
-            checkin = events_mod.Checkin(
+            checkin = model.Checkin(
                 checkin_id=-1,
                 student_id=student_id,
                 event_type=self.event_type,
@@ -178,7 +177,7 @@ class ScanScreen(screen.Screen):
         )
 
 
-class EventTypeDialog(screen.ModalScreen[Optional[events_mod.EventType]]):
+class EventTypeDialog(screen.ModalScreen[Optional[model.EventType]]):
     """Select the event type when opening scan attendance screen."""
 
     def __init__(self) -> None:
@@ -190,7 +189,7 @@ class EventTypeDialog(screen.ModalScreen[Optional[events_mod.EventType]]):
         with containers.Vertical(id="event-type-dialog", classes="modal-dialog"):
             yield widgets.Label("Event Type")
             event_options = widgets.OptionList(
-                *[option_list.Option(t.value.title(), id=t) for t in events_mod.EventType],
+                *[option_list.Option(t.value.title(), id=t) for t in model.EventType],
                 id="event-type-option",
             )
             yield event_options
@@ -198,7 +197,7 @@ class EventTypeDialog(screen.ModalScreen[Optional[events_mod.EventType]]):
                 yield widgets.Button("Ok", id="event-type-select-ok-button")
                 yield widgets.Button("Cancel", id="event-type-select-cancel-button")
         type_map = {opt.id: idx for idx, opt in enumerate(event_options.options)}
-        event_options.highlighted = type_map[events_mod.EventType.MEETING]
+        event_options.highlighted = type_map[model.EventType.MEETING]
 
     @textual.on(widgets.Button.Pressed, "#event-type-select-ok-button")
     def on_ok_button_pressed(self) -> None:
@@ -207,7 +206,7 @@ class EventTypeDialog(screen.ModalScreen[Optional[events_mod.EventType]]):
         selected_index = event_type_list.highlighted
         if selected_index is not None:
             selected_event = cast(
-                events_mod.EventType, event_type_list.options[selected_index].id
+                model.EventType, event_type_list.options[selected_index].id
             )
             self.dismiss(selected_event)
         else:

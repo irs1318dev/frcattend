@@ -11,7 +11,7 @@ from google.oauth2 import service_account
 import gspread
 import gspread.utils
 
-from irsattend.model import database, students_mod
+from irsattend import model
 
 
 # TODO: Check attendance name from roster.
@@ -40,7 +40,7 @@ class SheetUpdater:
     """
     column_map: dict[str, str]
     """Map of field names (dict key)"""
-    dbase: database.DBase
+    dbase: model.DBase
     """Sqlite database that contains student attendance data."""
     _credentials: service_account.Credentials
     """Information required to connect to Google Sheet roster."""
@@ -48,7 +48,7 @@ class SheetUpdater:
     """An object that's used to connect to Google accounts."""
 
     def __init__(
-        self, config_path: pathlib.Path, dbase: pathlib.Path | database.DBase
+        self, config_path: pathlib.Path, dbase: pathlib.Path | model.DBase
     ) -> None:
         """Initialize from settings in config file."""
         with open(config_path) as config_file:
@@ -62,7 +62,7 @@ class SheetUpdater:
         self.spreadsheet = self.client.open_by_key(self.sheet_key)
         self.roster_sheet = self.spreadsheet.worksheet(self.roster_sheet_name)
         if isinstance(dbase, pathlib.Path):
-            self.dbase = database.DBase(dbase)
+            self.dbase = model.DBase(dbase)
         else:
             self.dbase = dbase
         self.backup_folder = pathlib.Path(settings["backup_folder"])
@@ -139,7 +139,7 @@ class SheetUpdater:
         Dictionary values are student IDs.
         """
         student_ids: dict[tuple[str, str, int], str] = {}
-        for s in students_mod.Student.get_all(self.dbase, include_inactive=True):
+        for s in model.Student.get_all(self.dbase, include_inactive=True):
             student_ids[(s.last_name, s.first_name, s.grad_year)] = s.student_id
         return student_ids
 

@@ -7,21 +7,20 @@ import rich.text
 import textual
 from textual import app, binding, containers, reactive, screen, widgets
 
-from irsattend import config
+from irsattend import config, model
 import irsattend.view
 from irsattend.features import events, validators
-from irsattend.model import database, events_mod
 
 
 class EventsTable(widgets.DataTable):
     """Table of team events and number of students who attended."""
 
-    dbase: database.DBase
+    dbase: model.DBase
     """Connection to Sqlite Database."""
     checkin_events: dict[str, events.CheckinEvent]
     """Event data that's displayed in the table."""
 
-    def __init__(self, dbase: database.DBase, *args, **kwargs) -> None:
+    def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
         """Set link to database."""
         super().__init__(zebra_stripes=True, *args, **kwargs)
         self.dbase = dbase
@@ -66,7 +65,7 @@ class EventsTable(widgets.DataTable):
 class StudentsTable(widgets.DataTable):
     """Table of students who checked in at the selected event."""
 
-    dbase: database.DBase
+    dbase: model.DBase
     """Connection to Sqlite Database."""
     students: dict[str, events.EventStudent]
     """Students who checked in at that selected event."""
@@ -75,7 +74,7 @@ class StudentsTable(widgets.DataTable):
 
     CSS_PATH = irsattend.view.CSS_FOLDER / "event_screen.tcss"
 
-    def __init__(self, dbase: database.DBase, *args, **kwargs) -> None:
+    def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
         """Set link to database."""
         super().__init__(zebra_stripes=True, *args, **kwargs)
         self.dbase = dbase
@@ -125,7 +124,7 @@ class EventScreen(screen.Screen):
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
     ]
-    dbase: database.DBase
+    dbase: model.DBase
     """Connection to Sqlite Database."""
     event_key: reactive.reactive[str | None] = reactive.reactive(None)
     """Contains the currently selected event."""
@@ -134,8 +133,8 @@ class EventScreen(screen.Screen):
         """Initialize the databae connection."""
         super().__init__()
         if config.settings.db_path is None:
-            raise database.DBaseError("No database file selected.")
-        self.dbase = database.DBase(config.settings.db_path)
+            raise model.DBaseError("No database file selected.")
+        self.dbase = model.DBase(config.settings.db_path)
 
     def compose(self) -> app.ComposeResult:
         """Add the datatable and other controls to the screen."""
@@ -189,14 +188,14 @@ class EventScreen(screen.Screen):
 class EditEventDialog(screen.ModalScreen[bool]):
     """Edit or add events."""
 
-    dbase: database.DBase
+    dbase: model.DBase
     """Database interface."""
     event: events.CheckinEvent
     """The event to be edited."""
 
     CSS_PATH = irsattend.view.CSS_FOLDER / "event_screen.tcss"
 
-    def __init__(self, dbase: database.DBase, event: events.CheckinEvent) -> None:
+    def __init__(self, dbase: model.DBase, event: events.CheckinEvent) -> None:
         """Set the event to be edited."""
         super().__init__()
         self.dbase = dbase
@@ -220,7 +219,7 @@ class EditEventDialog(screen.ModalScreen[bool]):
             )
             yield widgets.Label("Event Type:")
             yield widgets.Select(
-                [(etype.value.title(), etype.value) for etype in events_mod.EventType],
+                [(etype.value.title(), etype.value) for etype in model.EventType],
                 value=event.event_type,
                 id="event-type-select",
             )
@@ -242,7 +241,7 @@ class EditEventDialog(screen.ModalScreen[bool]):
             self.query_one("#event-date-input", widgets.Input).value,
             dayfirst=False
         ).date()
-        new_type = events_mod.EventType(
+        new_type = model.EventType(
             self.query_one("#event-type-select", widgets.Select).value
         )
         new_description: str | None = self.query_one(

@@ -10,26 +10,6 @@ from typing import ClassVar, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from irsattend.model import database
 
-
-STUDENT_TABLE_SCHEMA = """
-CREATE TABLE IF NOT EXISTS students (
-    student_id TEXT PRIMARY KEY,
-    first_name TEXT NOT NULL,
-    last_name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    grad_year INTEGER NOT NULL,
-    deactivated_on TEXT
-);
-"""
-
-ACTIVE_STUDENTS_VIEW_SCHEMA = """
-    CREATE VIEW IF NOT EXISTS active_students AS
-        SELECT student_id, first_name, last_name, grad_year, email, deactivated_on
-          FROM students
-         WHERE deactivated_on IS NULL;
-"""
-
-
 @dataclasses.dataclass
 class Student:
     """An FRC student."""
@@ -40,6 +20,23 @@ class Student:
     grad_year: int
     email: str
     deactivated_on: Optional[datetime.date]
+
+    table_def: ClassVar[str] = """
+        CREATE TABLE IF NOT EXISTS students (
+                student_id TEXT PRIMARY KEY,
+                first_name TEXT NOT NULL,
+                 last_name TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                 grad_year INTEGER NOT NULL,
+            deactivated_on TEXT
+        );
+    """
+    active_students_view_def: ClassVar[str] = """
+        CREATE VIEW IF NOT EXISTS active_students AS
+            SELECT student_id, first_name, last_name, grad_year, email, deactivated_on
+              FROM students
+             WHERE deactivated_on IS NULL;
+    """
 
     _underscore_pattern: ClassVar[re.Pattern] = re.compile(r"[\s\-]+")
     """Replace whitespace and dashes with an underscore."""

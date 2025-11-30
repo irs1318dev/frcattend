@@ -7,8 +7,7 @@ import shutil
 
 import pytest
 
-from irsattend import config
-from irsattend.model import database
+from irsattend import config, model
 
 
 TEST_FOLDER = pathlib.Path(__file__).parent
@@ -33,7 +32,7 @@ def empty_output_folder() -> pathlib.Path:
 
 
 @pytest.fixture()
-def settings(full_dbase: database.DBase) -> config.Settings:
+def settings(full_dbase: model.DBase) -> config.Settings:
     """Get default settings for tests."""
     args = argparse.Namespace(
         db_path=full_dbase.db_path,
@@ -44,13 +43,13 @@ def settings(full_dbase: database.DBase) -> config.Settings:
 
 
 @pytest.fixture
-def empty_database(empty_output_folder: pathlib.Path) -> database.DBase:
+def empty_database(empty_output_folder: pathlib.Path) -> model.DBase:
     """An empty IrsAttend database, with tables created."""
-    return database.DBase(OUTPUT_FOLDER / "testdatabase.db", create_new=True)
+    return model.DBase(OUTPUT_FOLDER / "testdatabase.db", create_new=True)
 
 
 @pytest.fixture
-def full_dbase(empty_database: database.DBase) -> database.DBase:
+def full_dbase(empty_database: model.DBase) -> model.DBase:
     """Database with students, appearances, and events."""
     with open(DATA_FOLDER / "testdata-full.json") as jfile:
         attendance_data = json.load(jfile)
@@ -59,7 +58,7 @@ def full_dbase(empty_database: database.DBase) -> database.DBase:
 
 
 @pytest.fixture
-def noevents_dbase(empty_database: database.DBase) -> database.DBase:
+def noevents_dbase(empty_database: model.DBase) -> model.DBase:
     """Database with students."""
     with open(DATA_FOLDER / "testdata-full.json") as jfile:
         attendance_data = json.load(jfile)
@@ -70,9 +69,9 @@ def noevents_dbase(empty_database: database.DBase) -> database.DBase:
 
 
 @pytest.fixture
-def empty_database2(empty_output_folder: pathlib.Path) -> database.DBase:
+def empty_database2(empty_output_folder: pathlib.Path) -> model.DBase:
     """An empty IrsAttend database, with tables created."""
-    return database.DBase(OUTPUT_FOLDER / "testdatabase2.db", create_new=True)
+    return model.DBase(OUTPUT_FOLDER / "testdatabase2.db", create_new=True)
 
 
 @pytest.fixture

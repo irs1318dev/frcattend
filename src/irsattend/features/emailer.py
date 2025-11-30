@@ -8,9 +8,8 @@ import smtplib
 import time
 from typing import cast, Optional
 
-from irsattend import config
+from irsattend import config, model
 from irsattend.features import qr_code_generator
-from irsattend.model import students_mod
 
 
 class EmailError(Exception):
@@ -19,7 +18,7 @@ class EmailError(Exception):
 
 def send_all_emails(
     qr_folder: pathlib.Path,
-    students: list[students_mod.Student],
+    students: list[model.Student],
     email: Optional[str] = None,
 ) -> Iterator[tuple[str, bool]]:
     """Send an email with a QR code to all students.

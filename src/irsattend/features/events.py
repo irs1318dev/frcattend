@@ -4,11 +4,11 @@ import dataclasses
 import datetime
 from typing import Optional
 
-from irsattend.model import database, events_mod, students_mod
+from irsattend import model
 
 
 @dataclasses.dataclass
-class CheckinEvent(events_mod.Event):
+class CheckinEvent(model.Event):
     """Event with total number of students who checkedin."""
 
     checkin_count: int
@@ -17,7 +17,7 @@ class CheckinEvent(events_mod.Event):
     def __init__(
         self,
         event_date: datetime.date | str,
-        event_type: str | events_mod.EventType,
+        event_type: str | model.EventType,
         checkin_count: int,
         description: Optional[str] = None,
     ) -> None:
@@ -26,7 +26,7 @@ class CheckinEvent(events_mod.Event):
         super().__init__(event_date, event_type, description)
 
     @staticmethod
-    def get_checkin_events(dbase: "database.DBase") -> list["CheckinEvent"]:
+    def get_checkin_events(dbase: model.DBase) -> list["CheckinEvent"]:
         """Retrieve a events with number of students attending."""
         query = """
                 WITH event_attendance AS (
@@ -52,7 +52,7 @@ class CheckinEvent(events_mod.Event):
 
 
 @dataclasses.dataclass
-class EventStudent(students_mod.Student):
+class EventStudent(model.Student):
     """Students who have checked in at a specific event."""
 
     event_key: str
@@ -60,7 +60,7 @@ class EventStudent(students_mod.Student):
 
     @staticmethod
     def get_students_for_event(
-        dbase: "database.DBase", event_key: str
+        dbase: model.DBase, event_key: str
     ) -> list["EventStudent"]:
         """Retrieve students who attended the specified event."""
         event_date, event_type = tuple(event_key.split("::"))

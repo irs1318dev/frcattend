@@ -5,9 +5,8 @@ import pathlib
 import pytest
 import rich  # noqa: F401
 
-from irsattend import config
+from irsattend import config, model
 from irsattend.features import emailer, qr_code_generator
-from irsattend.model import database, students_mod
 
 
 DATA_FOLDER = pathlib.Path(__file__).parent / "data"
@@ -18,13 +17,13 @@ pytestmark = pytest.mark.skip(reason="Tests require email credentials.")
 
 
 def test_generate_qr_codes(
-    full_dbase: database.DBase,
+    full_dbase:model.DBase,
     empty_output_folder: pathlib.Path,
 ) -> None:
     """Generate QR codes for all students."""
     # Arrange
     qr_folder = empty_output_folder / QR_FOLDER_NAME
-    students = students_mod.Student.get_all(full_dbase, include_inactive=True)
+    students = model.Student.get_all(full_dbase, include_inactive=True)
     num_active_students = len([s for s in students if s.deactivated_on is None])
     # Act
     generator = qr_code_generator.generate_all_qr_codes(qr_folder, full_dbase)
@@ -42,7 +41,7 @@ def test_generate_qr_codes(
 
 
 def test_send_one_qr_code(
-    full_dbase: database.DBase,
+    full_dbase: model.DBase,
     empty_output_folder: pathlib.Path,
     settings: config.Settings,
 ) -> None:
@@ -52,7 +51,7 @@ def test_send_one_qr_code(
     sender inbox to verify email was received.
     """
     # Arrange
-    students = students_mod.Student.get_all(full_dbase)
+    students = model.Student.get_all(full_dbase)
     qr_folder = empty_output_folder / QR_FOLDER_NAME
     list(qr_code_generator.generate_all_qr_codes(qr_folder, full_dbase))
     # Act
@@ -66,7 +65,7 @@ def test_send_one_qr_code(
 
 
 def test_send_multiple_qr_codes(
-    full_dbase: database.DBase,
+    full_dbase: model.DBase,
     empty_output_folder: pathlib.Path,
     settings: config.Settings,
 ) -> None:
@@ -76,7 +75,7 @@ def test_send_multiple_qr_codes(
     sender inbox to verify emails were received.
     """
     # Arrange
-    students = students_mod.Student.get_all(full_dbase)
+    students = model.Student.get_all(full_dbase)
     qr_folder = empty_output_folder / QR_FOLDER_NAME
     num_codes = 5
     list(qr_code_generator.generate_all_qr_codes(qr_folder, full_dbase))

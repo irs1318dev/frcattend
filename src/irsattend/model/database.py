@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 
 from irsattend import config
-from irsattend.model import events_mod, students_mod
+from irsattend.model import events, students
 
 
 class DBaseError(Exception):
@@ -80,10 +80,10 @@ class DBase:
     def create_tables(self):
         """Creates the database tables if they don't already exist."""
         with self.get_db_connection() as conn:
-            conn.execute(students_mod.STUDENT_TABLE_SCHEMA)
-            conn.execute(events_mod.CHECKINS_TABLE_SCHEMA)
-            conn.execute(events_mod.EVENT_TABLE_SCHEMA)
-            conn.execute(students_mod.ACTIVE_STUDENTS_VIEW_SCHEMA)
+            conn.execute(students.Student.table_def)
+            conn.execute(events.Checkin.table_def)
+            conn.execute(events.Event.table_def)
+            conn.execute(students.Student.active_students_view_def)
         conn.close()
 
     def get_student_attendance_data(self) -> sqlite3.Cursor:
@@ -134,15 +134,15 @@ class DBase:
         db_data = {}
         db_data["students"] = [
             student.to_dict()
-            for student in students_mod.Student.get_all(self, include_inactive=True)
+            for student in students.Student.get_all(self, include_inactive=True)
         ]
-        events = self.get_events_dict()
+        event_data = self.get_events_dict()
         excluded_columns = ["event_id", "day_of_week"]
         db_data["events"] = [
             {col: val for col, val in row.items() if col not in excluded_columns}
-            for row in events
+            for row in event_data
         ]
-        checkins = [c.to_dict() for c in events_mod.Checkin.get_all(self)]
+        checkins = [c.to_dict() for c in events.Checkin.get_all(self)]
         excluded_columns = ["checkin_id"]
         db_data["checkins"] = [
             {col: val for col, val in row.items() if col not in excluded_columns}
@@ -180,7 +180,7 @@ class DBase:
 
     def add_event(
         self,
-        event_type: events_mod.EventType,
+        event_type: events.EventType,
         event_date: Optional[datetime.date] = None,
         description: Optional[str] = None,
     ) -> None:
