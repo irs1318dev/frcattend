@@ -11,7 +11,7 @@ from google.oauth2 import service_account
 import gspread
 import gspread.utils
 
-from irsattend import model
+from frcattend import model
 
 
 # TODO: Check attendance name from roster.

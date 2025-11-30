@@ -6,7 +6,7 @@ import shutil
 
 import segno
 
-from irsattend import model
+from frcattend import model
 
 
 class QrError(Exception):

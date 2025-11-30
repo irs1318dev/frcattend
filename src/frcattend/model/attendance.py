@@ -1,3 +1,3 @@
 """Define methods based on multiple tables."""
 
-from irsattend.model import database, events
+from frcattend.model import database, events

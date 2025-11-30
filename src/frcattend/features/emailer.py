@@ -8,8 +8,8 @@ import smtplib
 import time
 from typing import cast, Optional
 
-from irsattend import config, model
-from irsattend.features import qr_code_generator
+from frcattend import config, model
+from frcattend.features import qr_code_generator
 
 
 class EmailError(Exception):

@@ -5,9 +5,9 @@ import pathlib
 
 import rich
 
-from irsattend import config
-from irsattend.model import database, roster
-import irsattend.view.main_app
+from frcattend import config
+from frcattend.model import database, roster
+import frcattend.view.main_app
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -62,7 +62,7 @@ def run_app(args: argparse.Namespace) -> None:
     """Run the IRS Attendane TUI application."""
     if hasattr(args, "config_path") and args.config_path is not None:
         config.settings.update_from_args(args)
-    app = irsattend.view.main_app.IRSAttend()
+    app = frcattend.view.main_app.IRSAttend()
     app.run()
 
 

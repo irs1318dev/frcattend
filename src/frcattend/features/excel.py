@@ -6,8 +6,8 @@ from typing import Any
 
 import xlsxwriter
 
-from irsattend.model import database
-from irsattend.features import events
+from frcattend.model import database
+from frcattend.features import events
 
 
 def write(dbase: database.DBase, excel_path: pathlib.Path) -> None:

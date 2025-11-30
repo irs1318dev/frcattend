@@ -4,7 +4,7 @@ import pathlib
 
 import rich  # noqa: F401
 
-from irsattend import model
+from frcattend import model
 
 DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 

@@ -8,7 +8,7 @@ from typing import ClassVar, Optional, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from irsattend.model import database
+    from frcattend.model import database
 
 @dataclasses.dataclass
 class Student:

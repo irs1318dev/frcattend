@@ -11,15 +11,15 @@ import textual
 from textual import app, containers, message, screen, widgets
 from textual.widgets import option_list
 
-from irsattend import config, model
-import irsattend.view
-from irsattend.view import pw_dialog
+from frcattend import config, model
+import frcattend.view
+from frcattend.view import pw_dialog
 
 
 class ScanScreen(screen.Screen):
     """UI for scanning QR codes while taking attendance."""
 
-    CSS_PATH = [irsattend.view.CSS_FOLDER / "take_attendance.tcss"]
+    CSS_PATH = [frcattend.view.CSS_FOLDER / "take_attendance.tcss"]
 
     dbase: model.DBase
     """Sqlte database connection object."""

@@ -2,9 +2,9 @@
 
 from textual import app, containers, screen, validation, widgets
 
-from irsattend import model
-import irsattend.view
-from irsattend.features import validators
+from frcattend import model
+import frcattend.view
+from frcattend.features import validators
 
 
 class NotEmpty(validation.Validator):
@@ -24,7 +24,7 @@ class IsInteger(validation.Validator):
 class StudentDialog(screen.ModalScreen):
     """A dialog for adding or editing student details."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "student_dialog.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "student_dialog.tcss"
 
     def __init__(self, student: model.Student | None = None) -> None:
         self.student = student

@@ -7,8 +7,8 @@ import sqlite3
 from typing import Any, Optional
 
 
-from irsattend import config
-from irsattend.model import events, students
+from frcattend import config
+from frcattend.model import events, students
 
 
 class DBaseError(Exception):

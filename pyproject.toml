@@ -1,10 +1,10 @@
 [project]
-name = "irsattend"
+name = "frcattend"
 version = "0.8.0"
 description = "The Issaquah Robotics Society's Python program for managing attendance"
 readme = "README.md"
 authors = [
-    { name = "irwinsnet", email = "stacy.k.irwin@gmail.com" }
+    { name = "Stacy Irwin" }
 ]
 requires-python = ">=3.13"
 dependencies = [
@@ -36,4 +36,4 @@ dev = [
 ]
 
 [project.scripts]
-attend = "irsattend.__main__:main"
+attend = "frcattend.__main__:main"

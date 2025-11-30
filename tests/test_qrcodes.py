@@ -5,8 +5,8 @@ import pathlib
 import pytest
 import rich  # noqa: F401
 
-from irsattend import config, model
-from irsattend.features import emailer, qr_code_generator
+from frcattend import config, model
+from frcattend.features import emailer, qr_code_generator
 
 
 DATA_FOLDER = pathlib.Path(__file__).parent / "data"

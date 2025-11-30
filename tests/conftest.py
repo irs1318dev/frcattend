@@ -7,7 +7,7 @@ import shutil
 
 import pytest
 
-from irsattend import config, model
+from frcattend import config, model
 
 
 TEST_FOLDER = pathlib.Path(__file__).parent

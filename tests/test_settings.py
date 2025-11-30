@@ -4,7 +4,7 @@ import argparse
 import pathlib
 
 
-from irsattend import config
+from frcattend import config
 
 
 DATA_PATH = pathlib.Path(__file__).parent / "data"

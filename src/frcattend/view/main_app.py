@@ -6,10 +6,10 @@ import pathlib
 import textual
 from textual import app, containers, reactive, widgets
 
-from irsattend import config, model
-from irsattend.features import excel
-import irsattend.view
-from irsattend.view import (
+from frcattend import config, model
+from frcattend.features import excel
+import frcattend.view
+from frcattend.view import (
     attendance_screen,
     event_screen,
     file_widgets,
@@ -22,7 +22,7 @@ from irsattend.view import (
 class IRSAttend(app.App):
     """Main application and introduction screen."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "root.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "root.tcss"
 
     TITLE = "IRS 1318 Attendance System"
     BINDINGS = [

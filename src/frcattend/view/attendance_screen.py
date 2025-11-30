@@ -2,7 +2,7 @@
 
 from textual import app, binding, screen, widgets
 
-from irsattend import config, model
+from frcattend import config, model
 
 
 class AttendanceScreen(screen.Screen):

@@ -7,10 +7,10 @@ import textual
 import textual.css.query
 from textual import app, binding, containers, screen, widgets
 
-from irsattend import config, model
-from irsattend.features import emailer, qr_code_generator
-import irsattend.view
-from irsattend.view import confirm_dialogs, student_dialog
+from frcattend import config, model
+from frcattend.features import emailer, qr_code_generator
+import frcattend.view
+from frcattend.view import confirm_dialogs, student_dialog
 
 
 def success(message: str) -> str:
@@ -33,7 +33,7 @@ class StudentScreen(screen.Screen):
     _students: dict[str, model.Student]
     """List of students currently loaded in the datatable."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "student_screen.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "student_screen.tcss"
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
     ]

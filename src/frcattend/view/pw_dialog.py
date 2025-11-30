@@ -4,14 +4,14 @@ import hashlib
 
 from textual import app, containers, screen, widgets
 
-import irsattend.view
-from irsattend import config
+import frcattend.view
+from frcattend import config
 
 
 class PasswordPrompt(screen.ModalScreen[bool]):
     """A modal screen to ask for the management password."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "pw_dialog.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "pw_dialog.tcss"
 
     exit_on_cancel: bool
     """Exit from application when dialog canceled if true."""

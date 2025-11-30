@@ -7,9 +7,9 @@ import rich.text
 import textual
 from textual import app, binding, containers, reactive, screen, widgets
 
-from irsattend import config, model
-import irsattend.view
-from irsattend.features import events, validators
+from frcattend import config, model
+import frcattend.view
+from frcattend.features import events, validators
 
 
 class EventsTable(widgets.DataTable):
@@ -72,7 +72,7 @@ class StudentsTable(widgets.DataTable):
     event_key = reactive.reactive("")
     """Contains the currently selected event."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "event_screen.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "event_screen.tcss"
 
     def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
         """Set link to database."""
@@ -120,7 +120,7 @@ class StudentsTable(widgets.DataTable):
 class EventScreen(screen.Screen):
     """Add, delete, and edit students."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "event_screen.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "event_screen.tcss"
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
     ]
@@ -193,7 +193,7 @@ class EditEventDialog(screen.ModalScreen[bool]):
     event: events.CheckinEvent
     """The event to be edited."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "event_screen.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "event_screen.tcss"
 
     def __init__(self, dbase: model.DBase, event: events.CheckinEvent) -> None:
         """Set the event to be edited."""

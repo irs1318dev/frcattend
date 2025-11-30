@@ -2,13 +2,13 @@
 
 from textual import app, containers, screen, widgets
 
-import irsattend.view
+import frcattend.view
 
 
 class DeleteConfirmDialog(screen.ModalScreen):
     """A confirmation dialog for deleting students."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "confirm_dialogs.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "confirm_dialogs.tcss"
 
     student_name: str
     student_id: str
@@ -44,7 +44,7 @@ class DeleteConfirmDialog(screen.ModalScreen):
 class GeneralConfirmDialog(screen.ModalScreen):
     """General confirmation dialog."""
 
-    CSS_PATH = irsattend.view.CSS_FOLDER / "confirm_dialogs.tcss"
+    CSS_PATH = frcattend.view.CSS_FOLDER / "confirm_dialogs.tcss"
 
     message: str
     """Message displayed to user in confirmation dialog."""

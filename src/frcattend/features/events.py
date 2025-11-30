@@ -4,7 +4,7 @@ import dataclasses
 import datetime
 from typing import Optional
 
-from irsattend import model
+from frcattend import model
 
 
 @dataclasses.dataclass

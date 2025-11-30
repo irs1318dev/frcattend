@@ -16,7 +16,7 @@ import pathlib
 import pytest
 import rich  # noqa: F401
 
-from irsattend.model import database, roster
+from frcattend.model import database, roster
 
 TEST_PATH = pathlib.Path(__file__).parent
 DATA_PATH = TEST_PATH / "data"
