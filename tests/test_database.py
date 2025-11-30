@@ -41,7 +41,7 @@ def test_existing_database_raises_error_on_create_new(empty_database) -> None:
         model.DBase(empty_database.db_path, create_new=True)
 
 
-def test_attendance_table(full_dbase:model.DBase) -> None:
+def test_attendance_table(full_dbase: model.DBase) -> None:
     """Attendance table has many rows and 5 columns of data."""
     # Act
     checkins = model.Checkin.get_all(full_dbase)

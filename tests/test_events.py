@@ -136,8 +136,7 @@ def test_update_event_type(full_dbase: model.DBase) -> None:
     event_to_update.add(full_dbase)
     new_type = model.EventType.COMPETITION
     assert (
-        model.Checkin.get_count(full_dbase, event_to_update.event_date, new_type)
-        == 0
+        model.Checkin.get_count(full_dbase, event_to_update.event_date, new_type) == 0
     )
     # Act
     checkins_updated = event_to_update.update_event_type(full_dbase, new_type)

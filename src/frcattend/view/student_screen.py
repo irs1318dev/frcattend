@@ -287,9 +287,7 @@ class StudentScreen(screen.Screen):
             students_to_email = model.Student.get_all(self.dbase)
             self._add_progress_bar(len(students_to_email), "Send Emails")
         elif self._selected_student_id:
-            student = model.Student.get_by_id(
-                self.dbase, self._selected_student_id
-            )
+            student = model.Student.get_by_id(self.dbase, self._selected_student_id)
             if student is None:
                 self.update_status(
                     error(f"Unable to locate student {self._selected_student_id}")

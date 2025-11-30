@@ -19,12 +19,12 @@ from frcattend.view import (
 )
 
 
-class IRSAttend(app.App):
+class FrcAttend(app.App):
     """Main application and introduction screen."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "root.tcss"
 
-    TITLE = "IRS 1318 Attendance System"
+    TITLE = "FRC Attendance System"
     BINDINGS = [
         ("a", "take_attendance", "Take Attendance"),
         ("s", "manage_students", "Manage Students"),
@@ -43,7 +43,7 @@ class IRSAttend(app.App):
 
         # Main menu bar
         with containers.HorizontalGroup(classes="pane"):
-            with containers.HorizontalGroup(id="main-top-menu"):
+            with containers.HorizontalGroup(id="main-top-menu", classes="toolbar"):
                 yield widgets.Button(
                     "Take Attendance",
                     id="main-take-attendance",
@@ -52,17 +52,10 @@ class IRSAttend(app.App):
                 yield widgets.Button(
                     "Manage Students",
                     id="main-manage-students",
-                    classes="attend-main",
                     tooltip="Get a new student's info and generate a QR code.",
                 )
-                yield widgets.Button(
-                    "View Attendance Records",
-                    id="main-view-records",
-                    classes="attend-main",
-                )
-                yield widgets.Button(
-                    "Manage Events", id="main-manage-events", classes="attend-main"
-                )
+                yield widgets.Button("View Attendance Records", id="main-view-records")
+                yield widgets.Button("Manage Events", id="main-manage-events")
 
         # Database Controls
         with containers.VerticalGroup(classes="pane"):
@@ -72,22 +65,16 @@ class IRSAttend(app.App):
                     str(config.settings.db_path), id="main-config-db-path"
                 )
             with containers.HorizontalGroup(
-                id="main-database-buttons", classes="config"
+                id="main-database-buttons", classes="toolbar"
             ):
                 yield widgets.Button(
                     "Create New Database File",
                     id="main-create-database",
                     classes="attend-main",
                 )
-                yield widgets.Button(
-                    "Select Database", id="main-select-database", classes="attend-main"
-                )
-                yield widgets.Button(
-                    "Export", id="main-export-database", classes="attend-main"
-                )
-                yield widgets.Button(
-                    "Import", id="main-import-database", classes="attend-main"
-                )
+                yield widgets.Button("Select Database", id="main-select-database")
+                yield widgets.Button("Export", id="main-export-database")
+                yield widgets.Button("Import", id="main-import-database")
 
         # Configuration Controls
         with containers.VerticalGroup(classes="pane"):
@@ -96,15 +83,13 @@ class IRSAttend(app.App):
                 yield widgets.Label(
                     str(config.settings.config_path), id="main-settings-path"
                 )
-            with containers.HorizontalGroup(classes="config"):
+            with containers.HorizontalGroup(classes="toolbar"):
                 yield widgets.Button(
                     "Create New Settings File",
-                    classes="dock-right attend-main",
                     id="main-create-settings",
                 )
                 yield widgets.Button(
                     "Select Settings File",
-                    classes="dock-right attend-main",
                     id="main-select-settings",
                 )
         yield widgets.Label(
@@ -146,164 +131,149 @@ class IRSAttend(app.App):
         self.app.push_screen(event_screen.EventScreen())
 
     @textual.on(widgets.Button.Pressed, "#main-select-database")
-    def action_select_database(self) -> None:
+    async def action_select_database(self) -> None:
         """Select a different database file or create a new one."""
-        self._close_any_file_selector()
-        self.mount(
-            file_widgets.FileSelector(
-                pathlib.Path.cwd(),
-                [".db", ".sqlite3"],
-                create=False,
-                default_filename="irsattend.db",
-                id="main-select-database-file",
-            )
-        )
 
-    def _select_database(self, db_path: pathlib.Path) -> None:
-        """Select a new, existing database file."""
-        config.settings.db_path = db_path
-        self.db_path = db_path
+        def _select_database(db_path: pathlib.Path | None) -> None:
+            """Select a new, existing database file."""
+            if db_path is None:
+                return
+            config.settings.db_path = db_path
+            self.db_path = db_path
+
+        file_selector = file_widgets.FileSelector(
+            pathlib.Path.cwd(),
+            [".db", ".sqlite3"],
+            create=False,
+            default_filename=config.DB_FILE_NAME,
+            id="main-select-database-file",
+        )
+        await self.app.push_screen(file_selector, _select_database)
 
     @textual.on(widgets.Button.Pressed, "#main-create-database")
-    def action_create_database(self) -> None:
+    async def action_create_database(self) -> None:
         """Select a different database file or create a new one.
 
         Method `_on_file_selector_file_selected` is called when file selected.
         """
-        self._close_any_file_selector()
-        self.mount(
-            file_widgets.FileSelector(
-                pathlib.Path.cwd(),
-                [".db", ".sqlite3"],
-                create=True,
-                default_filename="irsattend.db",
-                id="main-create-database-file",
-            )
+
+        def _create_database(db_path: pathlib.Path | None) -> None:
+            """Select a new, existing database file."""
+            if db_path is None:
+                return
+            model.DBase(db_path, create_new=True)
+            config.settings.db_path = db_path
+            self.db_path = db_path
+
+        file_creator = file_widgets.FileSelector(
+            pathlib.Path.cwd(),
+            [".db", ".sqlite3"],
+            create=True,
+            default_filename=config.DB_FILE_NAME,
+            id="main-create-database-file",
         )
+        await self.app.push_screen(file_creator, _create_database)
 
     @textual.on(widgets.Button.Pressed, "#main-export-database")
-    def select_export_file(self):
+    async def export_file(self):
         """Display a file selection widget for exporting data.
 
         Method `_on_file_selector_file_selected` is called when file selected.
         """
-        self._close_any_file_selector()
-        self.mount(
-            file_widgets.FileSelector(
-                pathlib.Path.cwd(),
-                [".json", ".xlsx"],
-                create=True,
-                id="main-export-data-file",
-            )
-        )
 
-    def _export_database_to_file(self, export_path: pathlib.Path) -> None:
-        """Export the contents of the sqlite database to a file."""
-        if config.settings.db_path is None:
-            return
-        match export_path.suffix.lower():
-            case ".json":
-                dbase = model.DBase(config.settings.db_path)
-                with open(export_path.with_suffix(".json"), "wt") as jfile:
-                    json.dump(dbase.to_dict(), jfile, indent=2)
-                self.message = "Exporting JSON file."
-            case ".xlsx":
-                dbase = model.DBase(config.settings.db_path)
-                excel.write(dbase, export_path.with_suffix(".xlsx"))
-            case _:
-                self.message = "Incorrect file type"
+        def _export_database_to_file(export_path: pathlib.Path | None) -> None:
+            """Export the contents of the sqlite database to a file."""
+            if config.settings.db_path is None or export_path is None:
+                return
+            match export_path.suffix.lower():
+                case ".json":
+                    dbase = model.DBase(config.settings.db_path)
+                    with open(export_path.with_suffix(".json"), "wt") as jfile:
+                        json.dump(dbase.to_dict(), jfile, indent=2)
+                    self.message = "Exporting JSON file."
+                case ".xlsx":
+                    dbase = model.DBase(config.settings.db_path)
+                    excel.write(dbase, export_path.with_suffix(".xlsx"))
+                case _:
+                    self.message = "Incorrect file type"
+
+        file_selector = file_widgets.FileSelector(
+            pathlib.Path.cwd(),
+            [".json", ".xlsx"],
+            create=True,
+            id="main-export-data-file",
+        )
+        await self.app.push_screen(file_selector, _export_database_to_file)
 
     @textual.on(widgets.Button.Pressed, "#main-import-database")
-    def select_import_file(self):
+    async def select_import_file(self):
         """Display a file selection widget for importing data.
 
         Method `_on_file_selector_file_selected` is called when file selected.
         """
-        self._close_any_file_selector()
-        self.mount(
-            file_widgets.FileSelector(
-                pathlib.Path.cwd(), [".json", ".xlsx"], id="main-import-data-file"
-            )
-        )
 
-    def _import_data_from_file(self, import_path: pathlib.Path) -> None:
-        """Import data from a JSON file."""
-        if config.settings.db_path is None:
-            return
-        match import_path.suffix.lower():
-            case ".json":
-                with open(import_path, "rt") as jfile:
-                    imported_data = json.load(jfile)
-                dbase = model.DBase(config.settings.db_path)
-                dbase.load_from_dict(imported_data)
+        def _import_data_from_file(import_path: pathlib.Path | None) -> None:
+            """Import data from a JSON file."""
+            if config.settings.db_path is None or import_path is None:
+                return
+            match import_path.suffix.lower():
+                case ".json":
+                    with open(import_path, "rt") as jfile:
+                        imported_data = json.load(jfile)
+                    dbase = model.DBase(config.settings.db_path)
+                    dbase.load_from_dict(imported_data)
+
+        file_selector = file_widgets.FileSelector(
+            pathlib.Path.cwd(), [".json", ".xlsx"], id="main-import-data-file"
+        )
+        await self.app.push_screen(file_selector, _import_data_from_file)
 
     @textual.on(widgets.Button.Pressed, "#main-select-settings")
-    def select_settings_file(self):
+    async def select_settings_file(self):
         """Display a file selection widget for the application settings file.
 
         Method `_on_file_selector_file_selected` is called when file selected.
         """
-        self._close_any_file_selector()
-        self.mount(
-            file_widgets.FileSelector(
-                pathlib.Path.cwd(),
-                [".toml"],
-                create=False,
-                default_filename="irsattend.toml",
-                id="main-select-settings-file",
-            )
+
+        def _select_settings(config_path: pathlib.Path | None) -> None:
+            """Select a new settings TOML file."""
+            if config_path is None:
+                return
+            config.settings.config_path = config_path
+            self.config_path = config_path
+
+        file_selector = file_widgets.FileSelector(
+            pathlib.Path.cwd(),
+            [".toml"],
+            create=False,
+            default_filename=config.CONFIG_FILE_NAME,
+            id="main-select-settings-file",
         )
+        await self.app.push_screen(file_selector, _select_settings)
 
     @textual.on(widgets.Button.Pressed, "#main-create-settings")
-    def create_settings_file(self):
+    async def create_settings_file(self):
         """Display a file creation widget for the application settings. file.
 
         Method `_on_file_selector_file_selected` is called when file selected.
         """
-        self._close_any_file_selector()
-        self.mount(
-            file_widgets.FileSelector(
-                pathlib.Path.cwd(),
-                [".toml"],
-                create=True,
-                default_filename="irsattend.toml",
-                id="main-create-settings-file",
-            )
+
+        def _create_settings(config_path: pathlib.Path | None) -> None:
+            """Select a new settings TOML file."""
+            if config_path is None:
+                return
+            config.settings.create_new_config_file(config_path)
+            config.settings.config_path = config_path
+            self.config_path = config_path
+
+        file_creator = file_widgets.FileSelector(
+            pathlib.Path.cwd(),
+            [".toml"],
+            create=True,
+            default_filename=config.CONFIG_FILE_NAME,
+            id="main-create-settings-file",
         )
-
-    def _select_settings(self, config_path: pathlib.Path) -> None:
-        """Select a new settings TOML file."""
-        config.settings.config_path = config_path
-        self.config_path = config_path
-
-    def _on_file_selector_file_selected(
-        self, message: file_widgets.FileSelector.FileSelected
-    ) -> None:
-        """Update db_path in config and main screen."""
-        self.message = f"Selected DB file: {message.path, message.create, message.id}"
-        match message.id:
-            case "main-select-database-file":
-                self._select_database(message.path)
-            case "main-create-database-file":
-                model.DBase(message.path, create_new=True)
-                self._select_database(message.path)
-            case "main-export-data-file":
-                self._export_database_to_file(message.path)
-            case "main-import-data-file":
-                self._import_data_from_file(message.path)
-            case "main-select-settings-file":
-                self._select_settings(message.path)
-            case "main-create-settings-file":
-                config.settings.create_new_config_file(message.path)
-                self._select_settings(message.path)
-
-    def _close_any_file_selector(self) -> None:
-        """Close any existing FileSelector widget to prevent duplicates."""
-        try:
-            for selector in self.query(file_widgets.FileSelector):
-                selector.remove()
-        except Exception:
-            pass
+        await self.app.push_screen(file_creator, _create_settings)
 
     def watch_db_path(self, db_path: str) -> None:
         """Update the database path label."""

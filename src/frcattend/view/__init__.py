@@ -1,4 +1,4 @@
-"""The view subpackage contains Textual-based UI code for irsattend."""
+"""The view subpackage contains Textual-based UI code for frcattend."""
 
 import pathlib
 

@@ -1,6 +1,5 @@
 """Manage team events."""
 
-
 import dateutil.parser
 import rich.text
 
@@ -238,8 +237,7 @@ class EditEventDialog(screen.ModalScreen[bool]):
     def apply_dialog(self) -> None:
         """Close the dialog and update the event."""
         new_date = dateutil.parser.parse(
-            self.query_one("#event-date-input", widgets.Input).value,
-            dayfirst=False
+            self.query_one("#event-date-input", widgets.Input).value, dayfirst=False
         ).date()
         new_type = model.EventType(
             self.query_one("#event-type-select", widgets.Select).value
@@ -252,7 +250,6 @@ class EditEventDialog(screen.ModalScreen[bool]):
         self.event.update_event_date(self.dbase, new_date)
         # update_event_type adds a new event and deletes the old one, then
         #   updates the linked checkin data. This avoids referential integrity
-        #   issues. 
+        #   issues.
         self.event.update_event_type(self.dbase, new_type)
         self.dismiss(True)
-

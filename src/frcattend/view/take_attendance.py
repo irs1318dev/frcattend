@@ -50,8 +50,7 @@ class ScanScreen(screen.Screen):
             raise model.DBaseError("No database file selected.")
         self.dbase = model.DBase(config.settings.db_path)
         self._students = {
-            student.student_id: student
-            for student in model.Student.get_all(self.dbase)
+            student.student_id: student for student in model.Student.get_all(self.dbase)
         }
 
     class QrCodeFound(message.Message):

@@ -1,0 +1,25 @@
+/*Style settings for file selector dialog defined in view/file_dialog.py.*/
+
+FileSelectorTree {
+    padding: 1;
+    height: 22;
+}
+
+#file-dialog {
+    width: 60;
+    height: 40;
+}
+
+#file-create-pane {
+    layout: grid;
+    grid-size: 2 2;
+    grid-columns: 1fr 3fr;
+}
+
+#file-create-pane Label {
+    align-horizontal: right;
+}
+
+#file-create-help {
+    column-span: 2;
+}

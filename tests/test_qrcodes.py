@@ -17,7 +17,7 @@ pytestmark = pytest.mark.skip(reason="Tests require email credentials.")
 
 
 def test_generate_qr_codes(
-    full_dbase:model.DBase,
+    full_dbase: model.DBase,
     empty_output_folder: pathlib.Path,
 ) -> None:
     """Generate QR codes for all students."""

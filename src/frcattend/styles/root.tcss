@@ -1,9 +1,8 @@
-/* Top level styles for irsattend application. Used by all view files. */
+/* Top level styles for frcattend application. Used by all view files. */
 Button {
     background: purple;
     color: yellow;
     border: white;
-    margin: 1;
     content-align: center middle;
 }
 
@@ -37,10 +36,24 @@ ModalScreen {
 
 .dialog-row {
     align-horizontal: center;
+    height: 4;
+    margin: 0;
+}
+
+.dialog-row Button {
+    margin: 0 1;
+}
+
+.toolbar {
+    align: left top;
+}
+.toolbar Button {
+    margin: 0 1;
 }
 
 .emphasis {
     color: yellow;
+    padding: 0 1 1 1;
 }
 
 .ok {
@@ -52,11 +65,7 @@ ModalScreen {
 }
 
 .pane {
-    border: yellow
-}
-
-#file-widget-controls {
-    width: 30;
+    border: yellow;
 }
 
 .separator {
@@ -70,6 +79,7 @@ ModalScreen {
     border: thick $primary 80%;
     background: $surface;
     padding: 1;
+    margin: 0;
 }
 
 

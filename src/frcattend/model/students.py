@@ -10,6 +10,7 @@ from typing import ClassVar, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from frcattend.model import database
 
+
 @dataclasses.dataclass
 class Student:
     """An FRC student."""

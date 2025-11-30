@@ -11,8 +11,8 @@ import tomllib
 from typing import Optional
 
 
-DB_FILE_NAME = "irsattend.db"
-CONFIG_FILE_NAME = "irsattend.toml"
+DB_FILE_NAME = "frc-attend.db"
+CONFIG_FILE_NAME = "frc-attend.toml"
 
 
 class ConfigError(Exception):
@@ -32,7 +32,7 @@ class ConfigError(Exception):
 
 @dataclasses.dataclass
 class Settings:
-    """Configuration data for irsattend application.
+    """Configuration data for frcattend application.
 
     password_hash is a SHA256 hash created with the hashlib library. The
     default password is 1318.
@@ -142,7 +142,7 @@ class Settings:
 
 
 # Store settings in a module-level variable, which will be available from any
-# other module that imports irsattend.config. This pattern is sometimes referred
+# other module that imports frcattend.config. This pattern is sometimes referred
 # to as a Singleton pattern, because there is only a single instance of the
 # Settings class.
 settings = Settings()

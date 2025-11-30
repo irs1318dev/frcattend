@@ -62,7 +62,7 @@ def run_app(args: argparse.Namespace) -> None:
     """Run the IRS Attendane TUI application."""
     if hasattr(args, "config_path") and args.config_path is not None:
         config.settings.update_from_args(args)
-    app = frcattend.view.main_app.IRSAttend()
+    app = frcattend.view.main_app.FrcAttend()
     app.run()
 
 

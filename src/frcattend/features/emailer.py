@@ -180,7 +180,7 @@ def send_email(
         attachment = base.MIMEBase("application", "octet-stream")
         attachment.set_payload(fp.read())
     encoders.encode_base64(attachment)
-    attachment.add_header("Content-Disposition", "attachment", filename="irsattend.jpg")
+    attachment.add_header("Content-Disposition", "attachment", filename="frcattend.jpg")
     msg.attach(attachment)
     # Note: IHS WIFI has been known to block email.
     if smtp_port == 465:

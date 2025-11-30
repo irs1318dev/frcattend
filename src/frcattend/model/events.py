@@ -23,6 +23,7 @@ from typing import ClassVar, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from frcattend.model import database
 
+
 class EventType(enum.StrEnum):
     """Types of events at which we take attendance."""
 
@@ -66,6 +67,7 @@ sqlite3.register_converter("timestamp", convert_timestamp)
 
 class EventUpateError(Exception):
     """Raised when an event update fails."""
+
     pass
 
 
@@ -210,7 +212,7 @@ class Event:
         events = [Event(**event) for event in conn.execute(query)]
         conn.close()
         return events
-    
+
     def update_description(
         self, dbase: "database.DBase", description: str | None
     ) -> None:
@@ -261,9 +263,9 @@ class Event:
                    AND event_type = :event_type;
         """
         params = {
-                    "new_type": new_type,
-                    "event_type": self.event_type,
-                    "event_date": self.event_date
+            "new_type": new_type,
+            "event_type": self.event_type,
+            "event_date": self.event_date,
         }
         with dbase.get_db_connection() as conn:
             conn.execute(event_query, params)
@@ -473,4 +475,3 @@ class Checkin:
             "event_type": self.event_type,
             "timestamp": self.timestamp.isoformat(),
         }
-

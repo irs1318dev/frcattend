@@ -8,7 +8,7 @@ from frcattend import config, model
 class AttendanceScreen(screen.Screen):
     """Add, delete, and edit students."""
 
-    dbase:model.DBase
+    dbase: model.DBase
     """Connection to Sqlite Database."""
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),

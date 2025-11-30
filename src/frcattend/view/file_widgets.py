@@ -5,7 +5,9 @@ import pathlib
 from typing import cast, Optional
 
 import textual
-from textual import app, containers, message, widgets
+from textual import app, containers, message, screen, widgets
+
+import frcattend.view
 
 
 class FileSelectorTree(widgets.DirectoryTree):
@@ -53,8 +55,10 @@ class FileSelectorTree(widgets.DirectoryTree):
         self.path = event.path
 
 
-class FileSelector(containers.Horizontal):
+class FileSelector(screen.ModalScreen[pathlib.Path | None]):
     """Select or create a new file."""
+
+    CSS_PATH = frcattend.view.CSS_FOLDER / "file_dialog.tcss"
 
     class FileSelected(message.Message):
         """Message sent when file selected or on file creation."""
@@ -98,36 +102,42 @@ class FileSelector(containers.Horizontal):
 
     def compose(self) -> app.ComposeResult:
         """Add widgets to screen."""
-        with containers.VerticalGroup(id="file-widget-controls"):
-            yield widgets.Button(
-                "Home", id="to-start-path", tooltip="Go back to the initial folder."
-            )
-            yield widgets.Button(
-                "Up ..",
-                id="to-parent-folder",
-                tooltip="Navigate up to the parent folder.",
-            )
-            if self.create:
-                yield widgets.Label("Filename:", classes="emphasis")
-                yield widgets.Input(self.default_filename, id="filename")
-                yield widgets.Button("Create File", id="create-file", classes="ok")
-                yield widgets.Static(
-                    "Click on [i]Create File[/] to create a file with the "
-                    "specified filename in the folder displayed in the directory tree, "
-                    "or select [i]Cancel[/] to take no action."
+        with containers.VerticalGroup(id="file-dialog", classes="modal-dialog"):
+            with containers.HorizontalGroup(id="file-toolbar", classes="toolbar"):
+                yield widgets.Button(
+                    "Home", id="to-start-path", tooltip="Go back to the initial folder."
                 )
+                yield widgets.Button(
+                    "Up ..",
+                    id="to-parent-folder",
+                    tooltip="Navigate up to the parent folder.",
+                )
+
+            yield FileSelectorTree(self.start_path, self.filetypes)
+            if self.create:
+                with containers.Grid(id="file-create-pane"):
+                    yield widgets.Label("Filename:", classes="emphasis")
+                    yield widgets.Input(self.default_filename, id="filename")
+                    yield widgets.Static(
+                        "Click on [i]Create File[/] to create a file with the "
+                        "specified filename in the folder displayed in the "
+                        "directory tree, or select [i]Cancel[/] to take no action.",
+                        id="file-create-help",
+                    )
             else:
                 yield widgets.Static(
-                    "Select a file in the directory tree at right to open it, "
+                    "Select a file to open it, "
                     "or select [i]Cancel[/] to take no action."
                 )
-            yield widgets.Button(
-                "Cancel",
-                id="cancel-action",
-                classes="cancel",
-                tooltip="Close the file selector and take no action.",
-            )
-        yield FileSelectorTree(self.start_path, self.filetypes)
+            with containers.Horizontal(classes="dialog-row"):
+                if self.create:
+                    yield widgets.Button("Create File", id="create-file", classes="ok")
+                yield widgets.Button(
+                    "Cancel",
+                    id="cancel-action",
+                    classes="cancel",
+                    tooltip="Close the file selector and take no action.",
+                )
 
     @textual.on(widgets.Button.Pressed, "#to-start-path")
     def return_to_start_path(self) -> None:
@@ -146,8 +156,7 @@ class FileSelector(containers.Horizontal):
         # Ignore item selections in create mode.
         if self.create:
             return
-        self.post_message(self.FileSelected(message.path, create=False, id=self.id))
-        self.remove()
+        self.dismiss(message.path)
 
     @textual.on(widgets.Button.Pressed, "#create-file")
     def create_file(self) -> None:
@@ -161,10 +170,9 @@ class FileSelector(containers.Horizontal):
         full_path = directory / file_name
         if full_path.exists():
             return
-        self.post_message(self.FileSelected(full_path, create=True, id=self.id))
-        self.remove()
+        self.dismiss(full_path)
 
     @textual.on(widgets.Button.Pressed, "#cancel-action")
     def remove_selector(self) -> None:
         """Remove the database selector widgets on cancel."""
-        self.remove()
+        self.dismiss(None)
