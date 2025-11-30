@@ -5,7 +5,7 @@ import pathlib
 from typing import cast, Optional
 
 import textual
-from textual import app, containers, message, screen, widgets
+from textual import app, containers, message, widgets
 
 
 class FileSelectorTree(widgets.DirectoryTree):
