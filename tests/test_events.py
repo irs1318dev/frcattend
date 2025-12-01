@@ -148,3 +148,38 @@ def test_update_event_type(full_dbase: model.DBase) -> None:
         model.Checkin.get_count(full_dbase, event_to_update.event_date, new_type)
         == checkins_updated
     )
+
+def test_event_to_dict(full_dbase) -> None:
+    """Convert an Event dataclass to a dict."""
+    # Arrange
+    events = model.Event.get_all(full_dbase)
+    # Act
+    asdict = events[0].to_dict()
+    # Assert
+    cols = ["event_date", "event_type", "description"]
+    assert len(asdict) == len(cols)
+    assert all(col in asdict for col in cols)
+
+
+def test_add_checkin(
+    attendance_test_data: dict[str, list], noevents_dbase: model.DBase
+) -> None:
+    """Add a student checkin."""
+    # Arrange
+    students = attendance_test_data["students"]
+    timestamp = datetime.datetime(2025, 11, 15, hour=17, minute=25)
+    model.Event(timestamp.date(), model.EventType.COMPETITION, "test").add(noevents_dbase)
+    checkin = model.Checkin(
+        checkin_id=-1,
+        student_id=students[0]["student_id"],
+        event_type=model.EventType.COMPETITION,
+        timestamp=timestamp,
+    )
+    # Act
+    checkin.add(noevents_dbase)
+    # Assert
+    checkins = model.Checkin.get_all(noevents_dbase)
+    assert len(checkins) == 1
+    assert checkins[0].student_id == students[0]["student_id"]
+    assert checkins[0].event_type == model.EventType.COMPETITION
+    assert checkins[0].iso_date == "2025-11-15"

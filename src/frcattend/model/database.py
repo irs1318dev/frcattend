@@ -2,9 +2,10 @@
 
 from collections.abc import Sequence
 import datetime
+import os
 import pathlib
 import sqlite3
-from typing import Any, Optional
+from typing import Any
 
 
 from frcattend import config
@@ -86,44 +87,6 @@ class DBase:
             conn.execute(students.Student.active_students_view_def)
         conn.close()
 
-    def get_student_attendance_data(self) -> sqlite3.Cursor:
-        """Join students and checkins table and get current season data."""
-        # An 'app' is an appearance.
-        query = """
-                WITH year_checkins AS (
-                    SELECT student_id, COUNT(student_id) as checkins,
-                           MAX(event_date) as last_checkin
-                      FROM checkins
-                     WHERE timestamp >= :year_start
-                  GROUP BY student_id
-                ),
-                build_checkins AS (
-                    SELECT student_id, COUNT(student_id) as checkins
-                      FROM checkins
-                     WHERE timestamp >= :build_start
-                  GROUP BY student_id
-                )
-                SELECT s.student_id, s.last_name, s.first_name, s.grad_year,
-                       COALESCE(y.checkins, 0) AS year_checkins,
-                       COALESCE(b.checkins, 0) AS build_checkins,
-                       y.last_checkin
-                  FROM active_students AS s
-             LEFT JOIN year_checkins AS y
-                    ON y.student_id = s.student_id
-            LEFT JOIN build_checkins AS b
-                    ON b.student_id = s.student_id
-              ORDER BY last_name, first_name;
-        """
-        conn = self.get_db_connection()
-        cursor = conn.execute(
-            query,
-            {
-                "year_start": config.settings.schoolyear_start_date,
-                "build_start": config.settings.buildseason_start_date,
-            },
-        )
-        return cursor
-
     def to_dict(self) -> dict[str, list[dict[str, str | int | None]]]:
         """Save database contents to a JSON file.
 
@@ -136,7 +99,7 @@ class DBase:
             student.to_dict()
             for student in students.Student.get_all(self, include_inactive=True)
         ]
-        event_data = self.get_events_dict()
+        event_data = [event.to_dict() for event in events.Event.get_all(self)]
         excluded_columns = ["event_id", "day_of_week"]
         db_data["events"] = [
             {col: val for col, val in row.items() if col not in excluded_columns}
@@ -178,38 +141,6 @@ class DBase:
             conn.executemany(checkins_query, db_data_dict["checkins"])
         conn.close()
 
-    def add_event(
-        self,
-        event_type: events.EventType,
-        event_date: Optional[datetime.date] = None,
-        description: Optional[str] = None,
-    ) -> None:
-        """Add an event to the events table.
-
-        Nothing happens if there is already an event on the same date with the
-        same type.
-        """
-        if event_date is None:
-            event_date = datetime.date.today()
-        query = """
-                INSERT INTO events (event_date, event_type, description)
-                     VALUES (?, ?, ?)
-                ON CONFLICT DO NOTHING;
-        """
-        with self.get_db_connection() as conn:
-            conn.execute(
-                query, (event_date.strftime("%Y-%m-%d"), event_type.value, description)
-            )
-        conn.close()
-
-    def get_events_dict(self) -> list[dict[str, Any]]:
-        """Get all records from the events table."""
-        query = """
-                SELECT event_date, event_type, description
-                  FROM events
-              ORDER BY event_date, event_type;
-        """
-        conn = self.get_db_connection(as_dict=True)
-        events = conn.execute(query).fetchall()
-        conn.close()
-        return events
+    def get_data_file_info(self) -> os.stat_result:
+        """Get information about the currently-selected database file."""
+        return os.stat(self.db_path)

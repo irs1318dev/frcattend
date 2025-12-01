@@ -202,3 +202,12 @@ class Student:
             "email": self.email,
             "deactivated_on": self.deactivated_iso,
         }
+    
+    @staticmethod
+    def get_num_active_students(dbase: "database.DBase") -> int:
+        """Get the number of active students in the attenance system."""
+        query = "SELECT count(*) from active_students;"
+        conn = dbase.get_db_connection()
+        num_students = conn.execute(query).fetchone()[0]
+        conn.close()
+        return num_students

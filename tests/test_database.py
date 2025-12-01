@@ -72,7 +72,7 @@ def test_attendance_counts(full_dbase: model.DBase) -> None:
 def test_attendance_report_data(full_dbase: model.DBase) -> None:
     """Get info for student attendance report."""
     # Act
-    cursor = full_dbase.get_student_attendance_data()
+    cursor = model.Attendance.get_student_attendance_data(full_dbase)
     # Assert
     for row in cursor:
         rich.print(dict(row))
@@ -109,55 +109,3 @@ def test_from_dict(full_dbase: model.DBase, empty_database2: model.DBase) -> Non
     checkins2 = model.Checkin.get_all(empty_database2)
     assert len(checkins1) == len(checkins2)
 
-
-def test_add_event(noevents_dbase: model.DBase) -> None:
-    """Add an event to the events table."""
-    # Arrange
-    edate = datetime.date(2026, 1, 10)
-    desc = "Multiteam kickoff event at Auburn H.S."
-    # Act
-    noevents_dbase.add_event(model.EventType.KICKOFF, edate, desc)
-    # Assert
-    events = noevents_dbase.get_events_dict()
-    assert len(events) == 1
-    assert events[0]["event_type"] == model.EventType.KICKOFF
-    assert events[0]["event_date"] == edate.isoformat()
-    assert events[0]["description"] == desc
-
-
-def test_add_duplicate_event_does_nothing(noevents_dbase: model.DBase) -> None:
-    """Do not add any records to the events table when event is a duplicate."""
-    # Arrange
-    edate = datetime.date(2026, 1, 10)
-    desc = "Multiteam kickoff event at Auburn H.S."
-    noevents_dbase.add_event(model.EventType.KICKOFF, edate, desc)
-    # Act
-    noevents_dbase.add_event(model.EventType.KICKOFF, edate, "duplicate")
-    # Assert
-    events = noevents_dbase.get_events_dict()
-    assert len(events) == 1
-    assert events[0]["description"] == desc
-
-
-def test_add_checkin(
-    attendance_test_data: dict[str, list], noevents_dbase: model.DBase
-) -> None:
-    """Add a student checkin."""
-    # Arrange
-    students = attendance_test_data["students"]
-    event_date = datetime.datetime(2025, 11, 15)
-    noevents_dbase.add_event(model.EventType.COMPETITION, event_date, "test")
-    checkin = model.Checkin(
-        checkin_id=-1,
-        student_id=students[0]["student_id"],
-        event_type=model.EventType.COMPETITION,
-        timestamp=event_date,
-    )
-    # Act
-    checkin.add(noevents_dbase)
-    # Assert
-    checkins = model.Checkin.get_all(noevents_dbase)
-    assert len(checkins) == 1
-    assert checkins[0].student_id == students[0]["student_id"]
-    assert checkins[0].event_type == model.EventType.COMPETITION
-    assert checkins[0].iso_date == "2025-11-15"

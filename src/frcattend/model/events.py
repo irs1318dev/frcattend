@@ -17,7 +17,7 @@ import datetime
 import enum
 import sqlite3
 
-from typing import ClassVar, Optional, TYPE_CHECKING
+from typing import Any, ClassVar, Optional, TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -97,7 +97,7 @@ class Event:
     ) -> None:
         """Ensure event_date is converted to datetime.date."""
         if isinstance(event_date, str):
-            event_date = datetime.date.fromisoformat(event_date)
+            event_date = datetime.datetime.fromisoformat(event_date).date()
         if isinstance(event_type, str):
             event_type = EventType(event_type)
         self.event_date = event_date
@@ -147,7 +147,8 @@ class Event:
         query = """
                 INSERT INTO events
                             (event_date, event_type, description)
-                     VALUES (:event_date, :event_type, :description);
+                     VALUES (:event_date, :event_type, :description)
+                ON CONFLICT DO NOTHING;
         """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(
@@ -305,6 +306,14 @@ class Event:
             conn.execute(event_query, params)
         conn.close()
         self.event_date = new_date
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert object to a JSON-serializable dictionary."""
+        return {
+            "event_date": self.iso_date,
+            "event_type": self.event_type.value,
+            "description": self.description
+        }
 
 
 @dataclasses.dataclass

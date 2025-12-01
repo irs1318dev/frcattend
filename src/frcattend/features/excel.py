@@ -6,17 +6,19 @@ from typing import Any
 
 import xlsxwriter
 
-from frcattend.model import database
+from frcattend import model
 from frcattend.features import events
 
 
-def write(dbase: database.DBase, excel_path: pathlib.Path) -> None:
+def write(dbase: model.DBase, excel_path: pathlib.Path) -> None:
     """Write all data to a Microsoft Excel file."""
     workbook = xlsxwriter.Workbook(excel_path)
     attendance_data = dbase.to_dict()
     _write_sheet(workbook, "Students", attendance_data["students"])
     _write_sheet(workbook, "Events", attendance_data["events"])
-    student_totals = [dict(row) for row in dbase.get_student_attendance_data()]
+    student_totals = [
+        dict(row) for row in model.Attendance.get_student_attendance_data(dbase)
+    ]
     _write_sheet(workbook, "Attendance by Student", student_totals)
     event_totals = events.CheckinEvent.get_checkin_events(dbase)
     _write_sheet(

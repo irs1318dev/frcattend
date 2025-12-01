@@ -42,7 +42,7 @@ class AttendanceScreen(screen.Screen):
             ("Last Check-in", "last_checkin"),
         ]:
             table.add_column(col[0], key=col[1])
-        cursor = self.dbase.get_student_attendance_data()
+        cursor = model.Attendance.get_student_attendance_data(self.dbase)
         for row in cursor:
             table.add_row(row[1], row[2], row[4], row[5], row[6], key=row[0])
         cursor.connection.close()
