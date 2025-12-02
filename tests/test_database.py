@@ -72,7 +72,7 @@ def test_attendance_counts(full_dbase: model.DBase) -> None:
 def test_attendance_report_data(full_dbase: model.DBase) -> None:
     """Get info for student attendance report."""
     # Act
-    cursor = model.Attendance.get_student_attendance_data(full_dbase)
+    cursor = model.Attendance.get_student_attendance_cursor(full_dbase)
     # Assert
     for row in cursor:
         rich.print(dict(row))

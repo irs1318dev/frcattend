@@ -17,7 +17,7 @@ def write(dbase: model.DBase, excel_path: pathlib.Path) -> None:
     _write_sheet(workbook, "Students", attendance_data["students"])
     _write_sheet(workbook, "Events", attendance_data["events"])
     student_totals = [
-        dict(row) for row in model.Attendance.get_student_attendance_data(dbase)
+        dict(row) for row in model.Attendance.get_student_attendance_cursor(dbase)
     ]
     _write_sheet(workbook, "Attendance by Student", student_totals)
     event_totals = events.CheckinEvent.get_checkin_events(dbase)

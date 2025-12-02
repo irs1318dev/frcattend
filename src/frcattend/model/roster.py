@@ -167,7 +167,7 @@ class SheetUpdater:
         roster_ids = self.get_mapped_col_data("student_id")
         if roster_ids is None:
             return
-        cursor = model.Attendance.get_student_attendance_data(self.dbase)
+        cursor = model.Attendance.get_student_attendance_cursor(self.dbase)
         attendance_info = {
             stu["student_id"]: (stu["year_checkins"], stu["build_checkins"])
             for stu in cursor
