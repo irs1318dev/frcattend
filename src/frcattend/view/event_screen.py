@@ -84,7 +84,7 @@ class StudentsTable(widgets.DataTable):
         self.initialize_table()
 
     def initialize_table(self) -> None:
-        """Load attendance totals into the data table."""
+        """Define table columns."""
         for col in [
             ("Student ID", "student_id"),
             ("First Name", "first_name"),
@@ -119,14 +119,15 @@ class StudentsTable(widgets.DataTable):
 class EventScreen(screen.Screen):
     """Add, delete, and edit students."""
 
-    CSS_PATH = frcattend.view.CSS_FOLDER / "event_screen.tcss"
-    BINDINGS = [
-        binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
-    ]
     dbase: model.DBase
     """Connection to Sqlite Database."""
     event_key: reactive.reactive[str | None] = reactive.reactive(None)
     """Contains the currently selected event."""
+
+    CSS_PATH = frcattend.view.CSS_FOLDER / "event_screen.tcss"
+    BINDINGS = [
+        binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
+    ]
 
     def __init__(self) -> None:
         """Initialize the databae connection."""

@@ -149,6 +149,7 @@ def test_update_event_type(full_dbase: model.DBase) -> None:
         == checkins_updated
     )
 
+
 def test_event_to_dict(full_dbase) -> None:
     """Convert an Event dataclass to a dict."""
     # Arrange
@@ -168,7 +169,9 @@ def test_add_checkin(
     # Arrange
     students = attendance_test_data["students"]
     timestamp = datetime.datetime(2025, 11, 15, hour=17, minute=25)
-    model.Event(timestamp.date(), model.EventType.COMPETITION, "test").add(noevents_dbase)
+    model.Event(timestamp.date(), model.EventType.COMPETITION, "test").add(
+        noevents_dbase
+    )
     checkin = model.Checkin(
         checkin_id=-1,
         student_id=students[0]["student_id"],

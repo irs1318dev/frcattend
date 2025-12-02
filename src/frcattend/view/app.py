@@ -280,7 +280,8 @@ class FrcAttend(app.App):
         """Update the database path label."""
         self.query_one("#main-config-db-path", widgets.Label).update(str(db_path))
         self.query_one("#main-db-summary", widgets.Markdown).update(
-            summary.get_summary())
+            summary.get_summary()
+        )
 
     def watch_config_path(self, config_path: str) -> None:
         """update the config path label."""

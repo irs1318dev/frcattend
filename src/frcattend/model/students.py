@@ -202,7 +202,7 @@ class Student:
             "email": self.email,
             "deactivated_on": self.deactivated_iso,
         }
-    
+
     @staticmethod
     def get_num_active_students(dbase: "database.DBase") -> int:
         """Get the number of active students in the attenance system."""

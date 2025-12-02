@@ -1,10 +1,9 @@
 """Show attendance results."""
 
-import dataclasses
+import textual
+from textual import app, binding, reactive, screen, widgets
 
-from textual import app, binding, screen, widgets
-
-from frcattend import config, model
+from frcattend import config, model, view
 
 
 class StudentsTable(widgets.DataTable):
@@ -13,6 +12,7 @@ class StudentsTable(widgets.DataTable):
     dbase: model.DBase
     """Connection to Sqlite Database."""
     students: dict[str, model.AttendanceStudent]
+    """Students with checkin totals."""
 
     def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
         """Set link to database."""
@@ -20,7 +20,6 @@ class StudentsTable(widgets.DataTable):
         self.dbase = dbase
         self.students = {}
 
-    
     def on_mount(self) -> None:
         """Initialize the table."""
         self.initialize_table()
@@ -36,7 +35,7 @@ class StudentsTable(widgets.DataTable):
             ("[green]Build Season Checkins[/]", "build_checkins"),
             ("All Checkins", "season_checkins"),
             ("Last Checkin", "last_checkin"),
-            ("[yellow]Deactivated On[/]", "deactivated_on")
+            ("[yellow]Deactivated On[/]", "deactivated_on"),
         ]:
             self.add_column(col[0], key=col[1])
 
@@ -45,21 +44,77 @@ class StudentsTable(widgets.DataTable):
         self.clear(columns=False)
         self.students = {
             student.student_id: student
-            for student in model.Attendance.get_student_attendance_students(self.dbase)
+            for student in model.Attendance.get_student_attendance_students(
+                self.dbase, include_inactive=True
+            )
         }
         for key, stu in self.students.items():
-            deactivated_on = '' if stu.deactivated_on is None else stu.deactivated_on
+            deactivated_on = "" if stu.deactivated_on is None else stu.deactivated_iso
             self.add_row(
                 f"[green]{stu.last_name}[/]",
                 stu.first_name,
                 stu.grad_year,
                 f"[green]{stu.build_checkins}[/]",
+                stu.year_checkins,
                 stu.last_checkin,
-                stu.grad_year,
                 f"[yellow]{deactivated_on}[/]",
                 key=key,
             )
-        self.refresh
+        self.refresh()
+
+
+class CheckinTable(widgets.DataTable):
+    """Table of checkins for student selected in student table."""
+
+    dbase: model.DBase
+    """Connection to Sqlite Database."""
+    checkins: dict[int, model.Checkin]
+    """Checkins for selected student."""
+    student_id: reactive.reactive[str | None] = reactive.reactive(None)
+    """ID of selected student."""
+
+    def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
+        """Set link to database."""
+        super().__init__(zebra_stripes=True, *args, **kwargs)
+        self.dbase = dbase
+        self.checkins = {}
+
+    def on_mount(self) -> None:
+        """Initialize the table."""
+        self.initialize_table()
+
+    def initialize_table(self) -> None:
+        """Define table columns."""
+        self.cursor_type = "row"
+        for col in [
+            ("Date", "iso_date"),
+            ("Day", "day_of_week"),
+            ("Type", "event_type"),
+            ("Timestamp", "timestamp"),
+        ]:
+            self.add_column(col[0], key=col[1])
+
+    def watch_student_id(self) -> None:
+        """Add checkins for the specified student to the table."""
+        textual.log(f"Updating Checkin table. ID: {self.student_id}")
+        if self.student_id is None:
+            return
+        self.clear(columns=False)
+        self.checkins = {
+            checkin.checkin_id: checkin
+            for checkin in model.Checkin.get_checkins_by_student(
+                self.dbase, self.student_id
+            )
+        }
+        for checkin_id, checkin in self.checkins.items():
+            self.add_row(
+                checkin.iso_date,
+                checkin.day_of_week,
+                checkin.event_type.value,
+                checkin.timestamp,
+                key=str(checkin_id),
+            )
+        self.refresh()
 
 
 class AttendanceScreen(screen.Screen):
@@ -67,6 +122,10 @@ class AttendanceScreen(screen.Screen):
 
     dbase: model.DBase
     """Connection to Sqlite Database."""
+    student_id: reactive.reactive[str | None] = reactive.reactive(None)
+    """ID of selected student."""
+
+    CSS_PATH = view.CSS_FOLDER / "attendance_screen.tcss"
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
     ]
@@ -82,3 +141,29 @@ class AttendanceScreen(screen.Screen):
         """Add the datatable and other controls to the screen."""
         yield widgets.Header()
         yield StudentsTable(dbase=self.dbase, id="attendance-students-table")
+        yield widgets.Static(
+            "Events that Student Attended", classes="separator emphasis"
+        )
+        yield (
+            CheckinTable(dbase=self.dbase, id="attendance-checkins-table").data_bind(
+                AttendanceScreen.student_id
+            )
+        )
+
+    @textual.on(StudentsTable.RowHighlighted)
+    def on_students_table_row_highlighted(
+        self, message: StudentsTable.RowHighlighted
+    ) -> None:
+        """Set the new student_id, which will trigger a checkin table update."""
+        if "-" not in str(message.row_key.value):
+            return
+        self.student_id = message.row_key.value
+        textual.log(f"Row highlighted. ID: {message.row_key.value}")
+
+    # @textual.on(StudentsTable.RowSelected)
+    # def on_students_table_row_selected(
+    #     self, message: widgets.DataTable.RowSelected
+    # ) -> None:
+    #     """Set the new student_id, which will trigger a checkin table update."""
+    #     self.student_id = message.row_key.value
+    #     textual.log(f"Row selected. ID: {self.student_id}")

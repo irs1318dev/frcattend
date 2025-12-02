@@ -1,6 +1,6 @@
 [project]
 name = "frcattend"
-version = "1.0.0"
+version = "1.1.0"
 description = "The Issaquah Robotics Society's Python program for managing attendance"
 readme = "README.md"
 authors = [

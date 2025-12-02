@@ -80,11 +80,13 @@ class ScanScreen(screen.Screen):
             self.app.pop_screen()
             return
         self.event_type = event_type
-        self.dbase.add_event(event_type)
+        today = datetime.date.today()
+        event = model.Event(today, event_type)
+        event.add(self.dbase)
         # Prevent codes from being scanned more than once for same event.
         self._checkedin_students = set(
             model.Checkin.get_checkedin_students(
-                self.dbase, datetime.date.today(), event_type
+                self.dbase, today, event_type
             )
         )
         self.scan_qr_codes()

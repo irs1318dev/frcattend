@@ -1,0 +1,7 @@
+StudentsTable {
+    height: 48%
+}
+
+CheckinTable {
+    height: 48%
+}

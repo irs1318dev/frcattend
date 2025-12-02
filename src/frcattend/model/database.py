@@ -9,7 +9,6 @@ import sqlite3
 from typing import Any
 
 
-from frcattend import config
 from frcattend.model import events, students
 
 
@@ -155,6 +154,5 @@ class DBase:
         return DbInfo(
             access_time=datetime.datetime.fromtimestamp(file_info.st_atime),
             modification_time=datetime.datetime.fromtimestamp(file_info.st_mtime),
-            creation_time=datetime.datetime.fromtimestamp(file_info.st_birthtime)
+            creation_time=datetime.datetime.fromtimestamp(file_info.st_birthtime),
         )
-

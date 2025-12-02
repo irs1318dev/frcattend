@@ -312,7 +312,7 @@ class Event:
         return {
             "event_date": self.iso_date,
             "event_type": self.event_type.value,
-            "description": self.description
+            "description": self.description,
         }
 
 
@@ -437,6 +437,22 @@ class Checkin:
         ]
         conn.close()
         return student_ids
+
+    @classmethod
+    def get_checkins_by_student(
+        cls, dbase: "database.DBase", student_id: str
+    ) -> list["Checkin"]:
+        """Get a list of checkin objects for a single student."""
+        query = """
+                SELECT checkin_id, student_id, event_type, timestamp
+                  FROM checkins
+                 WHERE student_id = ?
+              ORDER BY event_date;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        checkins = [Checkin(**row) for row in conn.execute(query, (student_id,))]
+        conn.close()
+        return checkins
 
     @staticmethod
     def get_counts_by_student(

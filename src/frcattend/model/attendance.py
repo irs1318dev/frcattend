@@ -9,10 +9,10 @@ from frcattend import config
 from frcattend import model
 
 
-
 @dataclasses.dataclass
 class AttendanceStudent(model.Student):
     """Student record with attendance totals."""
+
     year_checkins: int
     build_checkins: int
 
@@ -33,14 +33,8 @@ class AttendanceStudent(model.Student):
         self.build_checkins = build_checkins
         self.last_checkin = last_checkin
         super().__init__(
-            student_id,
-            first_name,
-            last_name,
-            grad_year,
-            email,
-            deactivated_on
+            student_id, first_name, last_name, grad_year, email, deactivated_on
         )
-
 
 
 class Attendance:
@@ -48,16 +42,15 @@ class Attendance:
 
     @staticmethod
     def get_student_attendance_cursor(
-        dbase: model.DBase,
-        include_inactive: bool = False
+        dbase: model.DBase, include_inactive: bool = False
     ) -> sqlite3.Cursor:
         """Join students and checkins table and get current season data.
-        
+
         Caller must close the cursor.
         """
         relation = "students" if include_inactive else "active_students"
         # An 'app' is an appearance.
-        query = f"""
+        query = """
                 WITH year_checkins AS (
                     SELECT student_id, COUNT(student_id) as checkins,
                            MAX(event_date) as last_checkin
@@ -76,7 +69,7 @@ class Attendance:
                        COALESCE(y.checkins, 0) AS year_checkins,
                        COALESCE(b.checkins, 0) AS build_checkins,
                        y.last_checkin
-                  FROM {relation} AS s
+                  FROM students AS s
              LEFT JOIN year_checkins AS y
                     ON y.student_id = s.student_id
              LEFT JOIN build_checkins AS b
@@ -92,12 +85,10 @@ class Attendance:
             },
         )
         return cursor
-    
+
     @classmethod
     def get_student_attendance_students(
-        cls,
-        dbase: model.DBase,
-        include_inactive: bool = False
+        cls, dbase: model.DBase, include_inactive: bool = False
     ) -> list[AttendanceStudent]:
         """Get a list of AttendanceStudent objects."""
         cursor = cls.get_student_attendance_cursor(dbase)
