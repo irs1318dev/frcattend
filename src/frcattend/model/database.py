@@ -1,6 +1,7 @@
 """Connect to the Sqlite database and run queries."""
 
 from collections.abc import Sequence
+import dataclasses
 import datetime
 import os
 import pathlib
@@ -46,6 +47,13 @@ def adapt_datetime_iso(val: datetime.datetime | str) -> str:
 #   application or tests.
 sqlite3.register_adapter(datetime.date, adapt_date_iso)
 sqlite3.register_adapter(datetime.datetime, adapt_datetime_iso)
+
+
+@dataclasses.dataclass
+class DbInfo:
+    access_time: datetime.datetime
+    modification_time: datetime.datetime
+    creation_time: datetime.datetime
 
 
 class DBase:
@@ -141,6 +149,12 @@ class DBase:
             conn.executemany(checkins_query, db_data_dict["checkins"])
         conn.close()
 
-    def get_data_file_info(self) -> os.stat_result:
+    def get_database_file_info(self) -> DbInfo:
         """Get information about the currently-selected database file."""
-        return os.stat(self.db_path)
+        file_info = os.stat(self.db_path)
+        return DbInfo(
+            access_time=datetime.datetime.fromtimestamp(file_info.st_atime),
+            modification_time=datetime.datetime.fromtimestamp(file_info.st_mtime),
+            creation_time=datetime.datetime.fromtimestamp(file_info.st_birthtime)
+        )
+

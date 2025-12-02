@@ -7,7 +7,7 @@ import textual
 from textual import app, containers, reactive, widgets
 
 from frcattend import config, model
-from frcattend.features import excel
+from frcattend.features import excel, summary
 import frcattend.view
 from frcattend.view import (
     attendance_screen,
@@ -92,9 +92,10 @@ class FrcAttend(app.App):
                     "Select Settings File",
                     id="main-select-settings",
                 )
-        yield widgets.Label(
-            "Nothing to see here!", id="main-status-message", classes="debug"
-        )
+        # yield widgets.Label(
+        #     "Nothing to see here!", id="main-status-message", classes="debug"
+        # )
+        yield widgets.Markdown(summary.get_summary(), id="main-db-summary")
         yield widgets.Footer()
 
     def on_mount(self) -> None:
@@ -278,6 +279,8 @@ class FrcAttend(app.App):
     def watch_db_path(self, db_path: str) -> None:
         """Update the database path label."""
         self.query_one("#main-config-db-path", widgets.Label).update(str(db_path))
+        self.query_one("#main-db-summary", widgets.Markdown).update(
+            summary.get_summary())
 
     def watch_config_path(self, config_path: str) -> None:
         """update the config path label."""
@@ -285,8 +288,8 @@ class FrcAttend(app.App):
 
     def watch_message(self) -> None:
         """Update the status message on changes."""
-        status_label = self.query_one("#main-status-message", widgets.Label)
-        status_label.update(self.message)
+        # status_label = self.query_one("#main-status-message", widgets.Label)
+        # status_label.update(self.message)
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         """Disable navigation actions when other screens are active."""

@@ -39,7 +39,7 @@ class Attendance:
                   FROM active_students AS s
              LEFT JOIN year_checkins AS y
                     ON y.student_id = s.student_id
-            LEFT JOIN build_checkins AS b
+             LEFT JOIN build_checkins AS b
                     ON b.student_id = s.student_id
               ORDER BY last_name, first_name;
         """
