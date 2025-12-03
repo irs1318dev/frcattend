@@ -314,7 +314,19 @@ class Event:
             "event_type": self.event_type.value,
             "description": self.description,
         }
-
+    
+    @staticmethod
+    def summary(dbase: "database.DBase") -> dict[str, Any]:
+        """Get a summary of events in database."""
+        query = """
+            SELECT count(*) AS total,
+                   MIN(event_date) AS earliest, MAX(event_date) AS latest
+              FROM events;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        summ = conn.execute(query).fetchone()
+        conn.close()
+        return summ
 
 @dataclasses.dataclass
 class Checkin:
@@ -500,3 +512,16 @@ class Checkin:
             "event_type": self.event_type,
             "timestamp": self.timestamp.isoformat(),
         }
+    
+    @staticmethod
+    def summary(dbase: "database.DBase") -> dict[str, Any]:
+        """Get a summary of checkins in database."""
+        query = """
+            SELECT count(*) AS total,
+                   MIN(timestamp) AS earliest, MAX(timestamp) AS latest
+              FROM checkins;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        summ = conn.execute(query).fetchone()
+        conn.close()
+        return summ

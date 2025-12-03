@@ -204,10 +204,23 @@ class Student:
         }
 
     @staticmethod
-    def get_num_active_students(dbase: "database.DBase") -> int:
+    def summary(dbase: "database.DBase") -> dict[str, int]:
         """Get the number of active students in the attenance system."""
-        query = "SELECT count(*) from active_students;"
+        query = """
+            WITH totals AS (
+                SELECT count(*) AS total,
+                       count(deactivated_on) AS deactivated
+                  FROM students
+                )
+            SELECT total, (total - deactivated) AS active, deactivated
+            FROM totals;
+            """
         conn = dbase.get_db_connection()
-        num_students = conn.execute(query).fetchone()[0]
+        row = conn.execute(query).fetchone()
+        result = {
+            "total": row["total"],
+            "active": row["active"],
+            "deactivated": row["deactivated"]
+        }
         conn.close()
-        return num_students
+        return result
