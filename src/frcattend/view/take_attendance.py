@@ -85,9 +85,7 @@ class ScanScreen(screen.Screen):
         event.add(self.dbase)
         # Prevent codes from being scanned more than once for same event.
         self._checkedin_students = set(
-            model.Checkin.get_checkedin_students(
-                self.dbase, today, event_type
-            )
+            model.Checkin.get_checkedin_students(self.dbase, today, event_type)
         )
         self.scan_qr_codes()
 

@@ -10,7 +10,7 @@ from textual import app, binding, containers, screen, widgets
 from frcattend import config, model
 from frcattend.features import emailer, qr_code_generator
 import frcattend.view
-from frcattend.view import confirm_dialogs, student_dialog
+from frcattend.view import confirm_dialogs, student_dialog, inactive_toggle
 
 
 def success(message: str) -> str:
@@ -56,12 +56,9 @@ class StudentScreen(screen.Screen):
             with containers.Vertical(id="students-actions-container"):
                 yield widgets.Label("Actions", classes="emphasis")
                 with containers.ScrollableContainer():
-                    with containers.Horizontal(id="students-active-toggle"):
-                        yield widgets.Label("Include Inactive Students:")
-                        yield widgets.Switch(
-                            False,
-                            id="students-show-inactive-switch",
-                        )
+                    yield inactive_toggle.InactiveStudentToggle(
+                        id="students-show-inactive-toggle"
+                    )
                     yield widgets.Static(
                         "No student selected",
                         id="students-selection-indicator",
@@ -183,10 +180,10 @@ class StudentScreen(screen.Screen):
             f"{student.last_name}\nID: {student.student_id}"
         )
 
-    @textual.on(widgets.Switch.Changed, "#students-show-inactive-switch")
+    @textual.on(widgets.Switch.Changed, ".toggle-inactive-students-switch")
     def on_active_toggle_changed(self, message: widgets.Switch.Changed) -> None:
         """Reload student data when the active/inactive toggle is changed."""
-        textual.log(f"Show inactive changed to {message.value}")
+        self.notify(f"Show inactive: {message.value}", timeout=4)
         self.load_student_data(message.value)
         self._selected_student_id = None
         self.query_one("#edit-student", widgets.Button).disabled = True

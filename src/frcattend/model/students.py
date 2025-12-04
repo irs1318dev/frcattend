@@ -220,7 +220,7 @@ class Student:
         result = {
             "total": row["total"],
             "active": row["active"],
-            "deactivated": row["deactivated"]
+            "deactivated": row["deactivated"],
         }
         conn.close()
         return result

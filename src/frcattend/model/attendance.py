@@ -50,7 +50,7 @@ class Attendance:
         """
         relation = "students" if include_inactive else "active_students"
         # An 'app' is an appearance.
-        query = """
+        query = f"""
                 WITH year_checkins AS (
                     SELECT student_id, COUNT(student_id) as checkins,
                            MAX(event_date) as last_checkin
@@ -69,7 +69,7 @@ class Attendance:
                        COALESCE(y.checkins, 0) AS year_checkins,
                        COALESCE(b.checkins, 0) AS build_checkins,
                        y.last_checkin
-                  FROM students AS s
+                  FROM {relation} AS s
              LEFT JOIN year_checkins AS y
                     ON y.student_id = s.student_id
              LEFT JOIN build_checkins AS b
@@ -91,7 +91,7 @@ class Attendance:
         cls, dbase: model.DBase, include_inactive: bool = False
     ) -> list[AttendanceStudent]:
         """Get a list of AttendanceStudent objects."""
-        cursor = cls.get_student_attendance_cursor(dbase)
+        cursor = cls.get_student_attendance_cursor(dbase, include_inactive)
         students = [AttendanceStudent(**dict(row)) for row in cursor]
         cursor.connection.close()
         return students

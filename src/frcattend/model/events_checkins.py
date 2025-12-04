@@ -317,7 +317,7 @@ class Event:
             "event_type": self.event_type.value,
             "description": self.description,
         }
-    
+
     @staticmethod
     def summary(dbase: "database.DBase") -> dict[str, Any]:
         """Get a summary of events in database."""
@@ -330,6 +330,7 @@ class Event:
         summ = conn.execute(query).fetchone()
         conn.close()
         return summ
+
 
 @dataclasses.dataclass
 class Checkin:
@@ -515,7 +516,7 @@ class Checkin:
             "event_type": self.event_type,
             "timestamp": self.timestamp.isoformat(),
         }
-    
+
     @staticmethod
     def summary(dbase: "database.DBase") -> dict[str, Any]:
         """Get a summary of checkins in database."""

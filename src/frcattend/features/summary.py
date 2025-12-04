@@ -1,6 +1,5 @@
 """An attendance summary report in markdown format."""
 
-import datetime
 
 from frcattend import config, model
 
@@ -21,22 +20,28 @@ def get_summary() -> str:
         f"| {dbase.db_path.name} | {accessed_on} | {modified_on} | {created_on} |",
     ]
     students = model.Student.summary(dbase)
-    summary.extend([
-        "## Students",
-        "| Active | Deactivated | Total |",
-        "| ------ | ----------- | ----- |",
-        f"| {students['active']} | {students['deactivated']} | {students['total']} |"
-    ])
+    summary.extend(
+        [
+            "## Students",
+            "| Active | Deactivated | Total |",
+            "| ------ | ----------- | ----- |",
+            f"| {students['active']} | {students['deactivated']} | {students['total']} |",
+        ]
+    )
     events = model.Event.summary(dbase)
     checkins = model.Checkin.summary(dbase)
-    summary.extend([
-        "## Events and Checkins",
-        "| Total Events | First Event | First Checkin | Last Event | Last Checkin |",
-        "| ------------ | ----------- | ------------- | ---------- | ------------ |",
-        (f"| {events['total']} | {events['earliest']} "
-         f"| {checkins['earliest'][:19]} | {events['latest']} "
-         f"| {checkins['latest'][:19]} |")
-    ])
+    summary.extend(
+        [
+            "## Events and Checkins",
+            "| Total Events | First Event | First Checkin | Last Event | Last Checkin |",
+            "| ------------ | ----------- | ------------- | ---------- | ------------ |",
+            (
+                f"| {events['total']} | {events['earliest']} "
+                f"| {checkins['earliest'][:19]} | {events['latest']} "
+                f"| {checkins['latest'][:19]} |"
+            ),
+        ]
+    )
 
     return str("\n".join(summary))
 

@@ -5,3 +5,7 @@ StudentsTable {
 CheckinTable {
     height: 48%
 }
+
+InactiveStudentToggle {
+    width: 40
+}

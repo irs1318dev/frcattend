@@ -1,4 +1,5 @@
 /* Top level styles for frcattend application. Used by all view files. */
+
 Button {
     background: purple;
     color: yellow;
@@ -83,3 +84,8 @@ ModalScreen {
 }
 
 
+InactiveStudentToggle {
+    border: round green;
+    background: darkslategrey;
+    height: 5;
+}

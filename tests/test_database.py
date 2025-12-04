@@ -110,7 +110,6 @@ def test_from_dict(full_dbase: model.DBase, empty_database2: model.DBase) -> Non
     assert len(checkins1) == len(checkins2)
 
 
-
 # def test_db_file_data(noevents_dbase) -> None:
 #     """Retrieve information about the Sqlite3 database file."""
 #     # Act

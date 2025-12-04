@@ -14,12 +14,6 @@
     width: 100%;
 }
 
-#students-active-toggle {
-    border: round green;
-    background: darkslategrey;
-    height: 5;
-}
-
 #students-selection-indicator {
     padding: 1;
     margin: 1 0 0 0;
