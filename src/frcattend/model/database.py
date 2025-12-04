@@ -9,7 +9,7 @@ import sqlite3
 from typing import Any
 
 
-from frcattend.model import events, students
+from frcattend.model import events_checkins, students
 
 
 class DBaseError(Exception):
@@ -89,8 +89,8 @@ class DBase:
         """Creates the database tables if they don't already exist."""
         with self.get_db_connection() as conn:
             conn.execute(students.Student.table_def)
-            conn.execute(events.Checkin.table_def)
-            conn.execute(events.Event.table_def)
+            conn.execute(events_checkins.Checkin.table_def)
+            conn.execute(events_checkins.Event.table_def)
             conn.execute(students.Student.active_students_view_def)
         conn.close()
 
@@ -106,13 +106,13 @@ class DBase:
             student.to_dict()
             for student in students.Student.get_all(self, include_inactive=True)
         ]
-        event_data = [event.to_dict() for event in events.Event.get_all(self)]
+        event_data = [event.to_dict() for event in events_checkins.Event.get_all(self)]
         excluded_columns = ["event_id", "day_of_week"]
         db_data["events"] = [
             {col: val for col, val in row.items() if col not in excluded_columns}
             for row in event_data
         ]
-        checkins = [c.to_dict() for c in events.Checkin.get_all(self)]
+        checkins = [c.to_dict() for c in events_checkins.Checkin.get_all(self)]
         excluded_columns = ["checkin_id"]
         db_data["checkins"] = [
             {col: val for col, val in row.items() if col not in excluded_columns}

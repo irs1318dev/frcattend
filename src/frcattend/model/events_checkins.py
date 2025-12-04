@@ -1,5 +1,8 @@
 """Events and Checkins table definitions, queries, and dataclasss.
 
+The Event and Checkin classes are defined together in this module because they
+are tightly coupled.
+
 ## Contents
 * EventType: An enumeration of typical FRC team events.
 * Event: A dataclass that represents an FRC event.

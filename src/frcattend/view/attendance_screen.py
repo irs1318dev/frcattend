@@ -150,13 +150,11 @@ class AttendanceScreen(screen.Screen):
             )
         )
 
-    @textual.on(StudentsTable.RowHighlighted)
+    @textual.on(StudentsTable.RowHighlighted, "#attendance-students-table")
     def on_students_table_row_highlighted(
         self, message: StudentsTable.RowHighlighted
     ) -> None:
         """Set the new student_id, which will trigger a checkin table update."""
-        if "-" not in str(message.row_key.value):
-            return
         self.student_id = message.row_key.value
         textual.log(f"Row highlighted. ID: {message.row_key.value}")
 
