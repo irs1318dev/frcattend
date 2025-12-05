@@ -492,7 +492,7 @@ wheels = [
 
 [[package]]
 name = "frcattend"
-version = "0.8.0"
+version = "1.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "google-auth" },
