@@ -9,7 +9,7 @@ import sqlite3
 from typing import Any
 
 
-from frcattend.model import events_checkins, students
+from frcattend.model import events_checkins, students, surveys
 
 
 class DBaseError(Exception):
@@ -89,6 +89,7 @@ class DBase:
         """Creates the database tables if they don't already exist."""
         with self.get_db_connection() as conn:
             conn.execute(students.Student.table_def)
+            conn.execute(surveys.Survey.table_def)
             conn.execute(events_checkins.Checkin.table_def)
             conn.execute(events_checkins.Event.table_def)
             conn.execute(students.Student.active_students_view_def)
