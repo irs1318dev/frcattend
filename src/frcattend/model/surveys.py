@@ -54,11 +54,9 @@ class Survey:
         """Convert survey options list to a string containing a JSON array."""
         return json.dumps(self.answers)
     
-    def as_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert survey to a dictionary."""
-        survey = dataclasses.asdict(self)
-        survey["answers_json"] = self.answers_json
-        return survey
+        return dataclasses.asdict(self)
 
     def add(self, dbase: "database.DBase") -> bool:
         """Add a survey to the database."""
@@ -70,10 +68,49 @@ class Survey:
                             :allow_freetext, :max_length);
         """
         with dbase.get_db_connection() as conn:
-            cursor = conn.execute(query, self.as_dict())
+            cursor = conn.execute(
+                query,
+                {**self.to_dict(), "answers_json": self.answers_json}
+            )
         rowcount = cursor.rowcount
         conn.close()
         return rowcount == 1
+    
+    def update(self, dbase: "database.DBase") -> bool:
+        """Update the survey in the database."""
+        query = """
+                UPDATE surveys
+                   SET question = :question,
+                       answers = :answers_json,
+                       multiselect = :multiselect,
+                       allow_freetext = :allow_freetext,
+                       max_length = :max_length
+                 WHERE title = :title;
+        """
+        with dbase.get_db_connection() as conn:
+            cursor = conn.execute(
+                query,
+                {**self.to_dict(), "answers_json": self.answers_json}
+            )
+        rowcount = cursor.rowcount
+        conn.close()
+        return rowcount == 1
+    
+    @staticmethod
+    def get_by_title(dbase: "database.DBase", title: str) -> "Survey | None":
+        """Get the survey with the givent title, or None if it doesn't exist."""
+        query = """
+                SELECT title, question, answers, multiselect,
+                       allow_freetext, max_length
+                  FROM surveys
+                 WHERE title = :title;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        result = conn.execute(query, {"title": title}).fetchone()
+        conn.close()
+        if result:
+            return Survey(**result)
+        return None
     
     @staticmethod
     def get_all(dbase: "database.DBase") -> list["Survey"]:
@@ -88,3 +125,26 @@ class Survey:
         surveys = [Survey(**survey) for survey in conn.execute(query)]
         conn.close()
         return surveys
+    
+
+@dataclasses.dataclass
+class Answer:
+    """An answer to a survey question."""
+
+    student_id: str
+    survey_title: str
+    timestamp: str
+    selected_answers: list[str]
+    freetext_answer: str | None = None
+
+    table_def: ClassVar[str] = """
+        CREATE TABLE IF NOT EXISTS surveys (
+             student_id TEXT NOT NULL,
+           survey_title TEXT NOT NULL,
+              timestamp TEXT
+       selected_answers TEXT NOT NULL,
+        freetext_answer INT NOT NULL,
+            PRIMARY KEY (student_id, survey_title) ON CONFLICT REPLACE,
+            FOREIGN KEY (survey_title REFERENCES surveys (title);
+        );
+    """

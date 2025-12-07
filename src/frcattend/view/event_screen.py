@@ -8,7 +8,8 @@ from textual import app, binding, containers, reactive, screen, widgets
 
 from frcattend import config, model
 import frcattend.view
-from frcattend.features import events, validators
+from frcattend.features import events
+from frcattend.view import validators
 
 
 class EventsTable(widgets.DataTable):
@@ -225,7 +226,7 @@ class EditEventDialog(screen.ModalScreen[bool]):
             )
             yield widgets.Label("Description:")
             yield widgets.Input(value=event.description, id="event-description-input")
-            with containers.Horizontal():
+            with containers.Horizontal(classes="dialog-row"):
                 yield widgets.Button("Ok", id="events-edit-ok")
                 yield widgets.Button("Cancel", id="events-edit-cancel")
 

@@ -4,58 +4,45 @@ from textual import app, containers, screen, validation, widgets
 
 from frcattend import model
 import frcattend.view
-from frcattend.features import validators
-
-
-class NotEmpty(validation.Validator):
-    def validate(self, value: str) -> validation.ValidationResult:
-        if not value:
-            return self.failure("Field cannot be empty.")
-        return self.success()
-
-
-class IsInteger(validation.Validator):
-    def validate(self, value: str) -> validation.ValidationResult:
-        if value and not value.isdigit():
-            return self.failure("Must be a valid year (e.g., 2025).")
-        return self.success()
-
+from frcattend.view import validators
 
 class StudentDialog(screen.ModalScreen):
     """A dialog for adding or editing student details."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "student_dialog.tcss"
 
+    student: model.Student | None
+
     def __init__(self, student: model.Student | None = None) -> None:
-        self.student = student
+        """Initialize with student information if provided."""
         super().__init__()
-        # if not student_data:
-        #     self.add_class("add-mode")
+        self.student = student
 
     def compose(self) -> app.ComposeResult:
-        title = "Edit Student" if self.student else "Add New Student"
+        """Create and arrange dialog widgets."""
+        title = "Add New Student" if self.student is None else "Edit Student"
         with containers.Vertical(id="student-dialog", classes="modal-dialog"):
             yield widgets.Label(title, classes="emphasis")
             # Display read-only ID for existing students, but don't show input for new students
-            if self.student:
+            if self.student is not None:
                 yield widgets.Label(f"Student ID: {self.student.student_id}")
             yield widgets.Input(
                 value=self.student.first_name if self.student else "",
                 placeholder="First Name",
                 id="s-fname",
-                validators=[NotEmpty()],
+                validators=[validators.NotEmpty()],
             )
             yield widgets.Input(
                 value=self.student.last_name if self.student else "",
                 placeholder="Last Name",
                 id="s-lname",
-                validators=[NotEmpty()],
+                validators=[validators.NotEmpty()],
             )
             yield widgets.Input(
                 value=self.student.email if self.student else "",
                 placeholder="Email",
                 id="s-email",
-                validators=[NotEmpty()],
+                validators=[validators.NotEmpty()],
             )
             yield widgets.Input(
                 value=(
@@ -65,7 +52,7 @@ class StudentDialog(screen.ModalScreen):
                 ),
                 placeholder="Graduation Year",
                 id="s-gyear",
-                validators=[NotEmpty(), IsInteger()],
+                validators=[validators.NotEmpty(), validators.IsYear()],
             )
             yield widgets.Label("Deactivated on:", classes="emphasis")
             yield widgets.Input(
@@ -80,13 +67,6 @@ class StudentDialog(screen.ModalScreen):
             )
 
             yield widgets.Static()
-            # if self.student_data:
-            #     with Horizontal():
-            #         yield Label(
-            #             "Attendance Count: " + str(self.count), id="attendance-label"
-            #         )
-            #         yield Button("+", variant="success", id="add-attendance")
-            #         yield Button("-", variant="error", id="remove-attendance")
             with containers.Horizontal(id="attendance-actions"):
                 yield widgets.Button("Save", variant="primary", id="save-student")
                 yield widgets.Button("Cancel", id="cancel-student")

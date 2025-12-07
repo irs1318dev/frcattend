@@ -15,6 +15,7 @@ from frcattend.view import (
     file_widgets,
     pw_dialog,
     student_screen,
+    survey_screen,
     take_attendance,
 )
 
@@ -56,6 +57,7 @@ class FrcAttend(app.App):
                 )
                 yield widgets.Button("View Attendance Records", id="main-view-records")
                 yield widgets.Button("Manage Events", id="main-manage-events")
+                yield widgets.Button("Manage Surveys", id="main-manage-surveys")
 
         # Database Controls
         with containers.VerticalGroup(classes="pane"):
@@ -130,6 +132,11 @@ class FrcAttend(app.App):
     def action_manage_events(self) -> None:
         """Go to event management screen."""
         self.app.push_screen(event_screen.EventScreen())
+
+    @textual.on(widgets.Button.Pressed, "#main-manage-surveys")
+    def action_manage_surveys(self) -> None:
+        """Go to survey management screen."""
+        self.app.push_screen(survey_screen.SurveyScreen())
 
     @textual.on(widgets.Button.Pressed, "#main-select-database")
     async def action_select_database(self) -> None:

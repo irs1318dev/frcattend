@@ -3,6 +3,7 @@
 from collections.abc import Sequence
 import dataclasses
 import datetime
+import json
 import os
 import pathlib
 import sqlite3
@@ -107,6 +108,10 @@ class DBase:
             student.to_dict()
             for student in students.Student.get_all(self, include_inactive=True)
         ]
+        db_data["surveys"] = [
+            survey.to_dict()
+            for survey in surveys.Survey.get_all(self)
+        ]
         event_data = [event.to_dict() for event in events_checkins.Event.get_all(self)]
         excluded_columns = ["event_id", "day_of_week"]
         db_data["events"] = [
@@ -132,6 +137,13 @@ class DBase:
                  VALUES (:student_id, :first_name, :last_name, :email, :grad_year,
                         :deactivated_on);
         """
+        survey_query = """
+            INSERT INTO surveys
+                        (title, question, answers, multiselect,
+                         allow_freetext, max_length)
+                 VALUES (:title, :question, :answers_json, :multiselect,
+                         :allow_freetext, :max_length);
+        """
         checkins_query = """
             INSERT INTO checkins
                         (student_id, event_type, timestamp)
@@ -142,8 +154,16 @@ class DBase:
                         (event_date, event_type, description)
                  VALUES (:event_date, :event_type, :description);
         """
+        # Convert survey data to format expected by the database
+        # The answers field needs to be converted to JSON for storage
+        survey_data = [
+            {**survey, "answers_json": json.dumps(survey["answers"])}
+            for survey in db_data_dict.get("surveys", [])
+        ]
+
         with self.get_db_connection() as conn:
             conn.executemany(student_query, db_data_dict["students"])
+            conn.executemany(survey_query, survey_data)
             conn.executemany(event_query, db_data_dict["events"])
         with conn:
             conn.executemany(checkins_query, db_data_dict["checkins"])

@@ -1,0 +1,30 @@
+/* Styles for view.survey_screen.py */
+
+#survey-selection-indicator {
+    padding: 1;
+    margin: 1 0 0 0;
+    text-align: center;
+    background: $surface;
+    border: round $primary;
+    min-height: 5;
+}
+
+#survey-details {
+    padding: 1;
+    margin: 1 0 0 0;
+    background: $surface;
+    border: round $accent;
+}
+
+#survey-dialog {
+    width: 80;
+    height: 35;
+    overflow-y: auto;
+}
+
+#survey-answers-text {
+    height: 10;
+}
+#survey-max-length-input {
+    width: 30
+}

@@ -1121,6 +1121,53 @@
       "deactivated_on": "2025-11-24"
     }
   ],
+  "surveys": [
+    {
+      "title": "Subgroup",
+      "question": "What's your primary subgroup?",
+      "answers": [
+        "Analytics",
+        "Business and Media",
+        "CAD",
+        "Electrical",
+        "Infrastructure",
+        "Mechanical",
+        "Programming"
+      ],
+      "multiselect": false,
+      "allow_freetext": false,
+      "max_length": null
+    },
+    {
+      "title": "Dietary Restrictions",
+      "question": "Please tell us about any dietary restrictions. You can select more than one option or type an answer.",
+      "answers": [
+        "Vegan",
+        "Vegetarian (dairy OK)",
+        "No Beef",
+        "No Pork",
+        "Nut Allergy",
+        "Other Allergy (describe allergy below)"
+      ],
+      "multiselect": true,
+      "allow_freetext": true,
+      "max_length": null
+    },
+    {
+      "title": "2026 Week 1 Competition",
+      "question": "Will you be attending the Week 1 competition at Bonney Lake?",
+      "answers": [
+        "Yes, both days",
+        "Yes, Saturday only",
+        "Yes, Sunday only",
+        "No",
+        "Don't know"
+      ],
+      "multiselect": false,
+      "allow_freetext": false,
+      "max_length": null
+    }
+  ],
   "events": [
     {
       "event_date": "2025-09-04",
