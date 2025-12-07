@@ -80,3 +80,15 @@ def test_update_survey(full_dbase: model.DBase) -> None:
     assert survey2.multiselect
     assert survey2.allow_freetext
     assert survey2.max_length == 25
+
+@pytest.mark.parametrize(
+    "title,success", [("Subgroup", True), ("Favorite Video Game", False)]
+)
+def test_delete_survey(full_dbase: model.DBase, title: str, success: bool) -> None:
+    """Delete a survey."""
+    # Act
+    delete_result = model.Survey.delete_by_title(full_dbase, title)
+    # Assert
+    assert delete_result == success
+    assert len(model.Survey.get_all(full_dbase)) == 2 if success else 3
+    assert model.Survey.get_by_title(full_dbase, title) is None

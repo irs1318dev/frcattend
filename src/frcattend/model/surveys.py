@@ -97,6 +97,19 @@ class Survey:
         return rowcount == 1
     
     @staticmethod
+    def delete_by_title(dbase: "database.DBase", title: str) -> bool:
+        """Delete the survey's database record."""
+        query = """
+                DELETE FROM surveys
+                      WHERE title = :title;
+        """
+        with dbase.get_db_connection() as conn:
+            cursor = conn.execute(query, {"title": title})
+        rowcount = cursor.rowcount
+        conn.close()
+        return rowcount == 1
+    
+    @staticmethod
     def get_by_title(dbase: "database.DBase", title: str) -> "Survey | None":
         """Get the survey with the givent title, or None if it doesn't exist."""
         query = """

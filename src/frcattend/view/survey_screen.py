@@ -10,16 +10,6 @@ import frcattend.view
 from frcattend.view import validators
 
 
-def success(message: str) -> str:
-    """Format a success message for display in the status widget."""
-    return f"[ansi_bright_green]{message}[/]"
-
-
-def error(message: str) -> str:
-    """Format an error message for display in the status widget."""
-    return f"[ansi_bright_red]{message}[/]"
-
-
 class SurveyScreen(screen.Screen):
     """Manage surveys."""
 
@@ -128,11 +118,6 @@ class SurveyScreen(screen.Screen):
             details += f"[bold]Max Length:[/bold] {survey.max_length}\n"
         self.query_one("#survey-details", widgets.Static).update(details)
 
-    async def on_button_pressed(self, event: widgets.Button.Pressed) -> None:
-        """Respond to button presses."""
-        if event.button.id == "delete-survey":
-            await self.action_delete_survey()
-
     @textual.work
     @textual.on(widgets.Button.Pressed, "#add-survey")
     async def action_add_survey(self) -> None:
@@ -155,31 +140,13 @@ class SurveyScreen(screen.Screen):
         ):
             self.load_survey_table()
 
+    @textual.on(widgets.Button.Pressed, "#delete-survey")
     async def action_delete_survey(self) -> None:
         """Delete the selected survey."""
         if self._selected_survey_title is None:
             return
-        # TODO: Implement delete confirmation and deletion
-        # survey = self._surveys[self._selected_survey_title]
-        #
-        # def on_confirm(confirmed: bool | None):
-        #     if not confirmed or self._selected_survey_title is None:
-        #         return
-        #     # Delete survey from database
-        #     self.update_status(success(f"Survey '{survey.title}' deleted successfully."))
-        #     self.load_survey_data()
-        #     self._selected_survey_title = None
-        #     self.query_one("#edit-survey", widgets.Button).disabled = True
-        #     self.query_one("#delete-survey", widgets.Button).disabled = True
-        #     self.update_selected("No survey selected")
-        #     self.query_one("#survey-details", widgets.Static).update(
-        #         "Select a survey to view details"
-        #     )
-        #
-        # await self.app.push_screen(
-        #     ConfirmDialog(f"delete survey '{survey.title}'"),
-        #     callback=on_confirm
-        # )
+        model.Survey.delete_by_title(self.dbase, self._selected_survey_title)
+        self.load_survey_table()
 
 
 class SurveyDialog(screen.ModalScreen):
@@ -298,6 +265,7 @@ class SurveyDialog(screen.ModalScreen):
     def save_survey(self) -> None:
         """Save the survey information when the user clicks the Save button."""
         valid = True
+        add_new = self.survey is None
         for widget_id, val_result in self._validator_results.items():
             if (
                 isinstance(val_result, validation.ValidationResult) and
@@ -321,7 +289,7 @@ class SurveyDialog(screen.ModalScreen):
         if not max_length_raw or max_length_raw is None:
             max_length = None
         else:
-            max_length = max_length_raw
+            max_length = int(max_length_raw)
         if self.survey is None:
             title = self.query_one("#survey-title-input", widgets.Input).value
         else:
@@ -334,7 +302,10 @@ class SurveyDialog(screen.ModalScreen):
             allow_freetext=freetext,
             max_length=max_length
             )
-        success = self.survey.update(self.dbase)
+        if add_new:
+            success = self.survey.add(self.dbase)
+        else:
+            success = self.survey.update(self.dbase)
         if not success:
             self.notify("Error updating survey.")
         self.dismiss(success)
