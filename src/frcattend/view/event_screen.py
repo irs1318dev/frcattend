@@ -92,6 +92,7 @@ class StudentsTable(widgets.DataTable):
             ("Last Name", "last_name"),
             ("Graduation Year", "grad_year"),
             ("Check-in time", "timestamp"),
+            ("Deactivated On", "deactivated_on"),
         ]:
             self.add_column(col[0], key=col[1])
 
@@ -113,6 +114,7 @@ class StudentsTable(widgets.DataTable):
                 student.last_name,
                 student.grad_year,
                 student.timestamp,
+                "" if student.deactivated_on is None else student.deactivated_iso,
                 key=key,
             )
 

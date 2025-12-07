@@ -49,23 +49,11 @@ def adapt_event_type(val: EventType | str) -> str:
 
 def convert_event_type(val: bytes) -> EventType:
     """Convert values from event_type columns to an EventType enum object."""
-    return EventType(str(val))
-
-
-def convert_event_date(val: bytes) -> datetime.date:
-    """Convert Sqlite event_date strings to EventType objects."""
-    return datetime.date.fromisoformat(str(val))
-
-
-def convert_timestamp(val: bytes) -> datetime.datetime:
-    """Convert Sqlite timestamp strings to datetime.datetime objects."""
-    return datetime.datetime.fromisoformat(str(val))
+    return EventType(val.decode())
 
 
 sqlite3.register_adapter(EventType, adapt_event_type)
-sqlite3.register_converter("event_type", convert_event_type)
-sqlite3.register_converter("event_date", convert_event_date)
-sqlite3.register_converter("timestamp", convert_timestamp)
+sqlite3.register_converter("EVENT_TYPE", convert_event_type)
 
 
 class EventUpateError(Exception):
@@ -84,9 +72,9 @@ class Event:
 
     table_def: ClassVar[str] = """
         CREATE TABLE IF NOT EXISTS events (
-            event_date TEXT NOT NULL,
+            event_date DATE NOT NULL,
            day_of_week INT GENERATED ALWAYS AS (strftime('%u', event_date)) VIRTUAL,
-            event_type TEXT NOT NULL,
+            event_type EVENT_TYPE NOT NULL,
            description TEXT,
            PRIMARY KEY (event_date, event_type) ON CONFLICT IGNORE
         );
@@ -343,10 +331,11 @@ class Checkin:
         CREATE TABLE IF NOT EXISTS checkins (
             checkin_id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_id TEXT NOT NULL,
-            event_date TEXT GENERATED ALWAYS AS (date(timestamp)) VIRTUAL,
+            event_date DATE GENERATED ALWAYS AS (date(timestamp)) VIRTUAL,
            day_of_week INT GENERATED ALWAYS AS (strftime('%u', event_date)) VIRTUAL,
-            event_type TEXT,
-             timestamp TEXT NOT NULL,
+            event_type EVENT_TYPE,
+             timestamp DATETIME NOT NULL,
+              inactive BOOL NOT NULL,
            FOREIGN KEY (student_id) REFERENCES students (student_id),
            FOREIGN KEY (event_date, event_type)
                        REFERENCES events (event_date, event_type)
@@ -364,8 +353,12 @@ class Checkin:
         student_id: str,
         event_type: str | EventType,
         timestamp: datetime.datetime | str,
+        inactive: bool = False,
     ) -> None:
-        """Ensure timestamp is converted to datetime.datetime."""
+        """Ensure timestamp is converted to datetime.datetime.
+
+        Use -1 for checkin_id for new checkins.
+        """
         if isinstance(timestamp, str):
             timestamp = datetime.datetime.fromisoformat(timestamp)
         if isinstance(event_type, str):
@@ -374,6 +367,7 @@ class Checkin:
         self.student_id = student_id
         self.event_type = event_type
         self.timestamp = timestamp
+        self.inactive = inactive
 
     @property
     def event_date(self) -> datetime.date:
@@ -395,7 +389,7 @@ class Checkin:
         """Event date as an iso-formatted string."""
         return self.to_iso_date(self.event_date)
 
-    def add(self, dbase: "database.DBase") -> int | None:
+    def add(self, dbase: "database.DBase") -> int:
         """Add the checkin record to the database.
 
         Returns:
@@ -404,8 +398,8 @@ class Checkin:
         """
         query = """
                 INSERT INTO checkins
-                            (student_id, event_type, timestamp)
-                     VALUES (:student_id, :event_type, :timestamp);
+                            (student_id, event_type, timestamp, inactive)
+                     VALUES (:student_id, :event_type, :timestamp, :inactive);
         """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(
@@ -414,17 +408,19 @@ class Checkin:
                     "student_id": self.student_id,
                     "event_type": self.event_type.value,
                     "timestamp": self.timestamp,
+                    "inactive": self.inactive,
                 },
             )
             checkin_id = cursor.lastrowid
         conn.close()
-        return checkin_id
+        self.checkin_id = 0 if checkin_id is None else checkin_id
+        return self.checkin_id
 
     @staticmethod
     def get_all(dbase: "database.DBase") -> list["Checkin"]:
         """Retrieve a list of Checkin objects from the database."""
         query = """
-                SELECT checkin_id, student_id, event_type, timestamp
+                SELECT checkin_id, student_id, event_type, timestamp, inactive
                   FROM checkins
               ORDER BY timestamp;
         """
@@ -460,7 +456,7 @@ class Checkin:
     ) -> list["Checkin"]:
         """Get a list of checkin objects for a single student."""
         query = """
-                SELECT checkin_id, student_id, event_type, timestamp
+                SELECT checkin_id, student_id, event_type, timestamp, inactive,
                   FROM checkins
                  WHERE student_id = ?
               ORDER BY event_date;
@@ -478,10 +474,10 @@ class Checkin:
         conn = dbase.get_db_connection()
         cursor = conn.execute(
             """
-                SELECT student_id, COUNT(student_id) as checkins
+                SELECT student_id, inactive, COUNT(student_id) as checkins
                   FROM checkins
                  WHERE timestamp >= ?
-              GROUP BY student_id
+              GROUP BY student_id, inactive
               ORDER BY student_id;
         """,
             (since,),
@@ -508,6 +504,30 @@ class Checkin:
         conn.close()
         return query_result["checkin_count"]
 
+    @staticmethod
+    def get_checkin_by_student_and_date(
+        dbase: "database.DBase", student_id: str, event_date: datetime.date
+    ) -> "list[Checkin]":
+        """Get the checkin corresponding to a specific student and date.
+
+        Returns:
+            List of Checkin objects. List will be empty if no checkins exist for
+            given student and date.
+        """
+        query = """
+                SELECT checkin_id, student_id, event_type, timestamp, inactive
+                  FROM checkins
+                 WHERE student_id = ?
+                   AND event_date = ?;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        cursor = conn.execute(
+            query, (student_id, event_date.strftime("%Y-%m-%d"))
+        ).fetchall()
+        checkins = [Checkin(**row) for row in cursor]
+        conn.close()
+        return checkins
+
     def to_dict(self) -> dict:
         """Convert the Checkin dataclass to a JSON-serializable dictionary."""
         return {
@@ -515,6 +535,7 @@ class Checkin:
             "student_id": self.student_id,
             "event_type": self.event_type,
             "timestamp": self.timestamp.isoformat(),
+            "inactive": self.inactive,
         }
 
     @staticmethod

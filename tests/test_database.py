@@ -20,7 +20,7 @@ def test_empty_database(empty_database: model.DBase) -> None:
     with empty_database.get_db_connection() as conn:
         tables = set(row["name"] for row in conn.execute(query))
     conn.close()
-    assert len(tables) == 4
+    assert len(tables) == 5
     assert "students" in tables
     assert "checkins" in tables
     # Must close connection or fixtures won't be able to delete Sqlite3 file when
@@ -84,12 +84,12 @@ def test_to_dict(full_dbase: model.DBase) -> None:
     # Act
     data = full_dbase.to_dict()
     # Assert
-    tables = ["students", "checkins", "events"]
+    tables = ["students", "checkins", "events", "surveys"]
     assert len(data) == len(tables)
     assert all(col in data for col in tables)
     for table in tables:
         assert isinstance(data[table], list)
-        assert len(data[table]) >= 10
+        assert len(data[table]) > 0
 
     with open(full_dbase.db_path.parent / "testdata.json", "wt") as jfile:
         json.dump(data, jfile, indent=2)

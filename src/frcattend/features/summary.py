@@ -1,6 +1,5 @@
 """An attendance summary report in markdown format."""
 
-
 from frcattend import config, model
 
 

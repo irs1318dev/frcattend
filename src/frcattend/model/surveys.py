@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 @dataclasses.dataclass
 class Survey:
     """A question and a set of possible answers."""
+
     title: str
     question: str
     answers: list[str]
@@ -36,7 +37,7 @@ class Survey:
         answers: list[str] | str,
         multiselect: bool | int = False,
         allow_freetext: bool | int = False,
-        max_length: Optional[int] = None
+        max_length: Optional[int] = None,
     ) -> None:
         """Convert fields from Sqlite to Python datataypes as needed."""
         self.title = title
@@ -53,7 +54,7 @@ class Survey:
     def answers_json(self) -> str:
         """Convert survey options list to a string containing a JSON array."""
         return json.dumps(self.answers)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert survey to a dictionary."""
         return dataclasses.asdict(self)
@@ -69,13 +70,12 @@ class Survey:
         """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(
-                query,
-                {**self.to_dict(), "answers_json": self.answers_json}
+                query, {**self.to_dict(), "answers_json": self.answers_json}
             )
         rowcount = cursor.rowcount
         conn.close()
         return rowcount == 1
-    
+
     def update(self, dbase: "database.DBase") -> bool:
         """Update the survey in the database."""
         query = """
@@ -89,13 +89,12 @@ class Survey:
         """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(
-                query,
-                {**self.to_dict(), "answers_json": self.answers_json}
+                query, {**self.to_dict(), "answers_json": self.answers_json}
             )
         rowcount = cursor.rowcount
         conn.close()
         return rowcount == 1
-    
+
     @staticmethod
     def delete_by_title(dbase: "database.DBase", title: str) -> bool:
         """Delete the survey's database record."""
@@ -108,7 +107,7 @@ class Survey:
         rowcount = cursor.rowcount
         conn.close()
         return rowcount == 1
-    
+
     @staticmethod
     def get_by_title(dbase: "database.DBase", title: str) -> "Survey | None":
         """Get the survey with the givent title, or None if it doesn't exist."""
@@ -124,7 +123,7 @@ class Survey:
         if result:
             return Survey(**result)
         return None
-    
+
     @staticmethod
     def get_all(dbase: "database.DBase") -> list["Survey"]:
         """Retrive all surveys from the database."""
@@ -138,7 +137,7 @@ class Survey:
         surveys = [Survey(**survey) for survey in conn.execute(query)]
         conn.close()
         return surveys
-    
+
 
 @dataclasses.dataclass
 class Answer:

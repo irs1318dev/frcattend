@@ -17,36 +17,59 @@ class DBaseError(Exception):
     """Error occurred when working with database."""
 
 
-def dict_factory(cursor: sqlite3.Cursor, row: Sequence) -> dict[str, Any]:
-    """Return Sqlite data as a dictionary."""
-    fields = [column[0] for column in cursor.description]
-    return {key: value for key, value in zip(fields, row)}
-
-
-def adapt_date_iso(val: datetime.date | str) -> str:
-    """Adapt datetime.date to ISO 8601 date."""
-    if isinstance(val, datetime.date):
-        return val.isoformat()
-    return val
-
-
-def adapt_datetime_iso(val: datetime.datetime | str) -> str:
-    """Adapt datetime.datetime to timezone-naive ISO 8601 date."""
-    if isinstance(val, datetime.datetime):
-        return val.replace(tzinfo=None).isoformat()
-    return val
-
-
 # Sqlite converts Python datetime.date and datetime.datetime objects to
 #   ISO-8601-formatted strings automatically. But as of Python 3.12, this
 #   behavior is deprecated, which means the Python developers will remove this
 #   behavior in a future version of Python and we should stop relying on it.
-# The register_adapter function calls explicity tell Sqlite how to convert date
-#   and datetime objects to text values that can be stored in Sqlite.
-#   Omitting these two lines results in deprecation warnings when we run the
-#   application or tests.
-sqlite3.register_adapter(datetime.date, adapt_date_iso)
-sqlite3.register_adapter(datetime.datetime, adapt_datetime_iso)
+# The adapter and converter functions handle the conversions between Python
+#   datetime and date objects and Sqlite text strings. All columns with type
+#   DATE will be converted to datetime.date objects and columns with type
+#   DATETIME will be converted to datetime.datetime objects.
+# NOTE: For all this to work, pass detect_types=sqlite3.PARSE_DECLTYPES
+#   to sqlite3.connect method.
+# See https://docs.python.org/3/library/sqlite3.html#how-to-convert-sqlite-values-to-custom-python-types
+
+
+def adapt_from_date(val: datetime.date | None) -> str | None:
+    """Convert dates to ISO-formatted strings for storing in Sqlite."""
+    return None if val is None else val.isoformat()
+
+
+def convert_to_date(val: bytes | None) -> datetime.date | None:
+    """Convert Sqlite event_date strings to EventType objects."""
+    if val is None:
+        return None
+    return datetime.date.fromisoformat(val.decode())
+
+
+def adapt_from_datetime(val: datetime.datetime | None) -> str | None:
+    """Convert datetimes to ISO-formatted strings for storingin Sqlite."""
+    return None if val is None else val.isoformat()
+
+
+def convert_to_datetime(val: bytes | None) -> datetime.datetime | None:
+    """convert Sqlite DATETIME columns to Python datetime objects."""
+    if val is None:
+        return None
+    return datetime.datetime.fromisoformat(val.decode())
+
+
+def convert_to_bool(val: bytes) -> bool:
+    """Convert integer Sqlite columns to Python Bool objects."""
+    return int(val) != 0
+
+
+sqlite3.register_adapter(datetime.date, adapt_from_date)
+sqlite3.register_converter("DATE", convert_to_date)
+sqlite3.register_adapter(datetime.datetime, adapt_from_datetime)
+sqlite3.register_converter("DATETIME", convert_to_datetime)
+sqlite3.register_converter("BOOL", convert_to_bool)
+
+
+def dict_factory(cursor: sqlite3.Cursor, row: Sequence) -> dict[str, Any]:
+    """Return Sqlite data as a dictionary."""
+    fields = [column[0] for column in cursor.description]
+    return {key: value for key, value in zip(fields, row)}
 
 
 @dataclasses.dataclass
@@ -78,7 +101,7 @@ class DBase:
 
     def get_db_connection(self, as_dict=False) -> sqlite3.Connection:
         """Get connection to the SQLite database. Create DB if it doesn't exist."""
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
         if as_dict:
             conn.row_factory = dict_factory
         else:
@@ -109,8 +132,7 @@ class DBase:
             for student in students.Student.get_all(self, include_inactive=True)
         ]
         db_data["surveys"] = [
-            survey.to_dict()
-            for survey in surveys.Survey.get_all(self)
+            survey.to_dict() for survey in surveys.Survey.get_all(self)
         ]
         event_data = [event.to_dict() for event in events_checkins.Event.get_all(self)]
         excluded_columns = ["event_id", "day_of_week"]
@@ -146,8 +168,8 @@ class DBase:
         """
         checkins_query = """
             INSERT INTO checkins
-                        (student_id, event_type, timestamp)
-                 VALUES (:student_id, :event_type, :timestamp);
+                        (student_id, event_type, timestamp, inactive)
+                 VALUES (:student_id, :event_type, :timestamp, :inactive);
         """
         event_query = """
             INSERT INTO events

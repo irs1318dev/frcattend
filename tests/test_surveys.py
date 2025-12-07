@@ -24,8 +24,8 @@ def test_add_survey(noevents_dbase: model.DBase) -> None:
             "Sagittarius",
             "Scorpio",
             "Taurus",
-            "Virgo"
-        ]
+            "Virgo",
+        ],
     )
     # Act
     result = survey.add(noevents_dbase)
@@ -44,10 +44,13 @@ def test_get_surveys(full_dbase: model.DBase) -> None:
     assert len(surveys) == 3
     assert all(isinstance(survey, model.Survey) for survey in surveys)
 
+
 @pytest.mark.parametrize(
-        "title,success", [("Subgroup", True), ("Favorite Videogame", False)]
+    "title,success", [("Subgroup", True), ("Favorite Videogame", False)]
 )
-def test_get_survey_by_title(full_dbase: model.DBase, title: str, success: bool) -> None:
+def test_get_survey_by_title(
+    full_dbase: model.DBase, title: str, success: bool
+) -> None:
     """Get a survey from the database, or None if it doesn't exist."""
     # Act
     survey = model.Survey.get_by_title(full_dbase, title)
@@ -80,6 +83,7 @@ def test_update_survey(full_dbase: model.DBase) -> None:
     assert survey2.multiselect
     assert survey2.allow_freetext
     assert survey2.max_length == 25
+
 
 @pytest.mark.parametrize(
     "title,success", [("Subgroup", True), ("Favorite Video Game", False)]

@@ -5,805 +5,1167 @@
       "last_name": "Al-Farsi",
       "first_name": "Omar",
       "grad_year": 2029,
-      "email": "omar.alfarsi29@example.com"
+      "email": "omar.alfarsi29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "al_hashimi-noor-2027-778",
       "last_name": "Al-Hashimi",
       "first_name": "Noor",
       "grad_year": 2027,
-      "email": "noor.alhashimi27@example.com"
+      "email": "noor.alhashimi27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "al_mansour-fatima-2028-744",
       "last_name": "Al-Mansour",
       "first_name": "Fatima",
       "grad_year": 2028,
-      "email": "fatima.almansour28@example.com"
+      "email": "fatima.almansour28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "al_mutairi-lina-2026-117",
       "last_name": "Al-Mutairi",
       "first_name": "Lina",
       "grad_year": 2026,
-      "email": "lina.almutairi26@example.com"
+      "email": "lina.almutairi26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "al_sharif-samira-2028-135",
       "last_name": "Al-Sharif",
       "first_name": "Samira",
       "grad_year": 2028,
-      "email": "samira.alsharif28@example.com"
+      "email": "samira.alsharif28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "ali-ahmed-2029-874",
       "last_name": "Ali",
       "first_name": "Ahmed",
       "grad_year": 2029,
-      "email": "ahmed.ali29@example.com"
+      "email": "ahmed.ali29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "anderson-mason-2028-608",
       "last_name": "Anderson",
       "first_name": "Mason",
       "grad_year": 2028,
-      "email": "mason.anderson28@example.com"
+      "email": "mason.anderson28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "baker-daniel-2027-604",
       "last_name": "Baker",
       "first_name": "Daniel",
       "grad_year": 2027,
-      "email": "daniel.baker27@example.com"
+      "email": "daniel.baker27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "bakr-salma-2029-946",
       "last_name": "Bakr",
       "first_name": "Salma",
       "grad_year": 2029,
-      "email": "salma.bakr29@example.com"
+      "email": "salma.bakr29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "banerjee-vihaan-2027-180",
       "last_name": "Banerjee",
       "first_name": "Vihaan",
       "grad_year": 2027,
-      "email": "vihaan.banerjee27@example.com"
+      "email": "vihaan.banerjee27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "barakat-aliyah-2028-637",
       "last_name": "Barakat",
       "first_name": "Aliyah",
       "grad_year": 2028,
-      "email": "aliyah.barakat28@example.com"
+      "email": "aliyah.barakat28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "bose-arnav-2028-221",
       "last_name": "Bose",
       "first_name": "Arnav",
       "grad_year": 2028,
-      "email": "arnav.bose28@example.com"
+      "email": "arnav.bose28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "brown-olivia-2029-956",
       "last_name": "Brown",
       "first_name": "Olivia",
       "grad_year": 2029,
-      "email": "olivia.brown29@example.com"
+      "email": "olivia.brown29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "chakraborty-anika-2028-937",
       "last_name": "Chakraborty",
       "first_name": "Anika",
       "grad_year": 2028,
-      "email": "anika.chakraborty28@example.com"
+      "email": "anika.chakraborty28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "chatterjee-anvi-2027-491",
       "last_name": "Chatterjee",
       "first_name": "Anvi",
       "grad_year": 2027,
-      "email": "anvi.chatterjee27@example.com"
+      "email": "anvi.chatterjee27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "chaudhry-rehan-2029-286",
       "last_name": "Chaudhry",
       "first_name": "Rehan",
       "grad_year": 2029,
-      "email": "rehan.chaudhry29@example.com"
+      "email": "rehan.chaudhry29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "chen-li-2029-204",
       "last_name": "Chen",
       "first_name": "Li",
       "grad_year": 2029,
-      "email": "li.chen29@example.com"
+      "email": "li.chen29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "cheng-hui-2028-840",
       "last_name": "Cheng",
       "first_name": "Hui",
       "grad_year": 2028,
-      "email": "hui.cheng28@example.com"
+      "email": "hui.cheng28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "choi-ji_ho-2029-324",
       "last_name": "Choi",
       "first_name": "Ji-ho",
       "grad_year": 2029,
-      "email": "jiho.choi29@example.com"
+      "email": "jiho.choi29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "clark-amelia-2029-705",
       "last_name": "Clark",
       "first_name": "Amelia",
       "grad_year": 2029,
-      "email": "amelia.clark29@example.com"
+      "email": "amelia.clark29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "clark-emma-2026-699",
       "last_name": "Clark",
       "first_name": "Emma",
       "grad_year": 2026,
-      "email": "emma.clark26@example.com"
+      "email": "emma.clark26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "das-shreya-2027-285",
       "last_name": "Das",
       "first_name": "Shreya",
       "grad_year": 2027,
-      "email": "shreya.das27@example.com"
+      "email": "shreya.das27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "davis-isabella-2029-060",
       "last_name": "Davis",
       "first_name": "Isabella",
       "grad_year": 2029,
-      "email": "isabella.davis29@example.com"
+      "email": "isabella.davis29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "desai-isha-2029-550",
       "last_name": "Desai",
       "first_name": "Isha",
       "grad_year": 2029,
-      "email": "isha.desai29@example.com"
+      "email": "isha.desai29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "evans-lucas-2029-453",
       "last_name": "Evans",
       "first_name": "Lucas",
       "grad_year": 2029,
-      "email": "lucas.evans29@example.com"
+      "email": "lucas.evans29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "farooq-samir-2029-619",
       "last_name": "Farooq",
       "first_name": "Samir",
       "grad_year": 2029,
-      "email": "samir.farooq29@example.com"
+      "email": "samir.farooq29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "fujita-daiki-2028-499",
       "last_name": "Fujita",
       "first_name": "Daiki",
       "grad_year": 2028,
-      "email": "daiki.fujita28@example.com"
+      "email": "daiki.fujita28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "garcia-sofia-2029-953",
       "last_name": "Garcia",
       "first_name": "Sofia",
       "grad_year": 2029,
-      "email": "sofia.garcia29@example.com"
+      "email": "sofia.garcia29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "green-jack-2026-493",
       "last_name": "Green",
       "first_name": "Jack",
       "grad_year": 2026,
-      "email": "jack.green26@example.com"
+      "email": "jack.green26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "gupta-aditya-2029-329",
       "last_name": "Gupta",
       "first_name": "Aditya",
       "grad_year": 2029,
-      "email": "aditya.gupta29@example.com"
+      "email": "aditya.gupta29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "haddad-layla-2029-728",
       "last_name": "Haddad",
       "first_name": "Layla",
       "grad_year": 2029,
-      "email": "layla.haddad29@example.com"
+      "email": "layla.haddad29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "haddad-yousef-2026-200",
       "last_name": "Haddad",
       "first_name": "Yousef",
       "grad_year": 2026,
-      "email": "yousef.haddad26@example.com"
+      "email": "yousef.haddad26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "hall-david-2027-417",
       "last_name": "Hall",
       "first_name": "David",
       "grad_year": 2027,
-      "email": "david.hall27@example.com"
+      "email": "david.hall27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "hashimoto-akira-2029-750",
       "last_name": "Hashimoto",
       "first_name": "Akira",
       "grad_year": 2029,
-      "email": "akira.hashimoto29@example.com"
+      "email": "akira.hashimoto29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "hassan-amira-2029-592",
       "last_name": "Hassan",
       "first_name": "Amira",
       "grad_year": 2029,
-      "email": "amira.hassan29@example.com"
+      "email": "amira.hassan29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "hoang-minh-2029-592",
       "last_name": "Hoang",
       "first_name": "Minh",
       "grad_year": 2029,
-      "email": "minh.hoang29@example.com"
+      "email": "minh.hoang29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "hossain-farhan-2027-161",
       "last_name": "Hossain",
       "first_name": "Farhan",
       "grad_year": 2027,
-      "email": "farhan.hossain27@example.com"
+      "email": "farhan.hossain27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "huynh-trang-2027-384",
       "last_name": "Huynh",
       "first_name": "Trang",
       "grad_year": 2027,
-      "email": "trang.huynh27@example.com"
+      "email": "trang.huynh27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "ito-sakura-2029-833",
       "last_name": "Ito",
       "first_name": "Sakura",
       "grad_year": 2029,
-      "email": "sakura.ito29@example.com"
+      "email": "sakura.ito29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "iyer-aria-2027-558",
       "last_name": "Iyer",
       "first_name": "Aria",
       "grad_year": 2027,
-      "email": "aria.iyer27@example.com"
+      "email": "aria.iyer27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "jabari-leila-2028-495",
       "last_name": "Jabari",
       "first_name": "Leila",
       "grad_year": 2028,
-      "email": "leila.jabari28@example.com"
+      "email": "leila.jabari28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "jain-diya-2029-516",
       "last_name": "Jain",
       "first_name": "Diya",
       "grad_year": 2029,
-      "email": "diya.jain29@example.com"
+      "email": "diya.jain29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "joshi-neha-2028-211",
       "last_name": "Joshi",
       "first_name": "Neha",
       "grad_year": 2028,
-      "email": "neha.joshi28@example.com"
+      "email": "neha.joshi28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "kapoor-dev-2028-854",
       "last_name": "Kapoor",
       "first_name": "Dev",
       "grad_year": 2028,
-      "email": "dev.kapoor28@example.com"
+      "email": "dev.kapoor28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "kato-shin-2026-589",
       "last_name": "Kato",
       "first_name": "Shin",
       "grad_year": 2026,
-      "email": "shin.kato26@example.com"
+      "email": "shin.kato26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "khan-zara-2029-790",
       "last_name": "Khan",
       "first_name": "Zara",
       "grad_year": 2029,
-      "email": "zara.khan29@example.com"
+      "email": "zara.khan29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "kim-min_jun-2029-466",
       "last_name": "Kim",
       "first_name": "Min-Jun",
       "grad_year": 2029,
-      "email": "minjun.kim29@example.com"
+      "email": "minjun.kim29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "king-chloe-2028-029",
       "last_name": "King",
       "first_name": "Chloe",
       "grad_year": 2028,
-      "email": "chloe.king28@example.com"
+      "email": "chloe.king28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "kobayashi-shota-2028-005",
       "last_name": "Kobayashi",
       "first_name": "Shota",
       "grad_year": 2028,
-      "email": "shota.kobayashi28@example.com"
+      "email": "shota.kobayashi28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "kumar-arjun-2029-548",
       "last_name": "Kumar",
       "first_name": "Arjun",
       "grad_year": 2029,
-      "email": "arjun.kumar29@example.com"
+      "email": "arjun.kumar29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "lee-ji_woo-2029-657",
       "last_name": "Lee",
       "first_name": "Ji-woo",
       "grad_year": 2029,
-      "email": "jiwoo.lee29@example.com"
+      "email": "jiwoo.lee29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "lewis-matthew-2027-203",
       "last_name": "Lewis",
       "first_name": "Matthew",
       "grad_year": 2027,
-      "email": "matthew.lewis27@example.com"
+      "email": "matthew.lewis27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "lim-su_bin-2029-223",
       "last_name": "Lim",
       "first_name": "Su-bin",
       "grad_year": 2029,
-      "email": "subin.lim29@example.com"
+      "email": "subin.lim29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "lin-xin-2028-241",
       "last_name": "Lin",
       "first_name": "Xin",
       "grad_year": 2028,
-      "email": "xin.lin28@example.com"
+      "email": "xin.lin28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "mansoor-karim-2028-638",
       "last_name": "Mansoor",
       "first_name": "Karim",
       "grad_year": 2028,
-      "email": "karim.mansoor28@example.com"
+      "email": "karim.mansoor28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "mansour-samir-2027-636",
       "last_name": "Mansour",
       "first_name": "Samir",
       "grad_year": 2027,
-      "email": "samir.mansour27@example.com"
+      "email": "samir.mansour27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "martin-ethan-2028-811",
       "last_name": "Martin",
       "first_name": "Ethan",
       "grad_year": 2028,
-      "email": "ethan.martin28@example.com"
+      "email": "ethan.martin28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "mehta-krishna-2029-672",
       "last_name": "Mehta",
       "first_name": "Krishna",
       "grad_year": 2029,
-      "email": "krishna.mehta29@example.com"
+      "email": "krishna.mehta29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "miller-william-2029-562",
       "last_name": "Miller",
       "first_name": "William",
       "grad_year": 2029,
-      "email": "william.miller29@example.com"
+      "email": "william.miller29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "mishra-pari-2028-783",
       "last_name": "Mishra",
       "first_name": "Pari",
       "grad_year": 2028,
-      "email": "pari.mishra28@example.com"
+      "email": "pari.mishra28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "moore-elijah-2029-063",
       "last_name": "Moore",
       "first_name": "Elijah",
       "grad_year": 2029,
-      "email": "elijah.moore29@example.com"
+      "email": "elijah.moore29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "mori-keiko-2027-853",
       "last_name": "Mori",
       "first_name": "Keiko",
       "grad_year": 2027,
-      "email": "keiko.mori27@example.com"
+      "email": "keiko.mori27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "mukherjee-diya-2026-701",
       "last_name": "Mukherjee",
       "first_name": "Diya",
       "grad_year": 2026,
-      "email": "diya.mukherjee26@example.com"
+      "email": "diya.mukherjee26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "murphy-jack-2029-737",
       "last_name": "Murphy",
       "first_name": "Jack",
       "grad_year": 2029,
-      "email": "jack.murphy29@example.com"
+      "email": "jack.murphy29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "nasser-maya-2029-732",
       "last_name": "Nasser",
       "first_name": "Maya",
       "grad_year": 2029,
-      "email": "maya.nasser29@example.com"
+      "email": "maya.nasser29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "ng-mei-2029-774",
       "last_name": "Ng",
       "first_name": "Mei",
       "grad_year": 2029,
-      "email": "mei.ng29@example.com"
+      "email": "mei.ng29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "nguyen-dao-2026-594",
       "last_name": "Nguyen",
       "first_name": "Dao",
       "grad_year": 2026,
-      "email": "dao.nguyen26@example.com"
+      "email": "dao.nguyen26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "nguyen-phuc-2028-780",
       "last_name": "Nguyen",
       "first_name": "Phuc",
       "grad_year": 2028,
-      "email": "phuc.nguyen28@example.com"
+      "email": "phuc.nguyen28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "nguyen-thanh-2029-280",
       "last_name": "Nguyen",
       "first_name": "Thanh",
       "grad_year": 2029,
-      "email": "thanh.nguyen29@example.com"
+      "email": "thanh.nguyen29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "oconnor-sean-2028-842",
       "last_name": "O'Connor",
       "first_name": "Sean",
       "grad_year": 2028,
-      "email": "sean.oconnor28@example.com"
+      "email": "sean.oconnor28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "pandey-riya-2028-213",
       "last_name": "Pandey",
       "first_name": "Riya",
       "grad_year": 2028,
-      "email": "riya.pandey28@example.com"
+      "email": "riya.pandey28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "park-seo_yeon-2029-004",
       "last_name": "Park",
       "first_name": "Seo-yeon",
       "grad_year": 2029,
-      "email": "seoyeon.park29@example.com"
+      "email": "seoyeon.park29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "patel-aarav-2029-565",
       "last_name": "Patel",
       "first_name": "Aarav",
       "grad_year": 2029,
-      "email": "aarav.patel29@example.com"
+      "email": "aarav.patel29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "perez-lucas-2026-363",
       "last_name": "Perez",
       "first_name": "Lucas",
       "grad_year": 2026,
-      "email": "lucas.perez26@example.com"
+      "email": "lucas.perez26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "pham-quang-2028-969",
       "last_name": "Pham",
       "first_name": "Quang",
       "grad_year": 2028,
-      "email": "quang.pham28@example.com"
+      "email": "quang.pham28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "pham-tu-2027-853",
       "last_name": "Pham",
       "first_name": "Tu",
       "grad_year": 2027,
-      "email": "tu.pham27@example.com"
+      "email": "tu.pham27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "qureshi-rayyan-2027-454",
       "last_name": "Qureshi",
       "first_name": "Rayyan",
       "grad_year": 2027,
-      "email": "rayyan.qureshi27@example.com"
+      "email": "rayyan.qureshi27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "rahim-imran-2028-010",
       "last_name": "Rahim",
       "first_name": "Imran",
       "grad_year": 2028,
-      "email": "imran.rahim28@example.com"
+      "email": "imran.rahim28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "rahman-noor-2029-758",
       "last_name": "Rahman",
       "first_name": "Noor",
       "grad_year": 2029,
-      "email": "noor.rahman29@example.com"
+      "email": "noor.rahman29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "rana-simran-2027-150",
       "last_name": "Rana",
       "first_name": "Simran",
       "grad_year": 2027,
-      "email": "simran.rana27@example.com"
+      "email": "simran.rana27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "reddy-sanvi-2029-139",
       "last_name": "Reddy",
       "first_name": "Sanvi",
       "grad_year": 2029,
-      "email": "sanvi.reddy29@example.com"
+      "email": "sanvi.reddy29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "rizvi-saad-2028-174",
       "last_name": "Rizvi",
       "first_name": "Saad",
       "grad_year": 2028,
-      "email": "saad.rizvi28@example.com"
+      "email": "saad.rizvi28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "rizwan-ayaan-2026-249",
       "last_name": "Rizwan",
       "first_name": "Ayaan",
       "grad_year": 2026,
-      "email": "ayaan.rizwan26@example.com"
+      "email": "ayaan.rizwan26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "robinson-grace-2028-298",
       "last_name": "Robinson",
       "first_name": "Grace",
       "grad_year": 2028,
-      "email": "grace.robinson28@example.com"
+      "email": "grace.robinson28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "saito-haruka-2027-867",
       "last_name": "Saito",
       "first_name": "Haruka",
       "grad_year": 2027,
-      "email": "haruka.saito27@example.com"
+      "email": "haruka.saito27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "saleh-nour-2028-496",
       "last_name": "Saleh",
       "first_name": "Nour",
       "grad_year": 2028,
-      "email": "nour.saleh28@example.com"
+      "email": "nour.saleh28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "salem-amal-2026-624",
       "last_name": "Salem",
       "first_name": "Amal",
       "grad_year": 2026,
-      "email": "amal.salem26@example.com"
+      "email": "amal.salem26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "sato-yuki-2029-042",
       "last_name": "Sato",
       "first_name": "Yuki",
       "grad_year": 2029,
-      "email": "yuki.sato29@example.com"
+      "email": "yuki.sato29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "scott-alexander-2027-644",
       "last_name": "Scott",
       "first_name": "Alexander",
       "grad_year": 2027,
-      "email": "alexander.scott27@example.com"
+      "email": "alexander.scott27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "sengupta-arjun-2026-794",
       "last_name": "Sengupta",
       "first_name": "Arjun",
       "grad_year": 2026,
-      "email": "arjun.sengupta26@example.com"
+      "email": "arjun.sengupta26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "sharma-vihaan-2029-204",
       "last_name": "Sharma",
       "first_name": "Vihaan",
       "grad_year": 2029,
-      "email": "vihaan.sharma29@example.com"
+      "email": "vihaan.sharma29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "singh-ananya-2029-225",
       "last_name": "Singh",
       "first_name": "Ananya",
       "grad_year": 2029,
-      "email": "ananya.singh29@example.com"
+      "email": "ananya.singh29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "smith-emily-2029-676",
       "last_name": "Smith",
       "first_name": "Emily",
       "grad_year": 2029,
-      "email": "emily.smith29@example.com"
+      "email": "emily.smith29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "srinivasan-meera-2028-252",
       "last_name": "Srinivasan",
       "first_name": "Meera",
       "grad_year": 2028,
-      "email": "meera.srinivasan28@example.com"
+      "email": "meera.srinivasan28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "st_clare-denise-2027-191",
       "last_name": "St. Clare",
       "first_name": "Denise",
       "grad_year": 2027,
-      "email": "denise.stclare27@example.com"
+      "email": "denise.stclare27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "suleiman-yasmin-2029-962",
       "last_name": "Suleiman",
       "first_name": "Yasmin",
       "grad_year": 2029,
-      "email": "yasmin.suleiman29@example.com"
+      "email": "yasmin.suleiman29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "sun-lei-2029-787",
       "last_name": "Sun",
       "first_name": "Lei",
       "grad_year": 2029,
-      "email": "lei.sun29@example.com"
+      "email": "lei.sun29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "suzuki-hana-2028-563",
       "last_name": "Suzuki",
       "first_name": "Hana",
       "grad_year": 2028,
-      "email": "hana.suzuki28@example.com"
+      "email": "hana.suzuki28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "tanaka-ren-2029-091",
       "last_name": "Tanaka",
       "first_name": "Ren",
       "grad_year": 2029,
-      "email": "ren.tanaka29@example.com"
+      "email": "ren.tanaka29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "thomas-charlotte-2029-276",
       "last_name": "Thomas",
       "first_name": "Charlotte",
       "grad_year": 2029,
-      "email": "charlotte.thomas29@example.com"
+      "email": "charlotte.thomas29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "tran-anh-2029-878",
       "last_name": "Tran",
       "first_name": "Anh",
       "grad_year": 2029,
-      "email": "anh.tran29@example.com"
+      "email": "anh.tran29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "turner-natalie-2027-825",
       "last_name": "Turner",
       "first_name": "Natalie",
       "grad_year": 2027,
-      "email": "natalie.turner27@example.com"
+      "email": "natalie.turner27@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "van_buren-martin-2029-739",
       "last_name": "Van Buren",
       "first_name": "Martin",
       "grad_year": 2029,
-      "email": "martin.vanburen29@example.com"
+      "email": "martin.vanburen29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "verma-pranav-2029-514",
       "last_name": "Verma",
       "first_name": "Pranav",
       "grad_year": 2029,
-      "email": "pranav.verma29@example.com"
+      "email": "pranav.verma29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "walker-logan-2028-771",
       "last_name": "Walker",
       "first_name": "Logan",
       "grad_year": 2028,
-      "email": "logan.walker28@example.com"
+      "email": "logan.walker28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "wang-wei-2029-685",
       "last_name": "Wang",
       "first_name": "Wei",
       "grad_year": 2029,
-      "email": "wei.wang29@example.com"
+      "email": "wei.wang29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "white-henry-2028-671",
       "last_name": "White",
       "first_name": "Henry",
       "grad_year": 2028,
-      "email": "henry.white28@example.com"
+      "email": "henry.white28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "williams-james-2029-462",
       "last_name": "Williams",
       "first_name": "James",
       "grad_year": 2029,
-      "email": "james.williams29@example.com"
+      "email": "james.williams29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "wong-chun-2026-257",
       "last_name": "Wong",
       "first_name": "Chun",
       "grad_year": 2026,
-      "email": "chun.wong26@example.com"
+      "email": "chun.wong26@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "yamada-haruki-2028-267",
       "last_name": "Yamada",
       "first_name": "Haruki",
       "grad_year": 2028,
-      "email": "haruki.yamada28@example.com"
+      "email": "haruki.yamada28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "yamamoto-haruto-2029-867",
       "last_name": "Yamamoto",
       "first_name": "Haruto",
       "grad_year": 2029,
-      "email": "haruto.yamamoto29@example.com"
+      "email": "haruto.yamamoto29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "yilmaz-deniz-2029-877",
       "last_name": "Yilmaz",
       "first_name": "Deniz",
       "grad_year": 2029,
-      "email": "deniz.yilmaz29@example.com"
+      "email": "deniz.yilmaz29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "young-benjamin-2028-301",
       "last_name": "Young",
       "first_name": "Benjamin",
       "grad_year": 2028,
-      "email": "benjamin.young28@example.com"
+      "email": "benjamin.young28@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "zhang-yu-2029-424",
       "last_name": "Zhang",
       "first_name": "Yu",
       "grad_year": 2029,
-      "email": "yu.zhang29@example.com"
+      "email": "yu.zhang29@example.com",
+      "deactivated_on": null
     },
     {
       "student_id": "zhou-meilin-2027-200",
       "last_name": "Zhou",
       "first_name": "Meilin",
       "grad_year": 2027,
-      "email": "meilin.zhou27@example.com"
+      "email": "meilin.zhou27@example.com",
+      "deactivated_on": null
+    },
+    {
+      "student_id": "smith-olivia-2026-101",
+      "last_name": "Smith",
+      "first_name": "Olivia",
+      "grad_year": 2026,
+      "email": "olivia.smith26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "johnson-liam-2026-102",
+      "last_name": "Johnson",
+      "first_name": "Liam",
+      "grad_year": 2026,
+      "email": "liam.johnson26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "brown-emma-2026-103",
+      "last_name": "Brown",
+      "first_name": "Emma",
+      "grad_year": 2026,
+      "email": "emma.brown26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "jones-noah-2026-104",
+      "last_name": "Jones",
+      "first_name": "Noah",
+      "grad_year": 2026,
+      "email": "noah.jones26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "garcia-ava-2026-105",
+      "last_name": "Garcia",
+      "first_name": "Ava",
+      "grad_year": 2026,
+      "email": "ava.garcia26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "martinez-sophia-2026-106",
+      "last_name": "Martinez",
+      "first_name": "Sophia",
+      "grad_year": 2026,
+      "email": "sophia.martinez26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "lee-mason-2026-107",
+      "last_name": "Lee",
+      "first_name": "Mason",
+      "grad_year": 2026,
+      "email": "mason.lee26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "wong-lucas-2026-108",
+      "last_name": "Wong",
+      "first_name": "Lucas",
+      "grad_year": 2026,
+      "email": "lucas.wong26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "patel-ethan-2026-109",
+      "last_name": "Patel",
+      "first_name": "Ethan",
+      "grad_year": 2026,
+      "email": "ethan.patel26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "singh-isabella-2026-110",
+      "last_name": "Singh",
+      "first_name": "Isabella",
+      "grad_year": 2026,
+      "email": "isabella.singh26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "shah-mia-2026-111",
+      "last_name": "Shah",
+      "first_name": "Mia",
+      "grad_year": 2026,
+      "email": "mia.shah26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "kim-charlotte-2026-112",
+      "last_name": "Kim",
+      "first_name": "Charlotte",
+      "grad_year": 2026,
+      "email": "charlotte.kim26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "chen-henry-2027-113",
+      "last_name": "Chen",
+      "first_name": "Henry",
+      "grad_year": 2027,
+      "email": "henry.chen27@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "tanaka-james-2027-114",
+      "last_name": "Tanaka",
+      "first_name": "James",
+      "grad_year": 2027,
+      "email": "james.tanaka27@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "liu-grace-2026-115",
+      "last_name": "Liu",
+      "first_name": "Grace",
+      "grad_year": 2026,
+      "email": "grace.liu26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "nguyen-william-2026-116",
+      "last_name": "Nguyen",
+      "first_name": "William",
+      "grad_year": 2026,
+      "email": "william.nguyen26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "rao-benjamin-2027-117",
+      "last_name": "Rao",
+      "first_name": "Benjamin",
+      "grad_year": 2027,
+      "email": "benjamin.rao27@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "ahmed-daniel-2026-118",
+      "last_name": "Ahmed",
+      "first_name": "Daniel",
+      "grad_year": 2026,
+      "email": "daniel.ahmed26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "kumar-aria-2026-119",
+      "last_name": "Kumar",
+      "first_name": "Aria",
+      "grad_year": 2026,
+      "email": "aria.kumar26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "kato-priya-2027-120",
+      "last_name": "Kato",
+      "first_name": "Priya",
+      "grad_year": 2027,
+      "email": "priya.kato27@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "park-ananya-2026-121",
+      "last_name": "Park",
+      "first_name": "Ananya",
+      "grad_year": 2026,
+      "email": "ananya.park26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "choi-yuki-2026-122",
+      "last_name": "Choi",
+      "first_name": "Yuki",
+      "grad_year": 2026,
+      "email": "yuki.choi26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "ito-haru-2026-123",
+      "last_name": "Ito",
+      "first_name": "Haru",
+      "grad_year": 2026,
+      "email": "haru.ito26@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "zhang-mei-2027-124",
+      "last_name": "Zhang",
+      "first_name": "Mei",
+      "grad_year": 2027,
+      "email": "mei.zhang27@example.com",
+      "deactivated_on": "2025-11-24"
+    },
+    {
+      "student_id": "li-minseo-2026-125",
+      "last_name": "Li",
+      "first_name": "Minseo",
+      "grad_year": 2026,
+      "email": "minseo.li26@example.com",
+      "deactivated_on": "2025-11-24"
+    }
+  ],
+  "surveys": [
+    {
+      "title": "Subgroup",
+      "question": "What's your primary subgroup?",
+      "answers": [
+        "Analytics",
+        "Business and Media",
+        "CAD",
+        "Electrical",
+        "Infrastructure",
+        "Mechanical",
+        "Programming"
+      ],
+      "multiselect": false,
+      "allow_freetext": false,
+      "max_length": null
+    },
+    {
+      "title": "Dietary Restrictions",
+      "question": "Please tell us about any dietary restrictions. You can select more than one option or type an answer.",
+      "answers": [
+        "Vegan",
+        "Vegetarian (dairy OK)",
+        "No Beef",
+        "No Pork",
+        "Nut Allergy",
+        "Other Allergy (describe allergy below)"
+      ],
+      "multiselect": true,
+      "allow_freetext": true,
+      "max_length": null
+    },
+    {
+      "title": "2026 Week 1 Competition",
+      "question": "Will you be attending the Week 1 competition at Bonney Lake?",
+      "answers": [
+        "Yes, both days",
+        "Yes, Saturday only",
+        "Yes, Sunday only",
+        "No",
+        "Don't know"
+      ],
+      "multiselect": false,
+      "allow_freetext": false,
+      "max_length": null
     }
   ],
   "events": [
@@ -1123,6 +1485,201 @@
       "student_id": "chatterjee-anvi-2027-491",
       "event_type": "meeting",
       "timestamp": "2025-09-04 17:07:23.521652"
+    },
+    {
+      "student_id": "smith-olivia-2026-101",
+      "event_type": "meeting",
+      "timestamp": "2025-09-04 17:45:00.000000"
+    },
+    {
+      "student_id": "smith-olivia-2026-101",
+      "event_type": "meeting",
+      "timestamp": "2025-10-02 18:05:12.000000"
+    },
+    {
+      "student_id": "johnson-liam-2026-102",
+      "event_type": "outreach",
+      "timestamp": "2025-10-04 12:30:00.000000"
+    },
+    {
+      "student_id": "brown-emma-2026-103",
+      "event_type": "meeting",
+      "timestamp": "2025-09-25 17:00:00.000000"
+    },
+    {
+      "student_id": "jones-noah-2026-104",
+      "event_type": "meeting",
+      "timestamp": "2025-09-11 17:10:00.000000"
+    },
+    {
+      "student_id": "jones-noah-2026-104",
+      "event_type": "competition",
+      "timestamp": "2025-10-11 09:00:00.000000"
+    },
+    {
+      "student_id": "jones-noah-2026-104",
+      "event_type": "outreach",
+      "timestamp": "2025-10-05 11:15:00.000000"
+    },
+    {
+      "student_id": "garcia-ava-2026-105",
+      "event_type": "competition",
+      "timestamp": "2025-10-11 09:05:00.000000"
+    },
+    {
+      "student_id": "martinez-sophia-2026-106",
+      "event_type": "meeting",
+      "timestamp": "2025-09-25 17:20:00.000000"
+    },
+    {
+      "student_id": "martinez-sophia-2026-106",
+      "event_type": "meeting",
+      "timestamp": "2025-10-09 17:22:00.000000"
+    },
+    {
+      "student_id": "lee-mason-2026-107",
+      "event_type": "meeting",
+      "timestamp": "2025-09-04 18:00:00.000000"
+    },
+    {
+      "student_id": "lee-mason-2026-107",
+      "event_type": "meeting",
+      "timestamp": "2025-09-11 18:02:00.000000"
+    },
+    {
+      "student_id": "lee-mason-2026-107",
+      "event_type": "meeting",
+      "timestamp": "2025-10-02 18:05:00.000000"
+    },
+    {
+      "student_id": "lee-mason-2026-107",
+      "event_type": "meeting",
+      "timestamp": "2025-10-30 17:50:00.000000"
+    },
+    {
+      "student_id": "wong-lucas-2026-108",
+      "event_type": "outreach",
+      "timestamp": "2025-10-04 13:00:00.000000"
+    },
+    {
+      "student_id": "patel-ethan-2026-109",
+      "event_type": "competition",
+      "timestamp": "2025-10-12 10:00:00.000000"
+    },
+    {
+      "student_id": "patel-ethan-2026-109",
+      "event_type": "competition",
+      "timestamp": "2025-10-11 09:30:00.000000"
+    },
+    {
+      "student_id": "singh-isabella-2026-110",
+      "event_type": "outreach",
+      "timestamp": "2025-10-05 11:20:00.000000"
+    },
+    {
+      "student_id": "shah-mia-2026-111",
+      "event_type": "meeting",
+      "timestamp": "2025-09-04 18:05:00.000000"
+    },
+    {
+      "student_id": "kim-charlotte-2026-112",
+      "event_type": "meeting",
+      "timestamp": "2025-09-18 17:15:00.000000"
+    },
+    {
+      "student_id": "kim-charlotte-2026-112",
+      "event_type": "meeting",
+      "timestamp": "2025-10-09 17:25:00.000000"
+    },
+    {
+      "student_id": "chen-henry-2027-113",
+      "event_type": "meeting",
+      "timestamp": "2025-10-16 17:40:00.000000"
+    },
+    {
+      "student_id": "tanaka-james-2027-114",
+      "event_type": "meeting",
+      "timestamp": "2025-09-04 17:50:00.000000"
+    },
+    {
+      "student_id": "liu-grace-2026-115",
+      "event_type": "meeting",
+      "timestamp": "2025-10-23 17:30:00.000000"
+    },
+    {
+      "student_id": "nguyen-william-2026-116",
+      "event_type": "meeting",
+      "timestamp": "2025-09-04 17:55:00.000000"
+    },
+    {
+      "student_id": "nguyen-william-2026-116",
+      "event_type": "meeting",
+      "timestamp": "2025-10-30 17:52:00.000000"
+    },
+    {
+      "student_id": "rao-benjamin-2027-117",
+      "event_type": "meeting",
+      "timestamp": "2025-09-11 17:12:00.000000"
+    },
+    {
+      "student_id": "rao-benjamin-2027-117",
+      "event_type": "meeting",
+      "timestamp": "2025-10-02 18:10:00.000000"
+    },
+    {
+      "student_id": "rao-benjamin-2027-117",
+      "event_type": "outreach",
+      "timestamp": "2025-10-04 12:45:00.000000"
+    },
+    {
+      "student_id": "ahmed-daniel-2026-118",
+      "event_type": "meeting",
+      "timestamp": "2025-09-25 17:30:00.000000"
+    },
+    {
+      "student_id": "kumar-aria-2026-119",
+      "event_type": "competition",
+      "timestamp": "2025-10-11 09:20:00.000000"
+    },
+    {
+      "student_id": "kato-priya-2027-120",
+      "event_type": "meeting",
+      "timestamp": "2025-09-04 18:20:00.000000"
+    },
+    {
+      "student_id": "park-ananya-2026-121",
+      "event_type": "outreach",
+      "timestamp": "2025-10-05 11:30:00.000000"
+    },
+    {
+      "student_id": "park-ananya-2026-121",
+      "event_type": "competition",
+      "timestamp": "2025-10-11 09:10:00.000000"
+    },
+    {
+      "student_id": "choi-yuki-2026-122",
+      "event_type": "competition",
+      "timestamp": "2025-10-12 10:10:00.000000"
+    },
+    {
+      "student_id": "ito-haru-2026-123",
+      "event_type": "outreach",
+      "timestamp": "2025-10-04 12:10:00.000000"
+    },
+    {
+      "student_id": "zhang-mei-2027-124",
+      "event_type": "meeting",
+      "timestamp": "2025-09-04 18:10:00.000000"
+    },
+    {
+      "student_id": "li-minseo-2026-125",
+      "event_type": "meeting",
+      "timestamp": "2025-10-02 18:15:00.000000"
+    },
+    {
+      "student_id": "li-minseo-2026-125",
+      "event_type": "meeting",
+      "timestamp": "2025-10-16 17:45:00.000000"
     },
     {
       "student_id": "haddad-layla-2029-728",

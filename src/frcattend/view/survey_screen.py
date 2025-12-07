@@ -73,7 +73,6 @@ class SurveyScreen(screen.Screen):
         self.initialize_survey_table()
         self.load_survey_table()
 
-
     def initialize_survey_table(self) -> None:
         """Create the columns in the survey table."""
         self.survey_table = self.query_one(widgets.DataTable)
@@ -88,8 +87,7 @@ class SurveyScreen(screen.Screen):
         """Load survey data into the datatable widget."""
         self.survey_table.clear(columns=False)
         self._surveys = {
-            survey.title: survey
-            for survey in model.Survey.get_all(self.dbase)
+            survey.title: survey for survey in model.Survey.get_all(self.dbase)
         }
         for survey in self._surveys.values():
             self.survey_table.add_row(survey.title, survey.question, key=survey.title)
@@ -109,11 +107,15 @@ class SurveyScreen(screen.Screen):
         """Update the survey details panel."""
         details = f"[bold]Title:[/bold] {survey.title}\n\n"
         details += f"[bold]Question:[/bold] {survey.question}\n\n"
-        details += f"[bold]Answer Options:[/bold]\n"
+        details += "[bold]Answer Options:[/bold]\n"
         for i, answer in enumerate(survey.answers, 1):
             details += f"  {i}. {answer}\n"
-        details += f"\n[bold]Multiselect:[/bold] {'Yes' if survey.multiselect else 'No'}\n"
-        details += f"[bold]Allow Freetext:[/bold] {'Yes' if survey.allow_freetext else 'No'}\n"
+        details += (
+            f"\n[bold]Multiselect:[/bold] {'Yes' if survey.multiselect else 'No'}\n"
+        )
+        details += (
+            f"[bold]Allow Freetext:[/bold] {'Yes' if survey.allow_freetext else 'No'}\n"
+        )
         if survey.max_length:
             details += f"[bold]Max Length:[/bold] {survey.max_length}\n"
         self.query_one("#survey-details", widgets.Static).update(details)
@@ -123,7 +125,7 @@ class SurveyScreen(screen.Screen):
     async def action_add_survey(self) -> None:
         """Show the survey dialog and add a new survey."""
         if await self.app.push_screen_wait(
-            SurveyDialog(dbase=self.dbase, survey=None)
+            EditSurveyDialog(dbase=self.dbase, survey=None)
         ):
             self.load_survey_table()
 
@@ -134,9 +136,9 @@ class SurveyScreen(screen.Screen):
         if self._selected_survey_title is None:
             return
         if await self.app.push_screen_wait(
-            SurveyDialog(
-                dbase=self.dbase,
-                survey=self._surveys[self._selected_survey_title])
+            EditSurveyDialog(
+                dbase=self.dbase, survey=self._surveys[self._selected_survey_title]
+            )
         ):
             self.load_survey_table()
 
@@ -149,7 +151,7 @@ class SurveyScreen(screen.Screen):
         self.load_survey_table()
 
 
-class SurveyDialog(screen.ModalScreen):
+class EditSurveyDialog(screen.ModalScreen):
     """A dialog for adding or editing surveys."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "survey_screen.tcss"
@@ -169,7 +171,7 @@ class SurveyDialog(screen.ModalScreen):
         self._validator_results = {
             "survey-title-input": None,
             "survey-question-input": None,
-            "survey-max-length-input": None
+            "survey-max-length-input": None,
         }
 
     def compose(self) -> app.ComposeResult:
@@ -189,20 +191,20 @@ class SurveyDialog(screen.ModalScreen):
                         "Add a short title that describes the surveys. "
                         "Titles must be unique, so ensure this title is different from "
                         "all other survey titles."
+                    ),
                 )
-            )
             yield widgets.Input(
                 value="" if self.survey is None else self.survey.question,
                 placeholder="Question",
                 id="survey-question-input",
                 classes="validated",
                 validators=[validators.NotEmpty()],
-                tooltip=("Enter the survey question.")
+                tooltip=("Enter the survey question."),
             )
             yield widgets.TextArea(
                 text="" if self.survey is None else "\n".join(self.survey.answers),
                 id="survey-answers-text",
-                tooltip=("Enter each possible answer on a separate line.")
+                tooltip=("Enter each possible answer on a separate line."),
             )
             yield widgets.Checkbox(
                 "Allow multiple answers",
@@ -211,14 +213,14 @@ class SurveyDialog(screen.ModalScreen):
                 tooltip=(
                     "Check this box to allow students to select multiple answers "
                     "from the list."
-                )
+                ),
             )
             with containers.Horizontal():
                 freetext_checkbox = widgets.Checkbox(
                     "Allow freetext answer",
                     self.survey is not None and self.survey.allow_freetext,
                     id="survey-freetext-checkbox",
-                    tooltip="Check this box to allow students to type an answer."
+                    tooltip="Check this box to allow students to type an answer.",
                 )
                 yield freetext_checkbox
                 if self.survey is None or self.survey.max_length is None:
@@ -237,7 +239,7 @@ class SurveyDialog(screen.ModalScreen):
                         "if left empty. Has no effect if 'Allow freetext answer' is "
                         "not checked."
                     ),
-                    validators=[validators.IsPositiveInteger()]
+                    validators=[validators.IsPositiveInteger()],
                 )
             yield widgets.Static()
             with containers.Horizontal(classes="dialog-row"):
@@ -268,23 +270,22 @@ class SurveyDialog(screen.ModalScreen):
         add_new = self.survey is None
         for widget_id, val_result in self._validator_results.items():
             if (
-                isinstance(val_result, validation.ValidationResult) and
-                not val_result.is_valid
+                isinstance(val_result, validation.ValidationResult)
+                and not val_result.is_valid
             ):
                 valid = False
                 self.notify(
-                    f"Invalid input for {widget_id}: {val_result.failure_descriptions}")
+                    f"Invalid input for {widget_id}: {val_result.failure_descriptions}"
+                )
         if not valid:
             return
         question = self.query_one("#survey-question-input", widgets.Input).value
         answer_input = self.query_one("#survey-answers-text", widgets.TextArea)
         answers = [answer.strip() for answer in answer_input.text.split("\n")]
-        multiselect = (
-            self.query_one("#survey-multiselect-checkbox", widgets.Checkbox).value
-        )
-        freetext = (
-            self.query_one("#survey-freetext-checkbox", widgets.Checkbox).value
-        )
+        multiselect = self.query_one(
+            "#survey-multiselect-checkbox", widgets.Checkbox
+        ).value
+        freetext = self.query_one("#survey-freetext-checkbox", widgets.Checkbox).value
         max_length_raw = self.query_one("#survey-max-length-input", widgets.Input).value
         if not max_length_raw or max_length_raw is None:
             max_length = None
@@ -300,8 +301,8 @@ class SurveyDialog(screen.ModalScreen):
             answers=answers,
             multiselect=multiselect,
             allow_freetext=freetext,
-            max_length=max_length
-            )
+            max_length=max_length,
+        )
         if add_new:
             success = self.survey.add(self.dbase)
         else:

@@ -6,7 +6,6 @@ import random
 import re
 from typing import ClassVar, Optional, TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from frcattend.model import database
 
@@ -29,7 +28,7 @@ class Student:
                  last_name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                  grad_year INTEGER NOT NULL,
-            deactivated_on TEXT
+            deactivated_on DATE
         );
     """
     active_students_view_def: ClassVar[str] = """
@@ -57,25 +56,30 @@ class Student:
 
         Pass an empty string to student_id to auto-generate a unique ID.
         """
-        if isinstance(deactivated_on, str):
-            deactivated_on = datetime.date.fromisoformat(deactivated_on)
         self.student_id = (
             student_id
             if student_id
             else self.generate_unique_student_id(first_name, last_name, grad_year)
         )
+        match deactivated_on:
+            case None:
+                self.deactivated_on = None
+            case str():
+                self.deactivated_on = datetime.date.fromisoformat(deactivated_on)
+            case datetime.date():
+                self.deactivated_on = deactivated_on
         self.first_name = first_name
         self.last_name = last_name
         self.grad_year = grad_year
         self.email = email
-        self.deactivated_on = deactivated_on
 
     @property
     def deactivated_iso(self) -> Optional[str]:
         """Deactivation date as an iso-formatted string, or None."""
         if self.deactivated_on is None:
             return None
-        return self.deactivated_on.isoformat()
+        else:
+            return self.deactivated_on.isoformat()
 
     @classmethod
     def _clean_name(cls, name: str) -> str:

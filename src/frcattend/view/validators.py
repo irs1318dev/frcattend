@@ -15,7 +15,7 @@ class DateValidator(validation.Validator):
             return self.success()
         except dateutil.parser.ParserError as err:
             return self.failure(str(err))
-        
+
 
 class IsPositiveInteger(validation.Validator):
     """Input value must be convertable to an integer."""
@@ -24,7 +24,7 @@ class IsPositiveInteger(validation.Validator):
         """Input must be a postive integer."""
         if value and value.isdigit() and int(value) > 0:
             return self.success()
-        return self.failure("Must be an integer greater than 0.")       
+        return self.failure("Must be an integer greater than 0.")
 
 
 class IsYear(validation.Validator):
@@ -45,5 +45,3 @@ class NotEmpty(validation.Validator):
         if not value:
             return self.failure("Field cannot be empty.")
         return self.success()
-
-

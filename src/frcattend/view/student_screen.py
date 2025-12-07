@@ -243,8 +243,10 @@ class StudentScreen(screen.Screen):
             student.update(self.dbase)
             self.update_status(success("Student updated successfully."))
             inactive_switch = self.query_one(
-                    "#students-show-inactive-toggle Switch", widgets.Switch)
+                "#students-show-inactive-toggle Switch", widgets.Switch
+            )
             self.load_student_data(inactive_switch.value)
+
         await self.app.push_screen(
             student_dialog.StudentDialog(student=student), callback=on_dialog_closed
         )

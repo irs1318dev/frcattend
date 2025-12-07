@@ -50,7 +50,8 @@ class ScanScreen(screen.Screen):
             raise model.DBaseError("No database file selected.")
         self.dbase = model.DBase(config.settings.db_path)
         self._students = {
-            student.student_id: student for student in model.Student.get_all(self.dbase)
+            student.student_id: student
+            for student in model.Student.get_all(self.dbase, include_inactive=True)
         }
 
     class QrCodeFound(message.Message):
@@ -62,14 +63,14 @@ class ScanScreen(screen.Screen):
         yield widgets.Header()
         with containers.Vertical(id="log-container"):
             yield widgets.Static("Logs", classes="log-title")
-            yield widgets.RichLog(id="attendance-log", highlight=True, markup=True)
+            yield widgets.RichLog(id="attendance-log", highlight=False, markup=True)
         yield widgets.Footer()
 
     def on_mount(self) -> None:
         """Request type of event then start the scanner."""
         self.log_widget = self.query_one("#attendance-log", widgets.RichLog)
         self.app.push_screen(
-            EventTypeDialog(), callback=self.set_event_type_and_start_scanning
+            ChooseTypeAndSurveyDialog(), callback=self.set_event_type_and_start_scanning
         )
 
     def set_event_type_and_start_scanning(
@@ -87,7 +88,8 @@ class ScanScreen(screen.Screen):
         self._checkedin_students = set(
             model.Checkin.get_checkedin_students(self.dbase, today, event_type)
         )
-        self.scan_qr_codes()
+        # Force a small delay to ensure dialog is fully dismissed before camera opens
+        self.set_timer(0.1, self.scan_qr_codes)
 
     @textual.work(exclusive=False)
     async def scan_qr_codes(self) -> None:
@@ -135,23 +137,46 @@ class ScanScreen(screen.Screen):
             self._checkedin_students.add(student_id)
             timestamp = datetime.datetime.now()
             checkin = model.Checkin(
-                checkin_id=-1,
+                checkin_id=0,
                 student_id=student_id,
                 event_type=self.event_type,
                 timestamp=timestamp,
             )
-            checkin_id = checkin.add(self.dbase)
-            if checkin_id is None:
-                self.log_widget.write(
-                    "[ansi_bright_red]Valid QR code, but error recording checkin.\n"
-                    "Please speak to a mentor.[/]"
-                )
-            else:
-                self.log_widget.write(
-                    f"[green]Success: {student_name} "
-                    f"checked in at {timestamp.strftime('%H:%M:%S')}[/]"
-                )
+            checkin.add(self.dbase)
+            self._write_checkin_message(student, checkin)
         self.discard_scanned_code(student_id)
+
+    def _write_checkin_message(
+        self, student: model.Student, checkin: model.Checkin
+    ) -> None:
+        """Get message that's displayed on the screen when a student checks in."""
+        if not checkin.checkin_id:
+            self.log_widget.write(
+                "\n[red]"
+                "************************* ERROR ********************************\n"
+                "** Valid QR code, but error occurred while recording checkin. **\n"
+                "**                 "
+                "[reverse]Please speak to a mentor.[/]                  **\n"
+                "****************************************************************"
+                "[/]\n"
+            )
+            return
+        if student.deactivated_on is None:
+            self.log_widget.write(
+                f"[green]Success: {student.first_name} {student.last_name} "
+                f"checked in at {checkin.timestamp.strftime('%H:%M:%S')}[/]"
+            )
+        else:
+            self.log_widget.write(
+                "\n[yellow]"
+                "*********************** WARNING ***********************************\n"
+                "** Your QR code has been marked as inactive! This is most likely **\n"
+                "** due to not completing all membership requirements.            **\n"
+                "**    [/][reverse]Please speak to Stacy or another mentor.[/]"
+                "[yellow]                   **\n"
+                "*******************************************************************"
+                "[/]\n"
+            )
 
     # Tried using Textual's set_timer method, but that didn't work.
     #   Non-threaded async workers didn't work either. Might be due to
@@ -176,8 +201,8 @@ class ScanScreen(screen.Screen):
         )
 
 
-class EventTypeDialog(screen.ModalScreen[Optional[model.EventType]]):
-    """Select the event type when opening scan attendance screen."""
+class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[model.EventType]]):
+    """Select event type and a survey when opening scan attendance screen."""
 
     def __init__(self) -> None:
         super().__init__()

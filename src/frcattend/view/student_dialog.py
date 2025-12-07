@@ -1,10 +1,11 @@
 """Modal dialog definitions."""
 
-from textual import app, containers, screen, validation, widgets
+from textual import app, containers, screen, widgets
 
 from frcattend import model
 import frcattend.view
 from frcattend.view import validators
+
 
 class StudentDialog(screen.ModalScreen):
     """A dialog for adding or editing student details."""
