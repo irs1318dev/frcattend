@@ -138,7 +138,6 @@ class Survey:
         conn.close()
         return surveys
 
-
 @dataclasses.dataclass
 class Answer:
     """An answer to a survey question."""

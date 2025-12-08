@@ -41,8 +41,23 @@ ModalScreen {
     margin: 0;
 }
 
+.ok-cancel-row {
+    align-horizontal: center;
+    height: 4;
+    margin: 0;
+    dock: bottom;
+
+}
+
 .dialog-row Button {
     margin: 0 1;
+}
+
+.item-details {
+    padding: 1;
+    margin: 1 0 0 0;
+    background: $surface;
+    border: round $accent;
 }
 
 .toolbar {

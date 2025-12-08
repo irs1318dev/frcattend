@@ -1,6 +1,7 @@
 """Turn on camera and scan QR Codes."""
 
 import asyncio
+import dataclasses
 import datetime
 import time
 from typing import cast, Optional
@@ -29,6 +30,8 @@ class ScanScreen(screen.Screen):
     """Displays checking results."""
     event_type: model.EventType
     """Type of event at which we're taking attendance."""
+    survey: Optional[model.Survey]
+    """Students can be asked to complete a survey when they checkin."""
     _checkedin_students: set[str]
     """Recently scanned student IDs."""
     _scanned_students: set[str]
@@ -70,23 +73,24 @@ class ScanScreen(screen.Screen):
         """Request type of event then start the scanner."""
         self.log_widget = self.query_one("#attendance-log", widgets.RichLog)
         self.app.push_screen(
-            ChooseTypeAndSurveyDialog(), callback=self.set_event_type_and_start_scanning
+            ChooseTypeAndSurveyDialog(self.dbase),
+            callback=self.set_event_type_and_start_scanning
         )
 
     def set_event_type_and_start_scanning(
-        self, event_type: Optional[model.EventType]
+        self, result: Optional["DialogResult"]
     ) -> None:
         """Set the event type"""
-        if event_type is None:
+        if result is None or result.event_type is None:
             self.app.pop_screen()
             return
-        self.event_type = event_type
+        self.event_type = result.event_type
         today = datetime.date.today()
-        event = model.Event(today, event_type)
+        event = model.Event(today, result.event_type)
         event.add(self.dbase)
         # Prevent codes from being scanned more than once for same event.
         self._checkedin_students = set(
-            model.Checkin.get_checkedin_students(self.dbase, today, event_type)
+            model.Checkin.get_checkedin_students(self.dbase, today, result.event_type)
         )
         # Force a small delay to ensure dialog is fully dismissed before camera opens
         self.set_timer(0.1, self.scan_qr_codes)
@@ -201,27 +205,84 @@ class ScanScreen(screen.Screen):
         )
 
 
-class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[model.EventType]]):
+@dataclasses.dataclass
+class DialogResult:
+    """The Event type and survey selected in the dialog."""
+    event_type: Optional[model.EventType]
+    survey: Optional[model.Survey]
+
+class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[DialogResult]]):
     """Select event type and a survey when opening scan attendance screen."""
 
-    def __init__(self) -> None:
+    dbase: model.DBase
+    """Manages database."""
+    surveys: dict[str, model.Survey]
+    """Surveys that can be taken with attendance."""
+    _default_survey_status_message: str = "Select a survey to view details"
+    """Message shown when no survey is selected."""
+
+    def __init__(self, dbase: model.DBase) -> None:
         super().__init__()
-        self.title = "Select Event Type"
+        self.title = "[bold]Select Event Type[/]"
+        self.dbase = dbase
+        self.surveys = {
+            survey.title: survey for survey in model.Survey.get_all(self.dbase)
+        }
 
     def compose(self) -> app.ComposeResult:
         """Arrange widgets within the dialog."""
         with containers.Vertical(id="event-type-dialog", classes="modal-dialog"):
-            yield widgets.Label("Event Type")
-            event_options = widgets.OptionList(
-                *[option_list.Option(t.value.title(), id=t) for t in model.EventType],
-                id="event-type-option",
-            )
-            yield event_options
-            with containers.Horizontal(classes="dialog-row"):
+            with containers.Horizontal():
+                with containers.Vertical():
+                    yield widgets.Label("Event Type", classes="emphasis")
+                    event_options = widgets.OptionList(
+                        *[option_list.Option(t.value.title(), id=t) for t in model.EventType],
+                        id="event-type-option",
+                    )
+                    yield event_options
+                    yield widgets.Label("Select a Survey (optional)", classes="emphasis")
+                    yield widgets.Select(
+                        [(survey.title, survey.title) for survey in self.surveys.values()],
+                        allow_blank=True,
+                        prompt="No Survey",
+                        id="attendance-survey-select"
+                    )
+                yield widgets.Static(
+                    self._default_survey_status_message,
+                    id="attendance-survey-details",
+                    classes="item-details"
+                )
+            with containers.Horizontal(classes="ok-cancel-row"):
                 yield widgets.Button("Ok", id="event-type-select-ok-button")
                 yield widgets.Button("Cancel", id="event-type-select-cancel-button")
         type_map = {opt.id: idx for idx, opt in enumerate(event_options.options)}
         event_options.highlighted = type_map[model.EventType.MEETING]
+
+    @textual.on(widgets.Select.Changed, "#attendance-survey-select")
+    def update_survey_details(self, message: widgets.Select.Changed) -> None:
+        """Update the survey details panel."""
+        status_widget = self.query_one("#attendance-survey-details", widgets.Static)
+        if message.value == widgets.Select.BLANK:
+            status_widget.update(self._default_survey_status_message)
+            return
+        survey = self.surveys.get(str(message.value))
+        if survey is None:
+            status_widget.update(self._default_survey_status_message)
+            return
+        details = [
+            f"[bold]Title:[/bold] {survey.title}\n",
+            f"[bold]Question:[/bold] {survey.question}\n",
+            "[bold]Answer Options:[/bold]"
+        ]
+        for i, answer in enumerate(survey.answers, 1):
+            details.append(f"  {i}. {answer}")
+        details.extend([
+            f"\n[bold]Multiselect:[/bold] {'Yes' if survey.multiselect else 'No'}",
+            f"[bold]Allow Freetext:[/bold] {'Yes' if survey.allow_freetext else 'No'}"
+        ])
+        if survey.max_length:
+            details.append(f"[bold]Max Length:[/bold] {survey.max_length}")
+        status_widget.update("\n".join(details))
 
     @textual.on(widgets.Button.Pressed, "#event-type-select-ok-button")
     def on_ok_button_pressed(self) -> None:
@@ -232,7 +293,7 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[model.EventType]]):
             selected_event = cast(
                 model.EventType, event_type_list.options[selected_index].id
             )
-            self.dismiss(selected_event)
+            self.dismiss(DialogResult(selected_event, None))
         else:
             self.dismiss(None)
 

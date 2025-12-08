@@ -9,13 +9,6 @@
     min-height: 5;
 }
 
-#survey-details {
-    padding: 1;
-    margin: 1 0 0 0;
-    background: $surface;
-    border: round $accent;
-}
-
 #survey-dialog {
     width: 80;
     height: 35;

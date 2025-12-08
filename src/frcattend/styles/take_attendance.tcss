@@ -1,5 +1,8 @@
 #event-type-dialog {
-    width: 40;
-    height: 20;
+    width: 100;
+    height: 40;
 }
 
+#attendance-survey-details {
+    width: 50;
+}

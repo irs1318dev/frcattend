@@ -65,6 +65,7 @@ class SurveyScreen(screen.Screen):
             yield widgets.Static(
                 "Select a survey to view details",
                 id="survey-details",
+                classes="item-details"
             )
         yield widgets.Footer()
 
