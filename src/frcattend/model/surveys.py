@@ -208,13 +208,31 @@ class Answer:
 
     def add(self, dbase: "database.DBase", replace: bool = True) -> bool:
         """Add an answer to the answers table."""
-        query = """
-                INSERT INTO answers
-                            (student_id, survey_title, answer_date,
-                            choices, freetext_answer)
-                     VALUES (:student_id, :survey_title, :answer_date,
-                            :choices_json, :freetext_answer);
-        """
+        prior_answers = self.get_by_title_and_student(
+            dbase, self.survey_title, self.student_id
+        )
+        prior_dates = set(answer.answer_date for answer in prior_answers)
+        if (
+            len(prior_answers) == 0 or
+            datetime.date.today() in prior_dates or
+            not replace
+        ):
+            query = """
+                    INSERT INTO answers
+                                (student_id, survey_title, answer_date,
+                                choices, freetext_answer)
+                        VALUES (:student_id, :survey_title, :answer_date,
+                                :choices_json, :freetext_answer);
+            """
+        else:
+            query = """
+                    UPDATE answers
+                       SET answer_date = :answer_date,
+                           choices = :choices_json,
+                           freetext_answer = :freetext_answer
+                     WHERE survey_title = :survey_title AND
+                           student_id = :student_id;
+            """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(query, self.to_dict())
         rowcount = cursor.rowcount
