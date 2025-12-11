@@ -29,6 +29,14 @@ def get_summary() -> str:
     )
     events = model.Event.summary(dbase)
     checkins = model.Checkin.summary(dbase)
+    if checkins["earliest"] is None:
+        earliest_checkin_time = None
+    else:
+        earliest_checkin_time = checkins["earliest"][:19]
+    if checkins["latest"] is None:
+        latest_checkin_time = None
+    else:
+        latest_checkin_time = checkins["latest"][:19]
     summary.extend(
         [
             "## Events and Checkins",
@@ -36,8 +44,9 @@ def get_summary() -> str:
             "| ------------ | ----------- | ------------- | ---------- | ------------ |",
             (
                 f"| {events['total']} | {events['earliest']} "
-                f"| {checkins['earliest'][:19]} | {events['latest']} "
-                f"| {checkins['latest'][:19]} |"
+                f"| {earliest_checkin_time} "
+                f"| {events['latest']} "
+                f"| {latest_checkin_time} |"
             ),
         ]
     )

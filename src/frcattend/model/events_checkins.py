@@ -456,7 +456,7 @@ class Checkin:
     ) -> list["Checkin"]:
         """Get a list of checkin objects for a single student."""
         query = """
-                SELECT checkin_id, student_id, event_type, timestamp, inactive,
+                SELECT checkin_id, student_id, event_type, timestamp, inactive
                   FROM checkins
                  WHERE student_id = ?
               ORDER BY event_date;

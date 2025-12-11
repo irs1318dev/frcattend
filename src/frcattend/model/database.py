@@ -114,6 +114,7 @@ class DBase:
         with self.get_db_connection() as conn:
             conn.execute(students.Student.table_def)
             conn.execute(surveys.Survey.table_def)
+            conn.execute(surveys.Answer.table_def)
             conn.execute(events_checkins.Checkin.table_def)
             conn.execute(events_checkins.Event.table_def)
             conn.execute(students.Student.active_students_view_def)
@@ -161,9 +162,9 @@ class DBase:
         """
         survey_query = """
             INSERT INTO surveys
-                        (title, question, answers, multiselect,
+                        (title, question, choices, multiselect,
                          allow_freetext, max_length, replace)
-                 VALUES (:title, :question, :answers_json, :multiselect,
+                 VALUES (:title, :question, :choices_json, :multiselect,
                          :allow_freetext, :max_length, :replace);
         """
         checkins_query = """
@@ -177,9 +178,9 @@ class DBase:
                  VALUES (:event_date, :event_type, :description);
         """
         # Convert survey data to format expected by the database
-        # The answers field needs to be converted to JSON for storage
+        # The choices field needs to be converted to JSON for storage
         survey_data = [
-            {**survey, "answers_json": json.dumps(survey["answers"])}
+            {**survey, "choices_json": json.dumps(survey["choices"])}
             for survey in db_data_dict.get("surveys", [])
         ]
 

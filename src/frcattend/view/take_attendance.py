@@ -74,7 +74,7 @@ class ScanScreen(screen.Screen):
         self.log_widget = self.query_one("#attendance-log", widgets.RichLog)
         self.app.push_screen(
             ChooseTypeAndSurveyDialog(self.dbase),
-            callback=self.set_event_type_and_start_scanning
+            callback=self.set_event_type_and_start_scanning,
         )
 
     def set_event_type_and_start_scanning(
@@ -125,7 +125,7 @@ class ScanScreen(screen.Screen):
                                     self.dbase,
                                     self,
                                     self.survey,
-                                    self._students[qr_data]
+                                    self._students[qr_data],
                                 )
                             )
                             vcap.release()
@@ -137,13 +137,12 @@ class ScanScreen(screen.Screen):
                 break
         vcap.release()
         cv2.destroyAllWindows()
-        await self.run_action("exit_scan_mode")      
+        await self.run_action("exit_scan_mode")
 
     def restart_scanning(self) -> None:
         """Restart scanning for QR codes."""
         self.log_widget.write("Restarting Scanninig!!!!")
         self.set_timer(0.1, self.scan_qr_codes)  # Timer allows dialog to be dismissed.
-
 
     async def on_scan_screen_qr_code_found(self, message: QrCodeFound) -> None:
         """Add an attendance record to the database."""
@@ -228,8 +227,10 @@ class ScanScreen(screen.Screen):
 @dataclasses.dataclass
 class DialogResult:
     """The Event type and survey selected in the dialog."""
+
     event_type: Optional[model.EventType]
     survey: Optional[model.Survey]
+
 
 class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[DialogResult]]):
     """Select event type and a survey when opening scan attendance screen."""
@@ -256,21 +257,29 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[DialogResult]]):
                 with containers.Vertical():
                     yield widgets.Label("Event Type", classes="emphasis")
                     event_options = widgets.OptionList(
-                        *[option_list.Option(t.value.title(), id=t) for t in model.EventType],
+                        *[
+                            option_list.Option(t.value.title(), id=t)
+                            for t in model.EventType
+                        ],
                         id="event-type-option",
                     )
                     yield event_options
-                    yield widgets.Label("Select a Survey (optional)", classes="emphasis")
+                    yield widgets.Label(
+                        "Select a Survey (optional)", classes="emphasis"
+                    )
                     yield widgets.Select(
-                        [(survey.title, survey.title) for survey in self.surveys.values()],
+                        [
+                            (survey.title, survey.title)
+                            for survey in self.surveys.values()
+                        ],
                         allow_blank=True,
                         prompt="No Survey",
-                        id="attendance-survey-select"
+                        id="attendance-survey-select",
                     )
                 yield widgets.Static(
                     self._default_survey_status_message,
                     id="attendance-survey-details",
-                    classes="item-details"
+                    classes="item-details",
                 )
             with containers.Horizontal(classes="ok-cancel-row"):
                 yield widgets.Button("Ok", id="event-type-select-ok-button")
@@ -292,14 +301,16 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[DialogResult]]):
         details = [
             f"[bold]Title:[/bold] {survey.title}\n",
             f"[bold]Question:[/bold] {survey.question}\n",
-            "[bold]Answer Options:[/bold]"
+            "[bold]Answer Options:[/bold]",
         ]
-        for i, answer in enumerate(survey.answers, 1):
+        for i, answer in enumerate(survey.choices, 1):
             details.append(f"  {i}. {answer}")
-        details.extend([
-            f"\n[bold]Multiselect:[/bold] {'Yes' if survey.multiselect else 'No'}",
-            f"[bold]Allow Freetext:[/bold] {'Yes' if survey.allow_freetext else 'No'}"
-        ])
+        details.extend(
+            [
+                f"\n[bold]Multiselect:[/bold] {'Yes' if survey.multiselect else 'No'}",
+                f"[bold]Allow Freetext:[/bold] {'Yes' if survey.allow_freetext else 'No'}",
+            ]
+        )
         if survey.max_length:
             details.append(f"[bold]Max Length:[/bold] {survey.max_length}")
         status_widget.update("\n".join(details))

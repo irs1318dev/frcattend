@@ -68,7 +68,7 @@ class SurveyScreen(screen.Screen):
             yield widgets.Static(
                 "Select a survey to view details",
                 id="survey-details",
-                classes="item-details"
+                classes="item-details",
             )
         yield widgets.Footer()
 
@@ -111,9 +111,9 @@ class SurveyScreen(screen.Screen):
         """Update the survey details panel."""
         details = f"[bold]Title:[/bold] {survey.title}\n\n"
         details += f"[bold]Question:[/bold] {survey.question}\n\n"
-        details += "[bold]Answer Options:[/bold]\n"
-        for i, answer in enumerate(survey.answers, 1):
-            details += f"  {i}. {answer}\n"
+        details += "[bold]Choices:[/bold]\n"
+        for i, choice in enumerate(survey.choices, 1):
+            details += f"  {i}. {choice}\n"
         details += (
             f"\n[bold]Multiselect:[/bold] {'Yes' if survey.multiselect else 'No'}\n"
         )
@@ -207,9 +207,9 @@ class EditSurveyDialog(screen.ModalScreen):
                 tooltip=("Enter the survey question."),
             )
             yield widgets.TextArea(
-                text="" if self.survey is None else "\n".join(self.survey.answers),
-                id="survey-answers-text",
-                tooltip=("Enter each possible answer on a separate line."),
+                text="" if self.survey is None else "\n".join(self.survey.choices),
+                id="survey-choices-text",
+                tooltip=("Enter each choice on a separate line."),
             )
             with containers.Horizontal(id="survey-freetext-row"):
                 freetext_checkbox = widgets.Checkbox(
@@ -238,11 +238,11 @@ class EditSurveyDialog(screen.ModalScreen):
                     validators=[validators.IsPositiveInteger()],
                 )
             yield widgets.Checkbox(
-                "Allow multiple answers",
+                "Allow student to select multiple choices.",
                 self.survey is not None and self.survey.multiselect,
                 id="survey-multiselect-checkbox",
                 tooltip=(
-                    "Check this box to allow students to select multiple answers "
+                    "Check this box to allow students to select multiple choices "
                     "from the list."
                 ),
             )
@@ -250,7 +250,9 @@ class EditSurveyDialog(screen.ModalScreen):
                 "Replace prior answers",
                 self.survey is not None and self.survey.replace,
                 id="survey-replace-checkbox",
-                tooltip=("Check this box if newer answers should replace older answers.")
+                tooltip=(
+                    "Check this box if newer answers should replace older answers."
+                ),
             )
             yield widgets.Static()
             with containers.Horizontal(classes="ok-cancel-row"):
@@ -291,8 +293,8 @@ class EditSurveyDialog(screen.ModalScreen):
         if not valid:
             return
         question = self.query_one("#survey-question-input", widgets.Input).value
-        answer_input = self.query_one("#survey-answers-text", widgets.TextArea)
-        answers = [answer.strip() for answer in answer_input.text.split("\n")]
+        choice_input = self.query_one("#survey-choices-text", widgets.TextArea)
+        choices = [choice.strip() for choice in choice_input.text.split("\n")]
         multiselect = self.query_one(
             "#survey-multiselect-checkbox", widgets.Checkbox
         ).value
@@ -310,11 +312,11 @@ class EditSurveyDialog(screen.ModalScreen):
         self.survey = model.Survey(
             title=title,
             question=question,
-            answers=answers,
+            choices=choices,
             multiselect=multiselect,
             allow_freetext=freetext,
             max_length=max_length,
-            replace=replace
+            replace=replace,
         )
         if add_new:
             success = self.survey.add(self.dbase)
@@ -348,7 +350,7 @@ class TakeSurveyDialog(screen.ModalScreen):
         dbase: model.DBase,
         scan_screen: "take_attendance.ScanScreen",
         survey: model.Survey,
-        student: model.Student
+        student: model.Student,
     ) -> None:
         """Set database, survey, and student ID for the dialog."""
         super().__init__()
@@ -363,17 +365,16 @@ class TakeSurveyDialog(screen.ModalScreen):
         with containers.Vertical(id="attendance-take-survey", classes="modal-dialog"):
             yield widgets.Static(self.survey.title, id="take-survey-title")
             yield widgets.Label(
-                f"Hello {self.student.first_name}!",
-                id="take-survey-student-name"
+                f"Hello {self.student.first_name}!", id="take-survey-student-name"
             )
             yield widgets.Static(
                 self.survey.question, id="take-survey-question", classes="emphasis"
             )
             if self.survey.multiselect:
-                selections = [(s, s) for s in self.survey.answers]
+                selections = [(s, s) for s in self.survey.choices]
                 yield widgets.SelectionList[str](*selections, id="take-survey-multi")
             else:
-                yield widgets.OptionList(*self.survey.answers, id="take-survey-single")
+                yield widgets.OptionList(*self.survey.choices, id="take-survey-single")
             if self.survey.allow_freetext:
                 yield widgets.Label("Custom Answer", id="take-survey-freetext-label")
                 yield widgets.Input(id="take-survey-freetext")
@@ -392,4 +393,3 @@ class TakeSurveyDialog(screen.ModalScreen):
         """Close the dialog and return to the main screen."""
         self.dismiss()
         self._scan_screen.restart_scanning()
-

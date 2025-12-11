@@ -1,6 +1,7 @@
 """Surveys present a qustion to students when they checkin."""
 
 import dataclasses
+import datetime
 import json
 from typing import Any, ClassVar, Optional, TYPE_CHECKING
 
@@ -8,13 +9,17 @@ if TYPE_CHECKING:
     from frcattend.model import database
 
 
+class SurveyError(Exception):
+    """Error related to surveys and answers."""
+
+
 @dataclasses.dataclass
 class Survey:
-    """A question and a set of possible answers."""
+    """A question and a set of choices."""
 
     title: str
     question: str
-    answers: list[str]
+    choices: list[str]
     multiselect: bool = False
     allow_freetext: bool = False
     max_length: int | None = None
@@ -24,7 +29,7 @@ class Survey:
         CREATE TABLE IF NOT EXISTS surveys (
                   title TEXT PRIMARY KEY,
                question TEXT NOT NULL,
-                answers TEXT NOT NULL,
+                choices TEXT NOT NULL,
             multiselect BOOL NOT NULL,
          allow_freetext BOOL NOT NULL,
              max_length INT,
@@ -36,7 +41,7 @@ class Survey:
         self,
         title: str,
         question: str,
-        answers: list[str] | str,
+        choices: list[str] | str,
         multiselect: bool = False,
         allow_freetext: bool = False,
         max_length: Optional[int] = None,
@@ -45,19 +50,19 @@ class Survey:
         """Convert fields from Sqlite to Python datataypes as needed."""
         self.title = title
         self.question = question
-        if isinstance(answers, str):
-            self.answers = json.loads(answers)
+        if isinstance(choices, str):
+            self.choices = json.loads(choices)
         else:
-            self.answers = answers
+            self.choices = choices
         self.multiselect = multiselect
         self.allow_freetext = allow_freetext
         self.max_length = max_length
         self.replace = replace
 
     @property
-    def answers_json(self) -> str:
+    def choices_json(self) -> str:
         """Convert survey options list to a string containing a JSON array."""
-        return json.dumps(self.answers)
+        return json.dumps(self.choices)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert survey to a dictionary."""
@@ -67,14 +72,14 @@ class Survey:
         """Add a survey to the database."""
         query = """
                 INSERT INTO surveys
-                            (title, question, answers, multiselect,
+                            (title, question, choices, multiselect,
                             allow_freetext, max_length, replace)
-                     VALUES (:title, :question, :answers_json, :multiselect,
+                     VALUES (:title, :question, :choices_json, :multiselect,
                             :allow_freetext, :max_length, :replace);
         """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(
-                query, {**self.to_dict(), "answers_json": self.answers_json}
+                query, {**self.to_dict(), "choices_json": self.choices_json}
             )
         rowcount = cursor.rowcount
         conn.close()
@@ -85,7 +90,7 @@ class Survey:
         query = """
                 UPDATE surveys
                    SET question = :question,
-                       answers = :answers_json,
+                       choices = :choices_json,
                        multiselect = :multiselect,
                        allow_freetext = :allow_freetext,
                        max_length = :max_length,
@@ -94,7 +99,7 @@ class Survey:
         """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(
-                query, {**self.to_dict(), "answers_json": self.answers_json}
+                query, {**self.to_dict(), "choices_json": self.choices_json}
             )
         rowcount = cursor.rowcount
         conn.close()
@@ -117,7 +122,7 @@ class Survey:
     def get_by_title(dbase: "database.DBase", title: str) -> "Survey | None":
         """Get the survey with the givent title, or None if it doesn't exist."""
         query = """
-                SELECT title, question, answers, multiselect,
+                SELECT title, question, choices, multiselect,
                        allow_freetext, max_length, replace
                   FROM surveys
                  WHERE title = :title;
@@ -133,7 +138,7 @@ class Survey:
     def get_all(dbase: "database.DBase") -> list["Survey"]:
         """Retrive all surveys from the database."""
         query = """
-                SELECT title, question, answers, multiselect,
+                SELECT title, question, choices, multiselect,
                        allow_freetext, max_length, replace
                   FROM surveys
               ORDER BY title;
@@ -143,25 +148,126 @@ class Survey:
         conn.close()
         return surveys
 
+
 @dataclasses.dataclass
 class Answer:
     """An answer to a survey question."""
 
     student_id: str
     survey_title: str
-    timestamp: str
-    selected_answers: list[str]
+    answer_date: datetime.date
+    choices: list[str]
     freetext_answer: str | None = None
 
     table_def: ClassVar[str] = """
-        CREATE TABLE IF NOT EXISTS surveys (
+        CREATE TABLE IF NOT EXISTS answers (
              student_id TEXT NOT NULL,
            survey_title TEXT NOT NULL,
-              timestamp DATETIME,
-           awnswer_date DATE GENERATED ALWAYS AS (date(timestamp)) VIRTUAL,
-       selected_answers TEXT NOT NULL,
-        freetext_answer INT NOT NULL,
-            PRIMARY KEY (student_id, survey_title) ON CONFLICT REPLACE,
-            FOREIGN KEY (survey_title REFERENCES surveys (title);
+            answer_date DATE NOT NULL,
+                choices TEXT,
+        freetext_answer INT,
+            PRIMARY KEY (student_id, survey_title, answer_date) ON CONFLICT REPLACE,
+            FOREIGN KEY (survey_title) REFERENCES surveys (title)
         );
     """
+
+    def __init__(
+        self,
+        student_id: str,
+        survey_title: str,
+        answer_date: datetime.date | str,
+        choices: list[str] | str,
+        freetext_answer: str | None = None,
+    ) -> None:
+        """Convert fields from Sqlite to Python datatypes as needed."""
+        self.student_id = student_id
+        self.survey_title = survey_title
+        if isinstance(answer_date, str):
+            self.answer_date = datetime.datetime.fromisoformat(answer_date).date()
+        else:
+            self.answer_date = answer_date
+        if isinstance(choices, str):
+            try:
+                self.choices = json.loads(choices)
+                if not isinstance(self.choices, list):
+                    self.choices = [choices]
+            except json.JSONDecodeError:
+                self.choices = [choices]
+        else:
+            self.choices = choices
+        self.freetext_answer = freetext_answer
+
+    @property
+    def choices_json(self) -> str:
+        """Selected answers as a JSON string."""
+        return json.dumps(self.choices)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert answer object to a dictionary."""
+        return {**dataclasses.asdict(self), "choices_json": self.choices_json}
+
+    def add(self, dbase: "database.DBase", replace: bool = True) -> bool:
+        """Add an answer to the answers table."""
+        query = """
+                INSERT INTO answers
+                            (student_id, survey_title, answer_date,
+                            choices, freetext_answer)
+                     VALUES (:student_id, :survey_title, :answer_date,
+                            :choices_json, :freetext_answer);
+        """
+        with dbase.get_db_connection() as conn:
+            cursor = conn.execute(query, self.to_dict())
+        rowcount = cursor.rowcount
+        conn.close()
+        return rowcount == 1
+
+    def update(self, dbase: "database.DBase") -> bool:
+        """Update the answer in the database."""
+        query = """
+                UPDATE answers
+                   SET choices = :choices_json,
+                       freetext_answer = :freetext_answer
+                 WHERE student_id = :student_id
+                   AND survey_title = :survey_title
+                   AND answer_date = :answer_date;
+        """
+        with dbase.get_db_connection() as conn:
+            cursor = conn.execute(query, self.to_dict())
+        rowcount = cursor.rowcount
+        conn.close()
+        return rowcount == 1
+
+    @staticmethod
+    def get_all(dbase: "database.DBase") -> list["Answer"]:
+        """Retrive all answers from the database."""
+        query = """
+                SELECT student_id, survey_title, answer_date,
+                       choices, freetext_answer
+                  FROM answers
+              ORDER BY survey_title, student_id, answer_date DESC;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        answers = [Answer(**answer) for answer in conn.execute(query)]
+        conn.close()
+        return answers
+
+    @staticmethod
+    def get_by_title_and_student(
+        dbase: "database.DBase", survey_title: str, student_id: str
+    ) -> list["Answer"]:
+        """Get all answers for a specific survey and student."""
+        query = """
+                SELECT student_id, survey_title, answer_date,
+                       choices, freetext_answer
+                  FROM answers
+                 WHERE survey_title = :survey_title
+                   AND student_id = :student_id
+              ORDER BY answer_date DESC;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        cursor = conn.execute(
+            query, {"survey_title": survey_title, "student_id": student_id}
+        )
+        answers = [Answer(**answer) for answer in cursor]
+        conn.close()
+        return answers
