@@ -11,7 +11,7 @@
 
 #survey-dialog {
     width: 80;
-    height: 35;
+    height: 40;
     overflow-y: auto;
 }
 

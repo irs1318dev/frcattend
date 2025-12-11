@@ -162,9 +162,9 @@ class DBase:
         survey_query = """
             INSERT INTO surveys
                         (title, question, answers, multiselect,
-                         allow_freetext, max_length)
+                         allow_freetext, max_length, replace)
                  VALUES (:title, :question, :answers_json, :multiselect,
-                         :allow_freetext, :max_length);
+                         :allow_freetext, :max_length, :replace);
         """
         checkins_query = """
             INSERT INTO checkins

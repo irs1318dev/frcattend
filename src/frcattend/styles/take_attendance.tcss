@@ -6,3 +6,22 @@
 #attendance-survey-details {
     width: 50;
 }
+
+#attendance-take-survey {
+    width: 100;
+    height: 40;
+}
+
+#take-survey-title {
+    padding: 1;
+    background: indigo;
+    width: 100%;
+}
+
+#take-survey-student-name {
+    padding: 1;
+    text-style: bold italic;
+    color: plum;
+}
+
+

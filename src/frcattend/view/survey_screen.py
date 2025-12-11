@@ -1,13 +1,16 @@
 """Create, edit, and view surveys."""
 
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import textual
-from textual import app, binding, containers, screen, validation, widgets
+from textual import app, binding, containers, message, screen, validation, widgets
 
 from frcattend import config, model
 import frcattend.view
 from frcattend.view import validators
+
+if TYPE_CHECKING:
+    from frcattend.view import take_attendance
 
 
 class SurveyScreen(screen.Screen):
@@ -311,3 +314,73 @@ class EditSurveyDialog(screen.ModalScreen):
         if not success:
             self.notify("Error updating survey.")
         self.dismiss(success)
+
+
+class TakeSurveyDialog(screen.ModalScreen):
+    """Take a survey when checking in."""
+
+    class FinishedSurvey(message.Message):
+        """Send when finishing survey."""
+
+    CSS_PATH = frcattend.view.CSS_FOLDER / "survey_screen.tcss"
+
+    survey: model.Survey
+    """Survey to be edited. None if adding a new survey."""
+    student: model.Student
+    """Student taking the survey."""
+    dbase: model.DBase
+    """Database containing survey data."""
+    _validator_results: dict[str, validation.ValidationResult | None]
+    """Validation results for dialog inputs, [id: ValidationResult]."""
+    _scan_screen: "take_attendance.ScanScreen"
+
+    def __init__(
+        self,
+        dbase: model.DBase,
+        scan_screen: "take_attendance.ScanScreen",
+        survey: model.Survey,
+        student: model.Student
+    ) -> None:
+        """Set database, survey, and student ID for the dialog."""
+        super().__init__()
+        self.dbase = dbase
+        self._scan_screen = scan_screen
+        self.survey = survey
+        self.student = student
+        self._validator_results = {}
+
+    def compose(self) -> app.ComposeResult:
+        """Create and arrange dialog widgets."""
+        with containers.Vertical(id="attendance-take-survey", classes="modal-dialog"):
+            yield widgets.Static(self.survey.title, id="take-survey-title")
+            yield widgets.Label(
+                f"Hello {self.student.first_name}!",
+                id="take-survey-student-name"
+            )
+            yield widgets.Static(
+                self.survey.question, id="take-survey-question", classes="emphasis"
+            )
+            if self.survey.multiselect:
+                selections = [(s, s) for s in self.survey.answers]
+                yield widgets.SelectionList[str](*selections, id="take-survey-multi")
+            else:
+                yield widgets.OptionList(*self.survey.answers, id="take-survey-single")
+            if self.survey.allow_freetext:
+                yield widgets.Label("Custom Answer", id="take-survey-freetext-label")
+                yield widgets.Input(id="take-survey-freetext")
+            with containers.Horizontal(classes="ok-cancel-row"):
+                yield widgets.Button("Ok", id="take-survey-ok-button")
+                yield widgets.Button("Cancel", id="take-survey-cancel-button")
+
+    @textual.on(widgets.Button.Pressed, "#take-survey-cancel-button")
+    def on_cancel_button_pressed(self) -> None:
+        """Close the dialog and return to the main screen."""
+        self.dismiss()
+        self._scan_screen.restart_scanning()
+
+    @textual.on(widgets.Button.Pressed, "#take-survey-ok-button")
+    def on_ok_button_pressed(self) -> None:
+        """Close the dialog and return to the main screen."""
+        self.dismiss()
+        self._scan_screen.restart_scanning()
+

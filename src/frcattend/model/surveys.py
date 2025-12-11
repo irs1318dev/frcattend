@@ -18,15 +18,17 @@ class Survey:
     multiselect: bool = False
     allow_freetext: bool = False
     max_length: int | None = None
+    replace: bool = True
 
     table_def: ClassVar[str] = """
         CREATE TABLE IF NOT EXISTS surveys (
                   title TEXT PRIMARY KEY,
                question TEXT NOT NULL,
                 answers TEXT NOT NULL,
-            multiselect INT NOT NULL,
-         allow_freetext INT NOT NULL,
-             max_length INT
+            multiselect BOOL NOT NULL,
+         allow_freetext BOOL NOT NULL,
+             max_length INT,
+                replace BOOL NOT NULL
         );
     """
 
@@ -35,9 +37,10 @@ class Survey:
         title: str,
         question: str,
         answers: list[str] | str,
-        multiselect: bool | int = False,
-        allow_freetext: bool | int = False,
+        multiselect: bool = False,
+        allow_freetext: bool = False,
         max_length: Optional[int] = None,
+        replace: bool = True,
     ) -> None:
         """Convert fields from Sqlite to Python datataypes as needed."""
         self.title = title
@@ -46,9 +49,10 @@ class Survey:
             self.answers = json.loads(answers)
         else:
             self.answers = answers
-        self.multiselect = bool(multiselect)
-        self.allow_freetext = bool(allow_freetext)
+        self.multiselect = multiselect
+        self.allow_freetext = allow_freetext
         self.max_length = max_length
+        self.replace = replace
 
     @property
     def answers_json(self) -> str:
@@ -64,9 +68,9 @@ class Survey:
         query = """
                 INSERT INTO surveys
                             (title, question, answers, multiselect,
-                            allow_freetext, max_length)
+                            allow_freetext, max_length, replace)
                      VALUES (:title, :question, :answers_json, :multiselect,
-                            :allow_freetext, :max_length);
+                            :allow_freetext, :max_length, :replace);
         """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(
@@ -84,7 +88,8 @@ class Survey:
                        answers = :answers_json,
                        multiselect = :multiselect,
                        allow_freetext = :allow_freetext,
-                       max_length = :max_length
+                       max_length = :max_length,
+                       replace = :replace
                  WHERE title = :title;
         """
         with dbase.get_db_connection() as conn:
@@ -113,7 +118,7 @@ class Survey:
         """Get the survey with the givent title, or None if it doesn't exist."""
         query = """
                 SELECT title, question, answers, multiselect,
-                       allow_freetext, max_length
+                       allow_freetext, max_length, replace
                   FROM surveys
                  WHERE title = :title;
         """
@@ -129,7 +134,7 @@ class Survey:
         """Retrive all surveys from the database."""
         query = """
                 SELECT title, question, answers, multiselect,
-                       allow_freetext, max_length
+                       allow_freetext, max_length, replace
                   FROM surveys
               ORDER BY title;
         """
@@ -152,7 +157,8 @@ class Answer:
         CREATE TABLE IF NOT EXISTS surveys (
              student_id TEXT NOT NULL,
            survey_title TEXT NOT NULL,
-              timestamp TEXT
+              timestamp DATETIME,
+           awnswer_date DATE GENERATED ALWAYS AS (date(timestamp)) VIRTUAL,
        selected_answers TEXT NOT NULL,
         freetext_answer INT NOT NULL,
             PRIMARY KEY (student_id, survey_title) ON CONFLICT REPLACE,

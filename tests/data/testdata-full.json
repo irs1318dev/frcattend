@@ -1134,7 +1134,8 @@
       ],
       "multiselect": false,
       "allow_freetext": false,
-      "max_length": null
+      "max_length": null,
+      "replace": true
     },
     {
       "title": "Dietary Restrictions",
@@ -1149,7 +1150,8 @@
       ],
       "multiselect": true,
       "allow_freetext": true,
-      "max_length": null
+      "max_length": null,
+      "replace": true
     },
     {
       "title": "Subgroup",
@@ -1165,7 +1167,8 @@
       ],
       "multiselect": false,
       "allow_freetext": false,
-      "max_length": null
+      "max_length": null,
+      "replace": false
     }
   ],
   "events": [

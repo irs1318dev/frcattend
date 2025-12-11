@@ -14,7 +14,7 @@ from textual.widgets import option_list
 
 from frcattend import config, model
 import frcattend.view
-from frcattend.view import pw_dialog
+from frcattend.view import pw_dialog, survey_screen
 
 
 class ScanScreen(screen.Screen):
@@ -85,6 +85,7 @@ class ScanScreen(screen.Screen):
             self.app.pop_screen()
             return
         self.event_type = result.event_type
+        self.survey = result.survey
         today = datetime.date.today()
         event = model.Event(today, result.event_type)
         event.add(self.dbase)
@@ -93,7 +94,7 @@ class ScanScreen(screen.Screen):
             model.Checkin.get_checkedin_students(self.dbase, today, result.event_type)
         )
         # Force a small delay to ensure dialog is fully dismissed before camera opens
-        self.set_timer(0.1, self.scan_qr_codes)
+        self.set_timer(0.1, self.scan_qr_codes)  # Timer allows dialog to be dismissed.
 
     @textual.work(exclusive=False)
     async def scan_qr_codes(self) -> None:
@@ -117,13 +118,32 @@ class ScanScreen(screen.Screen):
                 if qr_data not in self._scanned_students:
                     self._scanned_students.add(qr_data)
                     self.post_message(self.QrCodeFound(qr_data))
+                    if self.survey is not None and qr_data in self._students:
+                        if self._students[qr_data].deactivated_on is None:
+                            self.app.push_screen(
+                                survey_screen.TakeSurveyDialog(
+                                    self.dbase,
+                                    self,
+                                    self.survey,
+                                    self._students[qr_data]
+                                )
+                            )
+                            vcap.release()
+                            cv2.destroyAllWindows()
+                            return
                     await asyncio.sleep(0.1)  # Allow log to update.
             wait_key = cv2.waitKey(50)  # Wait 50 miliseconds for key press.
             if wait_key in [ord("q"), ord("Q")]:
                 break
         vcap.release()
         cv2.destroyAllWindows()
-        await self.run_action("exit_scan_mode")
+        await self.run_action("exit_scan_mode")      
+
+    def restart_scanning(self) -> None:
+        """Restart scanning for QR codes."""
+        self.log_widget.write("Restarting Scanninig!!!!")
+        self.set_timer(0.1, self.scan_qr_codes)  # Timer allows dialog to be dismissed.
+
 
     async def on_scan_screen_qr_code_found(self, message: QrCodeFound) -> None:
         """Add an attendance record to the database."""
@@ -288,14 +308,19 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[DialogResult]]):
     def on_ok_button_pressed(self) -> None:
         """Close the dialog and display the QR code scanning screen."""
         event_type_list = self.query_one("#event-type-option", widgets.OptionList)
+        survey_select = self.query_one("#attendance-survey-select", widgets.Select)
         selected_index = event_type_list.highlighted
-        if selected_index is not None:
+        if selected_index is None:
+            self.dismiss(None)  # Don't take attendance if no event type selected.
+        else:
             selected_event = cast(
                 model.EventType, event_type_list.options[selected_index].id
             )
-            self.dismiss(DialogResult(selected_event, None))
-        else:
-            self.dismiss(None)
+            if survey_select.selection is None:
+                survey = None
+            else:
+                survey = self.surveys.get(survey_select.selection)
+            self.dismiss(DialogResult(selected_event, survey))
 
     @textual.on(widgets.Button.Pressed, "#event-type-select-cancel-button")
     def on_cancel_button_pressed(self) -> None:
