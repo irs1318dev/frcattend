@@ -17,7 +17,13 @@
 
 #survey-answers-text {
     height: 10;
+    border: solid blue;
 }
 #survey-max-length-input {
-    width: 30
+    width: 30;
+}
+
+#survey-freetext-row {
+    border: solid green;
+    height: 5;
 }

@@ -122,6 +122,7 @@ class SurveyScreen(screen.Screen):
         )
         if survey.max_length:
             details += f"[bold]Max Length:[/bold] {survey.max_length}\n"
+        details += f"[bold]Replace:[\bold] {'Yes' if survey.replace else 'No'}\n"
         self.query_one("#survey-details", widgets.Static).update(details)
 
     @textual.work
@@ -210,16 +211,7 @@ class EditSurveyDialog(screen.ModalScreen):
                 id="survey-answers-text",
                 tooltip=("Enter each possible answer on a separate line."),
             )
-            yield widgets.Checkbox(
-                "Allow multiple answers",
-                self.survey is not None and self.survey.multiselect,
-                id="survey-multiselect-checkbox",
-                tooltip=(
-                    "Check this box to allow students to select multiple answers "
-                    "from the list."
-                ),
-            )
-            with containers.Horizontal():
+            with containers.Horizontal(id="survey-freetext-row"):
                 freetext_checkbox = widgets.Checkbox(
                     "Allow freetext answer",
                     self.survey is not None and self.survey.allow_freetext,
@@ -245,8 +237,23 @@ class EditSurveyDialog(screen.ModalScreen):
                     ),
                     validators=[validators.IsPositiveInteger()],
                 )
+            yield widgets.Checkbox(
+                "Allow multiple answers",
+                self.survey is not None and self.survey.multiselect,
+                id="survey-multiselect-checkbox",
+                tooltip=(
+                    "Check this box to allow students to select multiple answers "
+                    "from the list."
+                ),
+            )
+            yield widgets.Checkbox(
+                "Replace prior answers",
+                self.survey is not None and self.survey.replace,
+                id="survey-replace-checkbox",
+                tooltip=("Check this box if newer answers should replace older answers.")
+            )
             yield widgets.Static()
-            with containers.Horizontal(classes="dialog-row"):
+            with containers.Horizontal(classes="ok-cancel-row"):
                 yield widgets.Button("Save", variant="primary", id="save-survey")
                 yield widgets.Button("Cancel", id="cancel-survey")
 
@@ -295,6 +302,7 @@ class EditSurveyDialog(screen.ModalScreen):
             max_length = None
         else:
             max_length = int(max_length_raw)
+        replace = self.query_one("#survey-replace-checkbox", widgets.Checkbox).value
         if self.survey is None:
             title = self.query_one("#survey-title-input", widgets.Input).value
         else:
@@ -306,6 +314,7 @@ class EditSurveyDialog(screen.ModalScreen):
             multiselect=multiselect,
             allow_freetext=freetext,
             max_length=max_length,
+            replace=replace
         )
         if add_new:
             success = self.survey.add(self.dbase)
