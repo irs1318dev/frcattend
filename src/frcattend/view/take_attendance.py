@@ -305,12 +305,14 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[DialogResult]]):
         ]
         for i, answer in enumerate(survey.choices, 1):
             details.append(f"  {i}. {answer}")
-        details.extend(
-            [
-                f"\n[bold]Multiselect:[/bold] {'Yes' if survey.multiselect else 'No'}",
-                f"[bold]Allow Freetext:[/bold] {'Yes' if survey.allow_freetext else 'No'}",
-            ]
+        details.append(
+            f"\n[bold]Multiselect:[/bold] {'Yes' if survey.multiselect else 'No'}"
         )
+        details.append(
+            f"[bold]Allow Freetext:[/bold] {'Yes' if survey.allow_freetext else 'No'}"
+        )
+        replace = "Yes" if survey.allow_freetext else "No"
+        details.append(f"[bold]Replace Prior Answer:[/bold] {replace}\n")
         if survey.max_length:
             details.append(f"[bold]Max Length:[/bold] {survey.max_length}")
         status_widget.update("\n".join(details))

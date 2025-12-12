@@ -1,5 +1,6 @@
 """Test the surveys table and Survey objects."""
 
+import copy
 import datetime
 import random
 
@@ -108,7 +109,7 @@ def test_add_new_answer(full_dbase: model.DBase) -> None:
     survey = model.Survey.get_by_title(full_dbase, "Subgroup")
     assert survey is not None
     choice = random.choice(survey.choices)
-    answer = model.Answer(student_id, survey.title, datetime.date.today(), choice)
+    answer = model.Answer(student_id, survey.title, choice, datetime.date.today())
     # Act
     answer.add(full_dbase)
     # Assert
@@ -125,3 +126,64 @@ def test_add_new_answer(full_dbase: model.DBase) -> None:
     assert len(selected_answers) == 1
     assert selected_answers[0] == choice
     assert db_answers[0].freetext_answer is None
+
+
+@pytest.mark.parametrize("replace", [(False, True)])
+def test_replace_answer_on_same_date(full_dbase: model.DBase, replace) -> None:
+    """Add answer for a survey that has already been answered on same date.
+
+    The replace argument should have no effect. Answers on the same day should
+    always be replaced.
+    """
+    # Arrange
+    student_id = random.choice(model.Student.get_all_ids(full_dbase))
+    survey = model.Survey.get_by_title(full_dbase, "Subgroup")
+    assert survey is not None
+    choices = copy.deepcopy(survey.choices)
+    random.shuffle(choices)
+    choice1 = choices.pop()
+    answer = model.Answer(student_id, survey.title, choices=choice1)
+    answer.add(full_dbase)
+    # Act
+    choice2 = choices.pop()
+    answer.choices = [choice2]
+    answer.add(full_dbase, replace=replace)
+    # Assert
+    db_answers = model.Answer.get_by_title_and_student(
+        full_dbase, survey.title, student_id
+    )
+    assert isinstance(db_answers, list)
+    assert len(db_answers) == 1
+    selected_answers = db_answers[0].choices
+    assert selected_answers is not None
+    assert len(selected_answers) == 1
+    assert selected_answers[0] == choice2
+
+
+@pytest.mark.parametrize("replace", [(False, True)])
+def test_add_new_answer_on_later_date(full_dbase: model.DBase, replace) -> None:
+    """Add answer for a survey that was already answered on a prior date."""
+    # Arrange
+    student_id = random.choice(model.Student.get_all_ids(full_dbase))
+    survey = model.Survey.get_by_title(full_dbase, "Subgroup")
+    assert survey is not None
+    choices = copy.deepcopy(survey.choices)
+    random.shuffle(choices)
+    choice1 = choices.pop()
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    answer = model.Answer(student_id, survey.title, choice1, yesterday, choice1)
+    answer.add(full_dbase)
+    # Act
+    choice2 = choices.pop()
+    answer.choices = [choice2]
+    answer.answer_date = datetime.date.today()
+    answer.add(full_dbase, replace=replace)
+    # Assert
+    db_answers = model.Answer.get_by_title_and_student(
+        full_dbase, survey.title, student_id
+    )
+    assert isinstance(db_answers, list)
+    assert len(db_answers) == 1 if replace else 2
+    assert db_answers[-1].choices is not None
+    assert len(db_answers[-1].choices) == 1
+    assert db_answers[-1].choices[0] == choice2

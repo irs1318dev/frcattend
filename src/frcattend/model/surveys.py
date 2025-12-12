@@ -18,12 +18,29 @@ class Survey:
     """A question and a set of choices."""
 
     title: str
+    """Short, unique (a few words) title that identifies the survey."""
     question: str
+    """Question that is presented to students who are taking the survey."""
     choices: list[str]
+    """Possible answers displayed in the multiple-choice section of the survey. """
     multiselect: bool = False
+    """True if students can selected more than one choice."""
     allow_freetext: bool = False
+    """Students are allowed to type their answer into an input box if True."""
     max_length: int | None = None
+    """Max length in characters of freetext answer. None if not allow_freetext."""
     replace: bool = True
+    """If True, older answers are always replaced by the most recent answer.
+    
+    For some surveys, if they are given every year, we'll want to retain
+    answers from prior years in the database (replace=True). For others, we only
+    want the most recent answer.
+
+    Note: If a student answers a survey twice on the same day, only the latest
+    answer is retained, regardless of the value of replace. This allows a
+    student to change their answer if they realized they initially gave an
+    incorrect answer.
+    """
 
     table_def: ClassVar[str] = """
         CREATE TABLE IF NOT EXISTS surveys (
@@ -175,17 +192,25 @@ class Answer:
         self,
         student_id: str,
         survey_title: str,
-        answer_date: datetime.date | str,
         choices: list[str] | str,
+        answer_date: datetime.date | str | None = None,
         freetext_answer: str | None = None,
     ) -> None:
         """Convert fields from Sqlite to Python datatypes as needed."""
         self.student_id = student_id
         self.survey_title = survey_title
-        if isinstance(answer_date, str):
-            self.answer_date = datetime.datetime.fromisoformat(answer_date).date()
-        else:
-            self.answer_date = answer_date
+        match answer_date:
+            case None:
+                self.answer_date = datetime.date.today()
+            case str():
+                self.answer_date = datetime.datetime.fromisoformat(answer_date).date()
+            case datetime.date():
+                self.answer_date = answer_date
+            case _:
+                raise SurveyError(
+                    "Invalid answer_date argument. "
+                    "Must be None, datetime.date, or ISO date as string."
+                )
         if isinstance(choices, str):
             try:
                 self.choices = json.loads(choices)
@@ -212,11 +237,7 @@ class Answer:
             dbase, self.survey_title, self.student_id
         )
         prior_dates = set(answer.answer_date for answer in prior_answers)
-        if (
-            len(prior_answers) == 0 or
-            datetime.date.today() in prior_dates or
-            not replace
-        ):
+        if len(prior_answers) == 0 or self.answer_date in prior_dates or not replace:
             query = """
                     INSERT INTO answers
                                 (student_id, survey_title, answer_date,

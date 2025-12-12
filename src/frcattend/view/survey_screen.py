@@ -1,9 +1,11 @@
 """Create, edit, and view surveys."""
 
+import datetime
 from typing import Optional, TYPE_CHECKING
 
 import textual
 from textual import app, binding, containers, message, screen, validation, widgets
+from textual.widgets import option_list
 
 from frcattend import config, model
 import frcattend.view
@@ -122,7 +124,8 @@ class SurveyScreen(screen.Screen):
         )
         if survey.max_length:
             details += f"[bold]Max Length:[/bold] {survey.max_length}\n"
-        details += f"[bold]Replace:[\bold] {'Yes' if survey.replace else 'No'}\n"
+        replace = "Yes" if survey.allow_freetext else "No"
+        details += f"[bold]Replace Prior Answer:[/bold] {replace}\n"
         self.query_one("#survey-details", widgets.Static).update(details)
 
     @textual.work
@@ -374,7 +377,8 @@ class TakeSurveyDialog(screen.ModalScreen):
                 selections = [(s, s) for s in self.survey.choices]
                 yield widgets.SelectionList[str](*selections, id="take-survey-multi")
             else:
-                yield widgets.OptionList(*self.survey.choices, id="take-survey-single")
+                options = [option_list.Option(s, id=s) for s in self.survey.choices]
+                yield widgets.OptionList(*options, id="take-survey-single")
             if self.survey.allow_freetext:
                 yield widgets.Label("Custom Answer", id="take-survey-freetext-label")
                 yield widgets.Input(id="take-survey-freetext")
@@ -390,6 +394,29 @@ class TakeSurveyDialog(screen.ModalScreen):
 
     @textual.on(widgets.Button.Pressed, "#take-survey-ok-button")
     def on_ok_button_pressed(self) -> None:
+        if self.survey.multiselect:
+            selector = self.query_one("#take-survey-multi", widgets.SelectionList)
+            choices: list[str] = selector.selected
+        else:
+            option_list = self.query_one("#take-survey-single", widgets.OptionList)
+            highlighted = option_list.highlighted_option
+            if highlighted is None or highlighted.id is None:
+                choices = []
+            else:
+                choices = [highlighted.id]
+        if self.survey.allow_freetext:
+            freetext_input = self.query_one("#take-survey-freetext", widgets.Input)
+            freetext = freetext_input.value if freetext_input.value else None
+        else:
+            freetext = None
         """Close the dialog and return to the main screen."""
+        answer = model.Answer(
+            self.student.student_id,
+            self.survey.title,
+            choices,
+            datetime.datetime.today(),
+            freetext_answer=freetext,
+        )
+        answer.add(self.dbase)
         self.dismiss()
         self._scan_screen.restart_scanning()
