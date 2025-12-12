@@ -51,13 +51,31 @@ class FrcAttend(app.App):
                     tooltip="Scan some QR Codes!",
                 )
                 yield widgets.Button(
-                    "Manage Students",
+                    "Students",
                     id="main-manage-students",
                     tooltip="Get a new student's info and generate a QR code.",
                 )
-                yield widgets.Button("View Attendance Records", id="main-view-records")
-                yield widgets.Button("Manage Events", id="main-manage-events")
-                yield widgets.Button("Manage Surveys", id="main-manage-surveys")
+                yield widgets.Button(
+                    "Attendance by Student",
+                    id="main-view-records",
+                    tooltip = (
+                        "View the number of checkins and "
+                        "events attended for each student."
+                    )
+                )
+                yield widgets.Button(
+                    "Attendance by Event",
+                    id="main-manage-events",
+                    tooltip=(
+                        "View the number of checkins and students that attended "
+                        "each event."
+                    )
+                )
+                yield widgets.Button(
+                    "Surveys",
+                    id="main-manage-surveys",
+                    tooltip="Create and edit surveys."
+                )
 
         # Database Controls
         with containers.VerticalGroup(classes="pane"):
@@ -74,9 +92,23 @@ class FrcAttend(app.App):
                     id="main-create-database",
                     classes="attend-main",
                 )
-                yield widgets.Button("Select Database", id="main-select-database")
-                yield widgets.Button("Export", id="main-export-database")
-                yield widgets.Button("Import", id="main-import-database")
+                yield widgets.Button(
+                    "Select Database",
+                    id="main-select-database",
+                    tooltip="Connect to a different database file."
+                )
+                yield widgets.Button(
+                    "Export",
+                    id="main-export-database",
+                    tooltip=(
+                        "Export attendance data to an Excel spreadsheet or JSON file."
+                    )
+                )
+                yield widgets.Button(
+                    "Import",
+                    id="main-import-database",
+                    tooltip="Import data from a JSON file."
+                )
 
         # Configuration Controls
         with containers.VerticalGroup(classes="pane"):
@@ -89,10 +121,12 @@ class FrcAttend(app.App):
                 yield widgets.Button(
                     "Create New Settings File",
                     id="main-create-settings",
+                    tooltip="ADVANCED: Create a new settings file (.toml)."
                 )
                 yield widgets.Button(
                     "Select Settings File",
                     id="main-select-settings",
+                    tooltip="Select a different settings file."
                 )
         # yield widgets.Label(
         #     "Nothing to see here!", id="main-status-message", classes="debug"
