@@ -5,6 +5,8 @@ import dataclasses
 import datetime
 import enum
 import functools
+import json
+import hashlib
 import pathlib
 import shutil
 import tomllib
@@ -21,6 +23,7 @@ class ConfigError(Exception):
     class ErrorType(enum.Enum):
         NOT_A_FILE = 1
         PATH_DOES_NOT_EXIST = 2
+        INVALID_GOOGLE_SERVICE_ACCOUNT = 3
 
     error_type: ErrorType
 
@@ -35,24 +38,49 @@ class Settings:
     """Configuration data for frcattend application.
 
     password_hash is a SHA256 hash created with the hashlib library. The
-    default password is 1318.
+    default password is 1318. See the hash_password function below for more
+    details.
     """
 
     db_path: Optional[pathlib.Path] = None
+    """Filesystem path to Sqlite database file with student and attendance data."""
     config_path: Optional[pathlib.Path] = None
+    """Filesystem path to TOML configuration file."""
     qr_code_dir: Optional[pathlib.Path] = None
+    """Filesystem path to folder where QR codes are written."""
     schoolyear_start_month_and_day: tuple[int, int] = (9, 1)
+    """Date on which next academic year starts.
+    
+    Team events before this date are counted in the prior academic year.
+    """
     build_start_month_and_day: tuple[int, int] = (1, 1)
+    """Date on which build season starts.
+    
+    Used for calculating attendance during build and competition season.
+    """
     password_hash: Optional[str] = (
         "095eaa09cd36d1f1e7a963c9ad618edab13f466882c9027ab81ffc18b0eb727e"  # 1318
     )
+    """Sets the password for opening application and leaving QR code scan mode."""
     camera_number: int = 0
-    smtp_server: Optional[str] = None
-    smtp_port: int = 465
-    smtp_username: Optional[str] = None
-    smtp_password: Optional[str] = None
-    email_sender_name: Optional[str] = None
+    """Identifies which camera on computer is used for scanning QR codes.
+    
+    Camera 0 is front facing camera on Windows OS.
+    """
     sender_email: Optional[str] = None
+    """Gmail email address used to send QR codes to students."""
+    email_sender_name: Optional[str] = None
+    """User-friendly app name that appears on QR code emails."""
+    smtp_server: Optional[str] = None
+    """Gmail credentials."""
+    smtp_port: int = 465
+    """Gmail credentials."""
+    smtp_username: Optional[str] = None
+    """Gmail credentials."""
+    smtp_password: Optional[str] = None
+    """Gmail credentials."""
+    google_service_account: Optional[dict[str, str]] = None
+    """Authentication credentials for connecting to Google worksheets."""
 
     @functools.cached_property
     def schoolyear_start_date(self) -> datetime.date:
@@ -125,12 +153,23 @@ class Settings:
         with open(self.config_path, "rb") as toml_file:
             file_settngs = tomllib.load(toml_file)
         for setting_name, value in file_settngs.items():
-            if setting_name in app_settings:
-                if setting_name == "qr_code_dir" and setting_name is not None:
-                    self.qr_code_dir = self._convert_path_to_absolute(value)
-                elif isinstance(value, str) and value.lower() in ["", "none", "null"]:
-                    value = None
-                else:
+            match setting_name:
+                case "qr_code_dir":
+                    if setting_name is not None and value is not None:
+                        self.qr_code_dir = self._convert_path_to_absolute(value)
+                case "google_service_account":
+                    if isinstance(value, str):
+                        self.google_service_account = json.loads(value)
+                    else:
+                        raise ConfigError(
+                            "Invalid Google service account data.",
+                            ConfigError.ErrorType.INVALID_GOOGLE_SERVICE_ACCOUNT
+                        )
+                case _:
+                    if setting_name not in app_settings:
+                        return
+                    if isinstance(value, str) and value.lower() in ["", "none", "null"]:
+                        value = None
                     setattr(self, setting_name, value)
 
     def create_new_config_file(self, config_path: pathlib.Path) -> None:
@@ -146,3 +185,12 @@ class Settings:
 # to as a Singleton pattern, because there is only a single instance of the
 # Settings class.
 settings = Settings()
+
+
+def hash_password(pw: str) -> str:
+    """Calculate the sha256 hash of a password.
+    
+    Put the resulting hash code in the config.toml file to use the password in
+    the attendance application.
+    """
+    return hashlib.sha256(pw.encode("utf-8")).hexdigest()

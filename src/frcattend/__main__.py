@@ -55,6 +55,15 @@ def build_parser() -> argparse.ArgumentParser:
     sync_parser.add_argument(
         "db_path", type=pathlib.Path, help="Path to attendance Sqlite file."
     )
+
+    pw_parser = subparsers.add_parser(
+        "pw-hash", help="Create a password hash for the coniguration TOML file."
+    )
+    pw_parser.set_defaults(func=hash_password)
+    pw_parser.add_argument(
+        "password", help="Password to be hashed."
+    )
+
     return parser
 
 
@@ -80,6 +89,11 @@ def sync_data(args: argparse.Namespace) -> None:
         print("Syncing attendance data!")
         # updater.backup_database_file()
         updater.insert_attendance_info()
+
+
+def hash_password(args: argparse.Namespace) -> None:
+    """Hash a password."""
+    rich.print(config.hash_password(args.password))
 
 
 def to_absolute_path(path: pathlib.Path) -> pathlib.Path:
