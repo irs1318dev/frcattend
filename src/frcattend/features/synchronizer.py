@@ -11,18 +11,96 @@ from google.oauth2 import service_account
 import gspread
 import gspread.utils
 
-from frcattend import model
+from frcattend import config, model
 
 
 # TODO: Check attendance name from roster.
 # TODO: Provide command-line feedback to user.
 
 
-class RosterError(Exception):
+class SynchronizerError(Exception):
     """Error when attempting to update student roster."""
 
+class GoogleWorkbook:
+    """Connect to a Google Workbook."""
 
-class SheetUpdater:
+    spreadsheet: gspread.spreadsheet.Spreadsheet
+    """Google spreadsheet that holds student roster."""
+    roster_sheet: gspread.worksheet.Worksheet
+    """Worksheet that contains the roster information."""
+    sheet_key: str
+    """Alpha-numeric string that uniquely identifies Google Sheet."""
+    dbase: model.DBase
+    """Sqlite database that contains student attendance data."""
+    _credentials: service_account.Credentials
+    """Information required to connect to Google Sheet roster."""
+    _client: gspread.Client
+    """An object that's used to connect to Google accounts."""
+
+    def __init__(self, dbase: model.DBase, sheet_key: str) -> None:
+        """Initialize from settings in config file."""
+        if config.settings.google_service_account is None:
+            raise SynchronizerError(
+                "google_service_account not defined in config TOML file.")
+        self._credentials = self._get_credentials(
+            config.settings.google_service_account)
+        self.sheet_key = sheet_key
+        self.client = gspread.authorize(self._credentials)
+        self.spreadsheet = self.client.open_by_key(self.sheet_key)
+        self.dbase = dbase
+
+    @staticmethod
+    def _get_credentials(
+        account_data: str | dict[str, str],
+    ) -> service_account.Credentials:
+        """Load Google service account credientials from the database."""
+        if isinstance(account_data, str):
+            account_data = json.loads(account_data)
+        credentials = service_account.Credentials.from_service_account_info(
+            account_data
+        )
+        scope = [
+            "https://spreadsheets.google.com/feeds",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        return credentials.with_scopes(scope)
+
+    @property
+    def worksheet_titles(self) -> list[str]:
+        """List of worksheet titles."""
+        return [sheet.title for sheet in self.spreadsheet.worksheets()]
+    
+    def rowcol_to_a1(self, row: int, col: int) -> str:
+        """Convert row and column numbers to A1 spreadsheet notation."""
+        return gspread.utils.rowcol_to_a1(row, col)
+
+
+
+class Synchronizer:
+    """Upload and download data to and from Google workbook."""
+
+    workbook: GoogleWorkbook
+    """Google workbook that contains attendance data."""
+
+    def __init__(self, ) -> None:
+        """Connect to Google workbook identifyed in sync_sheet_key setting."""
+        if config.settings.db_path is None:
+            raise SynchronizerError(
+                "db_path is undefined in config TOML file. Cannot connect to database.")
+        if config.settings.sync_sheet_key is None:
+            raise SynchronizerError(
+                "sync_sheet_key undefined in config TOML file. "
+                "Cannot connect to Google workbook."
+        )
+        dbase = model.DBase(config.settings.db_path)
+        self.workbook = GoogleWorkbook(dbase, config.settings.sync_sheet_key)
+
+    def upload_and_replace(self) -> None:
+        """Upload all attendance data to workbook, replacing all prior data."""
+
+
+
+class RosterUpdater:
     """Connect to and update Google Sheet roster."""
 
     spreadsheet: gspread.spreadsheet.Spreadsheet
@@ -151,7 +229,7 @@ class SheetUpdater:
         roster_gyears = self.get_mapped_col_data("grad_year")
         roster_ids = []
         if roster_lnames is None or roster_fnames is None or roster_gyears is None:
-            raise RosterError("Unable to read data from Google roster")
+            raise SynchronizerError("Unable to read data from Google roster")
         for last_name, first_name, grad_year in zip(
             roster_lnames, roster_fnames, roster_gyears
         ):

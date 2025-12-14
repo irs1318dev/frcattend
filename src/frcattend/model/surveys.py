@@ -203,7 +203,7 @@ class Answer:
             case None:
                 self.answer_date = datetime.date.today()
             case str():
-                self.answer_date = datetime.datetime.fromisoformat(answer_date).date()
+                self.answer_date = datetime.date.fromisoformat(answer_date)
             case datetime.date():
                 self.answer_date = answer_date
             case _:
@@ -226,10 +226,17 @@ class Answer:
     def choices_json(self) -> str:
         """Selected answers as a JSON string."""
         return json.dumps(self.choices)
+    
+    @property
+    def iso_date(self) -> str:
+        """Event date as an iso-formatted string."""
+        return self.answer_date.strftime("%Y-%m-%d")
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert answer object to a dictionary."""
-        return {**dataclasses.asdict(self), "choices_json": self.choices_json}
+        """Convert answer object to a JSON-serializable dictionary."""
+        ans_dict = {**dataclasses.asdict(self), "choices_json": self.choices_json}
+        ans_dict["answer_date"] = self.iso_date
+        return ans_dict
 
     def add(self, dbase: "database.DBase", replace: bool = True) -> bool:
         """Add an answer to the answers table."""

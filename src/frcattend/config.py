@@ -80,7 +80,18 @@ class Settings:
     smtp_password: Optional[str] = None
     """Gmail credentials."""
     google_service_account: Optional[dict[str, str]] = None
-    """Authentication credentials for connecting to Google worksheets."""
+    """Authentication credentials for connecting to Google worksheets.
+
+    Credentials are downloaded as a JSON file. Paste the contents of the JSON
+    file into a TOML multiline string.
+    
+    IMPORTANT: Use TOML multiline, literal syntax (''') to add Google
+    service account data to TOML config file. The literal syntax ignores escape
+    charactes and allows the string to contain double quotes (essntial for
+    JSON strings). See https://toml.io/en/
+    """
+    sync_sheet_key: Optional[str] = None
+    """Key to Google sheet used for syncing data between different computers."""
 
     @functools.cached_property
     def schoolyear_start_date(self) -> datetime.date:

@@ -414,7 +414,7 @@ class TakeSurveyDialog(screen.ModalScreen):
             self.student.student_id,
             self.survey.title,
             choices,
-            datetime.datetime.today(),
+            datetime.date.today(),
             freetext_answer=freetext,
         )
         answer.add(self.dbase)

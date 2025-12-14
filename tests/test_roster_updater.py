@@ -16,7 +16,8 @@ import pathlib
 import pytest
 import rich  # noqa: F401
 
-from frcattend.model import database, roster
+from frcattend.features import synchronizer
+from frcattend.model import database
 
 TEST_PATH = pathlib.Path(__file__).parent
 DATA_PATH = TEST_PATH / "data"
@@ -24,13 +25,13 @@ OUTPUT_PATH = TEST_PATH / "output"
 SETTINGS_PATH = DATA_PATH / "private" / "test-roster-settings.yaml"
 
 # Comment following line to run tests.
-pytestmark = pytest.mark.skip(reason="Roster update tests are slow.")
+# pytestmark = pytest.mark.skip(reason="Roster update tests are slow.")
 
 
 def test_open_settings_and_authorization(full_dbase) -> None:
     """Import Google Sheet settings."""
     # Act
-    updater = roster.SheetUpdater(SETTINGS_PATH, full_dbase)
+    updater = synchronizer.RosterUpdater(SETTINGS_PATH, full_dbase)
     # Arrange
     assert isinstance(updater.roster_sheet_name, str)
     assert updater.roster_sheet_name
@@ -39,7 +40,7 @@ def test_open_settings_and_authorization(full_dbase) -> None:
 def test_update_student_ids(full_dbase: database.DBase) -> None:
     """Update the attendance IDs in the test Google sheet."""
     # Arrange
-    updater = roster.SheetUpdater(SETTINGS_PATH, full_dbase)
+    updater = synchronizer.RosterUpdater(SETTINGS_PATH, full_dbase)
     # Act
     updater.insert_student_ids()
     # Assert
@@ -49,7 +50,7 @@ def test_update_student_ids(full_dbase: database.DBase) -> None:
 def test_update_attendance_data(full_dbase: database.DBase) -> None:
     """Send attendance data to the roster."""
     # Arrange
-    updater = roster.SheetUpdater(SETTINGS_PATH, full_dbase)
+    updater = synchronizer.RosterUpdater(SETTINGS_PATH, full_dbase)
     # Act
     updater.insert_student_ids()
     updater.insert_attendance_info()
@@ -64,7 +65,7 @@ def test_db_backup(full_dbase: database.DBase) -> None:
     test won't pass.
     """
     # Arrange
-    updater = roster.SheetUpdater(SETTINGS_PATH, full_dbase)
+    updater = synchronizer.RosterUpdater(SETTINGS_PATH, full_dbase)
     print()
     # Act
     updater.backup_database_file()

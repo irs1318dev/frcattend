@@ -39,7 +39,7 @@ def convert_to_date(val: bytes | None) -> datetime.date | None:
     """Convert Sqlite event_date strings to EventType objects."""
     if val is None:
         return None
-    return datetime.date.fromisoformat(val.decode())
+    return datetime.datetime.fromisoformat(val.decode()).date()
 
 
 def adapt_from_datetime(val: datetime.datetime | None) -> str | None:
@@ -134,6 +134,9 @@ class DBase:
         ]
         db_data["surveys"] = [
             survey.to_dict() for survey in surveys.Survey.get_all(self)
+        ]
+        db_data["answers"] = [
+            [answer.to_dict() for answer in surveys.Answer.get_all(self)]
         ]
         event_data = [event.to_dict() for event in events_checkins.Event.get_all(self)]
         excluded_columns = ["event_id", "day_of_week"]
