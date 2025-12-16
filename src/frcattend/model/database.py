@@ -136,7 +136,7 @@ class DBase:
             survey.to_dict() for survey in surveys.Survey.get_all(self)
         ]
         db_data["answers"] = [
-            [answer.to_dict() for answer in surveys.Answer.get_all(self)]
+            answer.to_dict() for answer in surveys.Answer.get_all(self)
         ]
         event_data = [event.to_dict() for event in events_checkins.Event.get_all(self)]
         excluded_columns = ["event_id", "day_of_week"]
@@ -163,13 +163,6 @@ class DBase:
                  VALUES (:student_id, :first_name, :last_name, :email, :grad_year,
                         :deactivated_on);
         """
-        survey_query = """
-            INSERT INTO surveys
-                        (title, question, choices, multiselect,
-                         allow_freetext, max_length, replace)
-                 VALUES (:title, :question, :choices_json, :multiselect,
-                         :allow_freetext, :max_length, :replace);
-        """
         checkins_query = """
             INSERT INTO checkins
                         (student_id, event_type, timestamp, inactive)
@@ -180,19 +173,38 @@ class DBase:
                         (event_date, event_type, description)
                  VALUES (:event_date, :event_type, :description);
         """
+        survey_query = """
+            INSERT INTO surveys
+                        (title, question, choices, multiselect,
+                         allow_freetext, max_length, replace)
+                 VALUES (:title, :question, :choices_json, :multiselect,
+                         :allow_freetext, :max_length, :replace);
+        """
+        answers_query = """
+                    INSERT INTO answers
+                                (student_id, survey_title, answer_date,
+                                choices, freetext_answer)
+                        VALUES (:student_id, :survey_title, :answer_date,
+                                :choices_json, :freetext_answer);
+        """
         # Convert survey data to format expected by the database
         # The choices field needs to be converted to JSON for storage
         survey_data = [
             {**survey, "choices_json": json.dumps(survey["choices"])}
             for survey in db_data_dict.get("surveys", [])
         ]
+        answer_data = [
+            {**answer, "choices_json": json.dumps(answer["choices"])}
+            for answer in db_data_dict.get("answers", [])
+        ]
 
         with self.get_db_connection() as conn:
             conn.executemany(student_query, db_data_dict["students"])
-            conn.executemany(survey_query, survey_data)
             conn.executemany(event_query, db_data_dict["events"])
         with conn:
             conn.executemany(checkins_query, db_data_dict["checkins"])
+            conn.executemany(survey_query, survey_data)
+            conn.executemany(answers_query, answer_data)
         conn.close()
 
     def get_database_file_info(self) -> DbInfo:

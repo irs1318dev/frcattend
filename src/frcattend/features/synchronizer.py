@@ -74,8 +74,6 @@ class GoogleWorkbook:
         """Convert row and column numbers to A1 spreadsheet notation."""
         return gspread.utils.rowcol_to_a1(row, col)
 
-
-
 class Synchronizer:
     """Upload and download data to and from Google workbook."""
 
@@ -95,9 +93,82 @@ class Synchronizer:
         dbase = model.DBase(config.settings.db_path)
         self.workbook = GoogleWorkbook(dbase, config.settings.sync_sheet_key)
 
-    def upload_and_replace(self) -> None:
-        """Upload all attendance data to workbook, replacing all prior data."""
+    def write_db_to_workbook(
+        self,
+        db_data: dict[str, list[dict[str, Any]]]
+    ) -> dict[str, int]:
+        """Write contents of attendance database to a Google workbook.
+        
+        Args:
+            db_data: A dictionary produced by
+                frcattend.model.database.DBase.to_dict(). Every key is a table
+                name and every value is a list of table rows. Each row is a
+                row-oritented dictionary with format
+                {column_name: column_value}.
 
+        Returns:
+            A dictionary of table names and the number of rows written for each
+            table.
+        """
+        return {
+            table_name: self.write_table_to_sheet(table_name, table_data)
+            for table_name, table_data in db_data.items()
+        }
+
+    def write_table_to_sheet(
+        self,
+        table_name: str,
+        table_data: list[dict[str, Any]]
+    ) -> int:
+        """Write a database table to a Google Sheets worksheet.
+
+        Args:
+            table_name: The name of the SQL table with the data that will be
+                written to the Google sheet.
+            table_data: The data from the SQL table, as a row-oriented list of
+                dictionaries of the form {col_name: col_value}.
+        
+        Returns:
+            The number of rows of data that are written to the sheet.
+
+        ### Assumptions
+        * Every row of table_data contains all columns. No rows have missing
+          columns.
+        * Every field value in table_data is JSON-serializable. 
+        """
+        col_names = list(table_data[0].keys())
+        sheet_data: list[list[Any] | dict[str, Any]] = [col_names]
+        for row in table_data:
+            sheet_data.append([
+                json.dumps(row[col_name]) if isinstance(row[col_name], (list, dict))
+                else row[col_name]
+                for col_name in col_names
+            ])
+
+        if len(table_data) < 1:
+            raise ValueError("table_data list cannot be empty.")
+        if table_name in self.workbook.worksheet_titles:
+            current_sheet = self._backup_and_clear_sheet(table_name)
+        else:
+            current_sheet = self.workbook.spreadsheet.add_worksheet(
+                table_name, rows=len(table_data), cols=len(table_data[0])
+            )
+        current_sheet.update(sheet_data)
+        return len(sheet_data)
+    
+    def _backup_and_clear_sheet(self, table_name: str) -> gspread.Worksheet:
+        """Backup existing sheet with title table_name and clear contents."""
+        current_sheet = self.workbook.spreadsheet.worksheet(table_name)
+        backup_sheet_name = table_name + "_bu"
+        if backup_sheet_name in self.workbook.worksheet_titles:
+            self.workbook.spreadsheet.del_worksheet(
+                self.workbook.spreadsheet.worksheet(backup_sheet_name)
+            )
+        self.workbook.spreadsheet.duplicate_sheet(
+            current_sheet.id, new_sheet_name=backup_sheet_name
+        )
+        current_sheet.clear()
+        return current_sheet
 
 
 class RosterUpdater:
