@@ -8,6 +8,7 @@ import shutil
 import pytest
 
 from frcattend import config, model
+from frcattend.features import sync
 
 
 TEST_FOLDER = pathlib.Path(__file__).parent
@@ -84,3 +85,22 @@ def attendance_test_data() -> dict[str, list]:
     with open(DATA_FOLDER / "testdata-full.json") as jfile:
         test_data = json.load(jfile)
     return test_data
+
+
+@pytest.fixture
+def empty_synchro(settings: config.Settings) -> sync.Synchronizer:
+    """A Synchronizer that points to an empty spreadsheet."""
+    synchro = sync.Synchronizer()
+    synchro.clear_all_sheets()
+    return synchro
+
+
+@pytest.fixture
+def full_synchro(
+    empty_synchro: sync.Synchronizer,
+    full_dbase: model.DBase
+) -> sync.Synchronizer:
+    """A synchronizer that points to a full spreadsheet."""
+    data = full_dbase.to_dict()
+    empty_synchro.write_db_to_workbook(data)
+    return empty_synchro

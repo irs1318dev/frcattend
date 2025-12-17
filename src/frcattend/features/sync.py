@@ -18,6 +18,9 @@ from frcattend import config, model
 # TODO: Provide command-line feedback to user.
 
 
+
+
+
 class SynchronizerError(Exception):
     """Error when attempting to update student roster."""
 
@@ -74,13 +77,14 @@ class GoogleWorkbook:
         """Convert row and column numbers to A1 spreadsheet notation."""
         return gspread.utils.rowcol_to_a1(row, col)
 
+
 class Synchronizer:
     """Upload and download data to and from Google workbook."""
 
     workbook: GoogleWorkbook
     """Google workbook that contains attendance data."""
 
-    def __init__(self, ) -> None:
+    def __init__(self) -> None:
         """Connect to Google workbook identifyed in sync_sheet_key setting."""
         if config.settings.db_path is None:
             raise SynchronizerError(
@@ -92,6 +96,11 @@ class Synchronizer:
         )
         dbase = model.DBase(config.settings.db_path)
         self.workbook = GoogleWorkbook(dbase, config.settings.sync_sheet_key)
+
+    def add_log_sheet(self) -> None:
+        """Add a worksheet to log activities."""
+        if "log" not in self.workbook.worksheet_titles:
+            self.workbook.spreadsheet.add_worksheet("log", rows=10, cols=10)
 
     def write_db_to_workbook(
         self,
@@ -169,6 +178,33 @@ class Synchronizer:
         )
         current_sheet.clear()
         return current_sheet
+    
+    def read_sheet(self, table_name: str) -> list[dict[str, Any]]:
+        """Read the worksheet with title equal to table_name.
+        
+        Returns:
+            A list of row-oritented dictionaries, where each dictionary is one
+            row and the Google worksheet and has the format
+            {column_name: value}.
+
+        ### Assumptions
+        * The title of the worksheet exactly matches the SQL table name.
+        * Row 1 of the google sheet contains column headers.
+        * The column headers exactly match the SQL table column names.
+        """
+        if table_name not in self.workbook.worksheet_titles:
+            raise SynchronizerError(
+                f"Table {table_name} is missing from Google workbook.")
+        worksheet = self.workbook.spreadsheet.worksheet(table_name)
+        return worksheet.get_all_records(default_blank=None)
+    
+    def clear_all_sheets(self) -> None:
+        """Remove all worksheets from the spreadsheet."""
+        self.add_log_sheet()
+        for sheet in self.workbook.spreadsheet.worksheets():
+            if sheet.title == "log":
+                continue
+            self.workbook.spreadsheet.del_worksheet(sheet)
 
 
 class RosterUpdater:

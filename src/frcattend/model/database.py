@@ -153,7 +153,7 @@ class DBase:
         return db_data
 
     def load_from_dict(
-        self, db_data_dict: dict[str, list[dict[str, str | int | None]]]
+        self, db_data_dict: dict[str, list[dict[str, Any]]]
     ) -> None:
         """Import data into the Sqlite database."""
         student_query = """

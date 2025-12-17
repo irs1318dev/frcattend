@@ -6,7 +6,7 @@ import pathlib
 import rich
 
 from frcattend import config
-from frcattend.features import synchronizer
+from frcattend.features import sync
 from frcattend.model import database
 import frcattend.view.app
 
@@ -81,7 +81,7 @@ def sync_data(args: argparse.Namespace) -> None:
     config_path = to_absolute_path(args.config_path)
     db_path = to_absolute_path(args.db_path)
     dbase = database.DBase(db_path)
-    updater = synchronizer.RosterUpdater(config_path, dbase)
+    updater = sync.RosterUpdater(config_path, dbase)
     rich.print(args)
     if args.student_ids:
         print("updating Student IDs")
