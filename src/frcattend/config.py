@@ -174,7 +174,7 @@ class Settings:
                     else:
                         raise ConfigError(
                             "Invalid Google service account data.",
-                            ConfigError.ErrorType.INVALID_GOOGLE_SERVICE_ACCOUNT
+                            ConfigError.ErrorType.INVALID_GOOGLE_SERVICE_ACCOUNT,
                         )
                 case _:
                     if setting_name not in app_settings:
@@ -200,7 +200,7 @@ settings = Settings()
 
 def hash_password(pw: str) -> str:
     """Calculate the sha256 hash of a password.
-    
+
     Put the resulting hash code in the config.toml file to use the password in
     the attendance application.
     """

@@ -61,9 +61,7 @@ def build_parser() -> argparse.ArgumentParser:
         "pw-hash", help="Create a password hash for the coniguration TOML file."
     )
     pw_parser.set_defaults(func=hash_password)
-    pw_parser.add_argument(
-        "password", help="Password to be hashed."
-    )
+    pw_parser.add_argument("password", help="Password to be hashed.")
 
     return parser
 

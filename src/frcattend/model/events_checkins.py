@@ -19,9 +19,9 @@ import dataclasses
 import datetime
 import enum
 import sqlite3
-
 from typing import Any, ClassVar, Optional, TYPE_CHECKING
 
+from frcattend.model import abstract
 
 if TYPE_CHECKING:
     from frcattend.model import database
@@ -63,13 +63,14 @@ class EventUpateError(Exception):
 
 
 @dataclasses.dataclass
-class Event:
+class Event(abstract.TableDef):
     """An event at which we record attendance."""
 
     event_date: datetime.date
     event_type: EventType
     description: Optional[str]
 
+    table_name: ClassVar[str] = "events"
     table_def: ClassVar[str] = """
         CREATE TABLE IF NOT EXISTS events (
             event_date DATE NOT NULL,
@@ -321,12 +322,13 @@ class Event:
 
 
 @dataclasses.dataclass
-class Checkin:
+class Checkin(abstract.TableDef):
     checkin_id: int
     student_id: str
     event_type: EventType
     timestamp: datetime.datetime
 
+    table_name: ClassVar[str] = "checkins"
     table_def: ClassVar[str] = """
         CREATE TABLE IF NOT EXISTS checkins (
             checkin_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -415,6 +417,18 @@ class Checkin:
         conn.close()
         self.checkin_id = 0 if checkin_id is None else checkin_id
         return self.checkin_id
+    
+    @classmethod
+    def get_nongenerated_columns(cls, dbase) -> list[str]:
+        """Remove 'checkin_id' from list of nongenerated columns.
+        
+        The checkin_id column is an auto-generated primary key that should not
+        be exported or imported.
+        """
+        return [
+            col for col in super().get_nongenerated_columns(dbase)
+            if col != "checkin_id"
+        ]
 
     @staticmethod
     def get_all(dbase: "database.DBase") -> list["Checkin"]:

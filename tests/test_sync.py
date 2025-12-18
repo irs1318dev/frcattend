@@ -21,8 +21,7 @@ def test_connect_to_sheet(settings: config.Settings) -> None:
 
 
 def test_write_surveys(
-    empty_synchro: sync.Synchronizer,
-    full_dbase: model.DBase
+    empty_synchro: sync.Synchronizer, full_dbase: model.DBase
 ) -> None:
     """Write the surveys table to the synchro sheet."""
     # Arrange
@@ -32,16 +31,10 @@ def test_write_surveys(
     assert num_rows > 0
 
 
-def test_write_db(
-    empty_synchro: sync.Synchronizer,
-    full_dbase: model.DBase
-) -> None:
+def test_write_db(empty_synchro: sync.Synchronizer, full_dbase: model.DBase) -> None:
     """Write the surveys table to the synchro sheet."""
     # Arrange
     data = full_dbase.to_dict()
     # Act
     write_result = empty_synchro.write_db_to_workbook(data)
     assert isinstance(write_result, dict)
-
-
-    

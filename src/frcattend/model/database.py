@@ -10,7 +10,7 @@ import sqlite3
 from typing import Any
 
 
-from frcattend.model import events_checkins, students, surveys
+from frcattend.model import abstract, events_checkins, students, surveys
 
 
 class DBaseError(Exception):
@@ -84,9 +84,15 @@ class DBase:
 
     db_path: pathlib.Path
     """Path to Sqlite database."""
+    tables: list[type[abstract.TableDef]]
+    """SQL table definitions."""
 
     def __init__(self, db_path: pathlib.Path, create_new: bool = False) -> None:
         """Set database path."""
+        self.tables = [
+            students.Student, events_checkins.Event, events_checkins.Checkin,
+            surveys.Survey, surveys.Answer
+        ]
         self.db_path = db_path
         if create_new:
             if self.db_path.exists():
@@ -99,6 +105,7 @@ class DBase:
             if not db_path.exists():
                 raise DBaseError(f"Database file at {db_path} does not exist.")
 
+
     def get_db_connection(self, as_dict=False) -> sqlite3.Connection:
         """Get connection to the SQLite database. Create DB if it doesn't exist."""
         conn = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
@@ -109,16 +116,25 @@ class DBase:
         conn.execute("PRAGMA foreign_keys = ON;")
         return conn
 
-    def create_tables(self):
+    def create_tables(self) -> None:
         """Creates the database tables if they don't already exist."""
         with self.get_db_connection() as conn:
-            conn.execute(students.Student.table_def)
-            conn.execute(surveys.Survey.table_def)
-            conn.execute(surveys.Answer.table_def)
-            conn.execute(events_checkins.Checkin.table_def)
-            conn.execute(events_checkins.Event.table_def)
-            conn.execute(students.Student.active_students_view_def)
+            for tabledef in self.tables:
+                conn.execute(tabledef.table_def)
         conn.close()
+
+    def get_schema(self) -> dict[str, list[str]]:
+        """Get information about the database's tables and columns.
+        
+        The schema does not include generated columns, like auto-incremented
+        primary keys or dates that are generated from timestamps. The schema
+        represents the minimum set of columns that fully defines the attendance
+        dataset with no duplication.
+        """
+        return {
+            tabledef.table_name: tabledef.get_nongenerated_columns(self)
+            for tabledef in self.tables
+        }
 
     def to_dict(self) -> dict[str, list[dict[str, str | int | None]]]:
         """Save database contents to a JSON file.
@@ -152,9 +168,7 @@ class DBase:
         ]
         return db_data
 
-    def load_from_dict(
-        self, db_data_dict: dict[str, list[dict[str, Any]]]
-    ) -> None:
+    def load_from_dict(self, db_data_dict: dict[str, list[dict[str, Any]]]) -> None:
         """Import data into the Sqlite database."""
         student_query = """
             INSERT INTO students

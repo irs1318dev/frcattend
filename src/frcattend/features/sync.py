@@ -18,11 +18,9 @@ from frcattend import config, model
 # TODO: Provide command-line feedback to user.
 
 
-
-
-
 class SynchronizerError(Exception):
     """Error when attempting to update student roster."""
+
 
 class GoogleWorkbook:
     """Connect to a Google Workbook."""
@@ -44,9 +42,11 @@ class GoogleWorkbook:
         """Initialize from settings in config file."""
         if config.settings.google_service_account is None:
             raise SynchronizerError(
-                "google_service_account not defined in config TOML file.")
+                "google_service_account not defined in config TOML file."
+            )
         self._credentials = self._get_credentials(
-            config.settings.google_service_account)
+            config.settings.google_service_account
+        )
         self.sheet_key = sheet_key
         self.client = gspread.authorize(self._credentials)
         self.spreadsheet = self.client.open_by_key(self.sheet_key)
@@ -72,7 +72,7 @@ class GoogleWorkbook:
     def worksheet_titles(self) -> list[str]:
         """List of worksheet titles."""
         return [sheet.title for sheet in self.spreadsheet.worksheets()]
-    
+
     def rowcol_to_a1(self, row: int, col: int) -> str:
         """Convert row and column numbers to A1 spreadsheet notation."""
         return gspread.utils.rowcol_to_a1(row, col)
@@ -88,12 +88,13 @@ class Synchronizer:
         """Connect to Google workbook identifyed in sync_sheet_key setting."""
         if config.settings.db_path is None:
             raise SynchronizerError(
-                "db_path is undefined in config TOML file. Cannot connect to database.")
+                "db_path is undefined in config TOML file. Cannot connect to database."
+            )
         if config.settings.sync_sheet_key is None:
             raise SynchronizerError(
                 "sync_sheet_key undefined in config TOML file. "
                 "Cannot connect to Google workbook."
-        )
+            )
         dbase = model.DBase(config.settings.db_path)
         self.workbook = GoogleWorkbook(dbase, config.settings.sync_sheet_key)
 
@@ -103,11 +104,10 @@ class Synchronizer:
             self.workbook.spreadsheet.add_worksheet("log", rows=10, cols=10)
 
     def write_db_to_workbook(
-        self,
-        db_data: dict[str, list[dict[str, Any]]]
+        self, db_data: dict[str, list[dict[str, Any]]]
     ) -> dict[str, int]:
         """Write contents of attendance database to a Google workbook.
-        
+
         Args:
             db_data: A dictionary produced by
                 frcattend.model.database.DBase.to_dict(). Every key is a table
@@ -125,9 +125,7 @@ class Synchronizer:
         }
 
     def write_table_to_sheet(
-        self,
-        table_name: str,
-        table_data: list[dict[str, Any]]
+        self, table_name: str, table_data: list[dict[str, Any]]
     ) -> int:
         """Write a database table to a Google Sheets worksheet.
 
@@ -136,23 +134,26 @@ class Synchronizer:
                 written to the Google sheet.
             table_data: The data from the SQL table, as a row-oriented list of
                 dictionaries of the form {col_name: col_value}.
-        
+
         Returns:
             The number of rows of data that are written to the sheet.
 
         ### Assumptions
         * Every row of table_data contains all columns. No rows have missing
           columns.
-        * Every field value in table_data is JSON-serializable. 
+        * Every field value in table_data is JSON-serializable.
         """
         col_names = list(table_data[0].keys())
         sheet_data: list[list[Any] | dict[str, Any]] = [col_names]
         for row in table_data:
-            sheet_data.append([
-                json.dumps(row[col_name]) if isinstance(row[col_name], (list, dict))
-                else row[col_name]
-                for col_name in col_names
-            ])
+            sheet_data.append(
+                [
+                    json.dumps(row[col_name])
+                    if isinstance(row[col_name], (list, dict))
+                    else row[col_name]
+                    for col_name in col_names
+                ]
+            )
 
         if len(table_data) < 1:
             raise ValueError("table_data list cannot be empty.")
@@ -164,7 +165,7 @@ class Synchronizer:
             )
         current_sheet.update(sheet_data)
         return len(sheet_data)
-    
+
     def _backup_and_clear_sheet(self, table_name: str) -> gspread.Worksheet:
         """Backup existing sheet with title table_name and clear contents."""
         current_sheet = self.workbook.spreadsheet.worksheet(table_name)
@@ -178,10 +179,10 @@ class Synchronizer:
         )
         current_sheet.clear()
         return current_sheet
-    
+
     def read_sheet(self, table_name: str) -> list[dict[str, Any]]:
         """Read the worksheet with title equal to table_name.
-        
+
         Returns:
             A list of row-oritented dictionaries, where each dictionary is one
             row and the Google worksheet and has the format
@@ -194,10 +195,20 @@ class Synchronizer:
         """
         if table_name not in self.workbook.worksheet_titles:
             raise SynchronizerError(
-                f"Table {table_name} is missing from Google workbook.")
+                f"Table {table_name} is missing from Google workbook."
+            )
         worksheet = self.workbook.spreadsheet.worksheet(table_name)
         return worksheet.get_all_records(default_blank=None)
     
+    # def read_workbook(self) -> dict[str, list[dict[str, Any]]]:
+    #     """Read all sheets in the workbook.
+        
+    #     Returns:
+    #         A dictionary of the format
+    #         {table_name: list[{column_name: value, ...}], ...}.
+    #     """
+
+
     def clear_all_sheets(self) -> None:
         """Remove all worksheets from the spreadsheet."""
         self.add_log_sheet()

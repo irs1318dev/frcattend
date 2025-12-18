@@ -5,6 +5,8 @@ import datetime
 import json
 from typing import Any, ClassVar, Optional, TYPE_CHECKING
 
+from frcattend.model import abstract
+
 if TYPE_CHECKING:
     from frcattend.model import database
 
@@ -14,7 +16,7 @@ class SurveyError(Exception):
 
 
 @dataclasses.dataclass
-class Survey:
+class Survey(abstract.TableDef):
     """A question and a set of choices."""
 
     title: str
@@ -42,6 +44,7 @@ class Survey:
     incorrect answer.
     """
 
+    table_name: ClassVar[str] = "surveys"
     table_def: ClassVar[str] = """
         CREATE TABLE IF NOT EXISTS surveys (
                   title TEXT PRIMARY KEY,
@@ -167,7 +170,7 @@ class Survey:
 
 
 @dataclasses.dataclass
-class Answer:
+class Answer(abstract.TableDef):
     """An answer to a survey question."""
 
     student_id: str
@@ -176,6 +179,7 @@ class Answer:
     choices: list[str]
     freetext_answer: str | None = None
 
+    table_name: ClassVar[str] = "answers"
     table_def: ClassVar[str] = """
         CREATE TABLE IF NOT EXISTS answers (
              student_id TEXT NOT NULL,
@@ -226,7 +230,7 @@ class Answer:
     def choices_json(self) -> str:
         """Selected answers as a JSON string."""
         return json.dumps(self.choices)
-    
+
     @property
     def iso_date(self) -> str:
         """Event date as an iso-formatted string."""

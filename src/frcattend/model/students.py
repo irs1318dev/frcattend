@@ -6,12 +6,14 @@ import random
 import re
 from typing import ClassVar, Optional, TYPE_CHECKING
 
+from frcattend.model import abstract
+
 if TYPE_CHECKING:
     from frcattend.model import database
 
 
 @dataclasses.dataclass
-class Student:
+class Student(abstract.TableDef):
     """An FRC student."""
 
     student_id: str
@@ -21,6 +23,7 @@ class Student:
     email: str
     deactivated_on: Optional[datetime.date]
 
+    table_name: ClassVar[str] = "students"
     table_def: ClassVar[str] = """
         CREATE TABLE IF NOT EXISTS students (
                 student_id TEXT PRIMARY KEY,

@@ -97,8 +97,7 @@ def empty_synchro(settings: config.Settings) -> sync.Synchronizer:
 
 @pytest.fixture
 def full_synchro(
-    empty_synchro: sync.Synchronizer,
-    full_dbase: model.DBase
+    empty_synchro: sync.Synchronizer, full_dbase: model.DBase
 ) -> sync.Synchronizer:
     """A synchronizer that points to a full spreadsheet."""
     data = full_dbase.to_dict()

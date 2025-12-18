@@ -96,7 +96,6 @@ class StudentsTable(widgets.DataTable):
         ]:
             self.add_column(col[0], key=col[1])
 
-
     def watch_event_key(self) -> None:
         """Add events to the event table."""
         if not self.event_key:

@@ -58,10 +58,10 @@ class FrcAttend(app.App):
                 yield widgets.Button(
                     "Attendance by Student",
                     id="main-view-records",
-                    tooltip = (
+                    tooltip=(
                         "View the number of checkins and "
                         "events attended for each student."
-                    )
+                    ),
                 )
                 yield widgets.Button(
                     "Attendance by Event",
@@ -69,12 +69,12 @@ class FrcAttend(app.App):
                     tooltip=(
                         "View the number of checkins and students that attended "
                         "each event."
-                    )
+                    ),
                 )
                 yield widgets.Button(
                     "Surveys",
                     id="main-manage-surveys",
-                    tooltip="Create and edit surveys."
+                    tooltip="Create and edit surveys.",
                 )
 
         # Database Controls
@@ -95,19 +95,19 @@ class FrcAttend(app.App):
                 yield widgets.Button(
                     "Select Database",
                     id="main-select-database",
-                    tooltip="Connect to a different database file."
+                    tooltip="Connect to a different database file.",
                 )
                 yield widgets.Button(
                     "Export",
                     id="main-export-database",
                     tooltip=(
                         "Export attendance data to an Excel spreadsheet or JSON file."
-                    )
+                    ),
                 )
                 yield widgets.Button(
                     "Import",
                     id="main-import-database",
-                    tooltip="Import data from a JSON file."
+                    tooltip="Import data from a JSON file.",
                 )
 
         # Configuration Controls
@@ -121,12 +121,12 @@ class FrcAttend(app.App):
                 yield widgets.Button(
                     "Create New Settings File",
                     id="main-create-settings",
-                    tooltip="ADVANCED: Create a new settings file (.toml)."
+                    tooltip="ADVANCED: Create a new settings file (.toml).",
                 )
                 yield widgets.Button(
                     "Select Settings File",
                     id="main-select-settings",
-                    tooltip="Select a different settings file."
+                    tooltip="Select a different settings file.",
                 )
         # yield widgets.Label(
         #     "Nothing to see here!", id="main-status-message", classes="debug"
