@@ -120,7 +120,7 @@ class DBase:
         """Creates the database tables if they don't already exist."""
         with self.get_db_connection() as conn:
             for tabledef in self.tables:
-                conn.execute(tabledef.table_def)
+                tabledef.create(conn)
         conn.close()
 
     def get_schema(self) -> dict[str, list[str]]:

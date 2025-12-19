@@ -198,16 +198,43 @@ class Synchronizer:
                 f"Table {table_name} is missing from Google workbook."
             )
         worksheet = self.workbook.spreadsheet.worksheet(table_name)
-        return worksheet.get_all_records(default_blank=None)
+        ws_data = worksheet.get_all_records(default_blank=None)
+        return self._convert_bools(ws_data)
     
-    # def read_workbook(self) -> dict[str, list[dict[str, Any]]]:
-    #     """Read all sheets in the workbook.
+    def _convert_bools(self, table_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Convert "TRUE", and "FALSE" values from Google sheet to Booleans."""
+        for index, row in enumerate(table_data):
+            for col_name, val in row.items():
+                match str(val):
+                    case "TRUE" | "True" | "true":
+                        table_data[index][col_name] = True
+                    case "FALSE" | "False" | "false":
+                        table_data[index][col_name] = False
+        return table_data
+    
+    def read_workbook(
+        self,
+        schema: dict[str, list[str]]
+    ) -> dict[str, list[dict[str, Any]]]:
+        """Read all sheets in the workbook.
         
-    #     Returns:
-    #         A dictionary of the format
-    #         {table_name: list[{column_name: value, ...}], ...}.
-    #     """
+        Returns:
+            A dictionary of the format
+            {table_name: list[{column_name: value, ...}], ...}.
+        """
+        wb_data: dict[str, list[dict[str, Any]]] = {}
+        for table_name in schema:
+            wb_data[table_name] = self.read_sheet(table_name)
+            schema_columns = set(schema[table_name])
+            wb_columns =  set(wb_data[table_name][0].keys())
+            if wb_columns != schema_columns:
+                raise SynchronizerError(
+                    f"Google sheet columns do not match schema for {table_name} table. "
+                    f"Missing sheet columns: ({schema_columns - wb_columns}). "
+                    f"Extra sheet columns: ({wb_columns - schema_columns})."
+                )
 
+        return wb_data       
 
     def clear_all_sheets(self) -> None:
         """Remove all worksheets from the spreadsheet."""

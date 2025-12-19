@@ -4,6 +4,7 @@ import dataclasses
 import datetime
 import random
 import re
+import sqlite3
 from typing import ClassVar, Optional, TYPE_CHECKING
 
 from frcattend.model import abstract
@@ -83,6 +84,12 @@ class Student(abstract.TableDef):
             return None
         else:
             return self.deactivated_on.isoformat()
+        
+    @classmethod
+    def create(cls, conn: sqlite3.Connection) -> None:
+        """Create the table and other associated items (views, indexes, etc.)."""
+        super().create(conn)
+        conn.execute(cls.active_students_view_def)
 
     @classmethod
     def _clean_name(cls, name: str) -> str:

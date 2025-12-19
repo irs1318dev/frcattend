@@ -4,6 +4,7 @@ Table dataclasses defined in other modules should inherit from TableDef.
 """
 
 import abc
+import sqlite3
 from typing import ClassVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -21,6 +22,11 @@ class TableDef(abc.ABC):
     """The SQL name of the table."""
     table_def: ClassVar[str]
     """The CREATE TABLE SQL statement that creates the table."""
+
+    @classmethod
+    def create(cls, conn: sqlite3.Connection) -> None:
+        """Create the table and other associated items (views, indexes, etc.)."""
+        conn.execute(cls.table_def)
 
     @classmethod
     def get_nongenerated_columns(cls, dbase: "database.DBase") -> list[str]:

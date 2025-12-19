@@ -7,9 +7,9 @@ from frcattend import config, model
 from frcattend.features import sync
 
 
-pytestmark = pytest.mark.skip(
-    reason="Prevent exceeding Google sheet rate limits. Run tests one at a time."
-)
+# pytestmark = pytest.mark.skip(
+#     reason="Prevent exceeding Google sheet rate limits. Run tests one at a time."
+# )
 
 
 def test_connect_to_sheet(settings: config.Settings) -> None:
@@ -38,3 +38,19 @@ def test_write_db(empty_synchro: sync.Synchronizer, full_dbase: model.DBase) -> 
     # Act
     write_result = empty_synchro.write_db_to_workbook(data)
     assert isinstance(write_result, dict)
+
+def test_read_db(full_synchro: sync.Synchronizer, empty_database2: model.DBase) -> None:
+    """Read data from the synchro sheet."""
+    # Arrange
+    schema = empty_database2.get_schema()
+    # Act
+    wb_data = full_synchro.read_workbook(schema)
+    empty_database2.load_from_dict(wb_data)
+    # Assert
+    db_data = empty_database2.to_dict()
+    for table_name, min_len in [
+        ("students", 100), ("events", 50), ("checkins", 4000),
+        ("surveys", 2), ("answers", 2)
+    ]:
+        assert len(db_data[table_name]) > min_len
+

@@ -238,7 +238,7 @@ class Answer(abstract.TableDef):
 
     def to_dict(self) -> dict[str, Any]:
         """Convert answer object to a JSON-serializable dictionary."""
-        ans_dict = {**dataclasses.asdict(self), "choices_json": self.choices_json}
+        ans_dict = {**dataclasses.asdict(self), "choices": self.choices_json}
         ans_dict["answer_date"] = self.iso_date
         return ans_dict
 
@@ -254,13 +254,13 @@ class Answer(abstract.TableDef):
                                 (student_id, survey_title, answer_date,
                                 choices, freetext_answer)
                         VALUES (:student_id, :survey_title, :answer_date,
-                                :choices_json, :freetext_answer);
+                                :choices, :freetext_answer);
             """
         else:
             query = """
                     UPDATE answers
                        SET answer_date = :answer_date,
-                           choices = :choices_json,
+                           choices = :choices,
                            freetext_answer = :freetext_answer
                      WHERE survey_title = :survey_title AND
                            student_id = :student_id;

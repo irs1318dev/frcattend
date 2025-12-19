@@ -90,7 +90,7 @@ def test_update_survey(full_dbase: model.DBase) -> None:
 
 
 @pytest.mark.parametrize(
-    "title,success", [("Subgroup", True), ("Favorite Video Game", False)]
+    "title,success", [("2026 Week 1 Competition", True), ("Favorite Video Game", False)]
 )
 def test_delete_survey(full_dbase: model.DBase, title: str, success: bool) -> None:
     """Delete a survey."""

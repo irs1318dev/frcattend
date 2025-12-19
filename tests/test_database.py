@@ -84,7 +84,7 @@ def test_to_dict(full_dbase: model.DBase) -> None:
     # Act
     data = full_dbase.to_dict()
     # Assert
-    tables = ["students", "checkins", "events", "surveys"]
+    tables = ["students", "checkins", "events", "surveys", "answers"]
     assert len(data) == len(tables)
     assert all(col in data for col in tables)
     for table in tables:
