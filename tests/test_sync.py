@@ -1,6 +1,5 @@
 """Test synchronization between local app and Google workbook."""
 
-import pytest
 import rich  # noqa: F401
 
 from frcattend import config, model
@@ -36,8 +35,9 @@ def test_write_db(empty_synchro: sync.Synchronizer, full_dbase: model.DBase) -> 
     # Arrange
     data = full_dbase.to_dict()
     # Act
-    write_result = empty_synchro.write_db_to_workbook(data)
+    write_result = empty_synchro.write_data_to_workbook(data)
     assert isinstance(write_result, dict)
+
 
 def test_read_db(full_synchro: sync.Synchronizer, empty_database2: model.DBase) -> None:
     """Read data from the synchro sheet."""
@@ -49,8 +49,10 @@ def test_read_db(full_synchro: sync.Synchronizer, empty_database2: model.DBase) 
     # Assert
     db_data = empty_database2.to_dict()
     for table_name, min_len in [
-        ("students", 100), ("events", 50), ("checkins", 4000),
-        ("surveys", 2), ("answers", 2)
+        ("students", 100),
+        ("events", 50),
+        ("checkins", 4000),
+        ("surveys", 2),
+        ("answers", 2),
     ]:
         assert len(db_data[table_name]) > min_len
-

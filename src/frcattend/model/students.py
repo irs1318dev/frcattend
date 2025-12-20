@@ -84,7 +84,7 @@ class Student(abstract.TableDef):
             return None
         else:
             return self.deactivated_on.isoformat()
-        
+
     @classmethod
     def create(cls, conn: sqlite3.Connection) -> None:
         """Create the table and other associated items (views, indexes, etc.)."""

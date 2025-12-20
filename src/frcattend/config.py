@@ -24,13 +24,16 @@ class ConfigError(Exception):
         NOT_A_FILE = 1
         PATH_DOES_NOT_EXIST = 2
         INVALID_GOOGLE_SERVICE_ACCOUNT = 3
+        UNDEFINED_SETTING = 4
 
     error_type: ErrorType
+    settings: list[str]
 
     def __init__(self, message: str, error_type: ErrorType) -> None:
         """Set error type."""
         super().__init__(message)
         self.error_type = error_type
+        self.settings = []
 
 
 @dataclasses.dataclass

@@ -1,6 +1,7 @@
 """Tools for working with Google documents."""
 
 import datetime
+import enum
 import json
 import pathlib
 import sqlite3
@@ -21,6 +22,21 @@ from frcattend import config, model
 class SynchronizerError(Exception):
     """Error when attempting to update student roster."""
 
+    class ErrorType(enum.Enum):
+        """Types of errors."""
+
+        ACCESS_DENIED = enum.auto()
+        MISSING_TABLE = enum.auto()
+        COLUMN_MISMATCH = enum.auto()
+
+    error_type: ErrorType
+    """Type of error."""
+
+    def __init__(self, error_type: ErrorType, message: str) -> None:
+        """Specify error type on initialization."""
+        super().__init__(message)
+        self.error_type = error_type
+
 
 class GoogleWorkbook:
     """Connect to a Google Workbook."""
@@ -31,26 +47,33 @@ class GoogleWorkbook:
     """Worksheet that contains the roster information."""
     sheet_key: str
     """Alpha-numeric string that uniquely identifies Google Sheet."""
-    dbase: model.DBase
-    """Sqlite database that contains student attendance data."""
     _credentials: service_account.Credentials
     """Information required to connect to Google Sheet roster."""
     _client: gspread.Client
     """An object that's used to connect to Google accounts."""
 
-    def __init__(self, dbase: model.DBase, sheet_key: str) -> None:
+    def __init__(self, sheet_key: str) -> None:
         """Initialize from settings in config file."""
         if config.settings.google_service_account is None:
-            raise SynchronizerError(
-                "google_service_account not defined in config TOML file."
+            error = config.ConfigError(
+                "google_service_account undefined in config TOML file. "
+                "Cannot connect to Google workbook.",
+                config.ConfigError.ErrorType.UNDEFINED_SETTING,
             )
+            error.settings.append("google_service_account")
+            raise error
         self._credentials = self._get_credentials(
             config.settings.google_service_account
         )
         self.sheet_key = sheet_key
         self.client = gspread.authorize(self._credentials)
-        self.spreadsheet = self.client.open_by_key(self.sheet_key)
-        self.dbase = dbase
+        try:
+            self.spreadsheet = self.client.open_by_key(self.sheet_key)
+        except PermissionError:
+            raise SynchronizerError(
+                SynchronizerError.ErrorType.ACCESS_DENIED,
+                "Permission Error when accessing workheet.",
+            )
 
     @staticmethod
     def _get_credentials(
@@ -83,30 +106,48 @@ class Synchronizer:
 
     workbook: GoogleWorkbook
     """Google workbook that contains attendance data."""
+    dbase: model.DBase
+    """Sqlite database that contains student attendance data."""
 
     def __init__(self) -> None:
         """Connect to Google workbook identifyed in sync_sheet_key setting."""
         if config.settings.db_path is None:
-            raise SynchronizerError(
-                "db_path is undefined in config TOML file. Cannot connect to database."
+            error = config.ConfigError(
+                "db_path is undefined in config TOML file. Cannot connect to database.",
+                config.ConfigError.ErrorType.UNDEFINED_SETTING,
             )
+            error.settings.append("db_path")
+            raise error
         if config.settings.sync_sheet_key is None:
-            raise SynchronizerError(
+            error = config.ConfigError(
                 "sync_sheet_key undefined in config TOML file. "
-                "Cannot connect to Google workbook."
+                "Cannot connect to Google workbook.",
+                config.ConfigError.ErrorType.UNDEFINED_SETTING,
             )
-        dbase = model.DBase(config.settings.db_path)
-        self.workbook = GoogleWorkbook(dbase, config.settings.sync_sheet_key)
+            error.settings.append("sync_sheet_key")
+            raise error
+        self.dbase = model.DBase(config.settings.db_path)
+        self.workbook = GoogleWorkbook(config.settings.sync_sheet_key)
 
     def add_log_sheet(self) -> None:
         """Add a worksheet to log activities."""
         if "log" not in self.workbook.worksheet_titles:
             self.workbook.spreadsheet.add_worksheet("log", rows=10, cols=10)
 
-    def write_db_to_workbook(
+    def upload(self) -> dict[str, int]:
+        """Upload all attendance data to a Google spreadsheet.
+
+        Returns:
+            A dictionary of table names and the number of rows written for each
+            table.
+        """
+        db_data = self.dbase.to_dict()
+        return self.write_data_to_workbook(db_data)
+
+    def write_data_to_workbook(
         self, db_data: dict[str, list[dict[str, Any]]]
     ) -> dict[str, int]:
-        """Write contents of attendance database to a Google workbook.
+        """Write attendance data to a Google workbook.
 
         Args:
             db_data: A dictionary produced by
@@ -143,6 +184,8 @@ class Synchronizer:
           columns.
         * Every field value in table_data is JSON-serializable.
         """
+        if len(table_data) == 0:
+            return 0
         col_names = list(table_data[0].keys())
         sheet_data: list[list[Any] | dict[str, Any]] = [col_names]
         for row in table_data:
@@ -195,12 +238,13 @@ class Synchronizer:
         """
         if table_name not in self.workbook.worksheet_titles:
             raise SynchronizerError(
-                f"Table {table_name} is missing from Google workbook."
+                SynchronizerError.ErrorType.MISSING_TABLE,
+                f"Table {table_name} is missing from Google workbook.",
             )
         worksheet = self.workbook.spreadsheet.worksheet(table_name)
         ws_data = worksheet.get_all_records(default_blank=None)
         return self._convert_bools(ws_data)
-    
+
     def _convert_bools(self, table_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Convert "TRUE", and "FALSE" values from Google sheet to Booleans."""
         for index, row in enumerate(table_data):
@@ -211,13 +255,12 @@ class Synchronizer:
                     case "FALSE" | "False" | "false":
                         table_data[index][col_name] = False
         return table_data
-    
+
     def read_workbook(
-        self,
-        schema: dict[str, list[str]]
+        self, schema: dict[str, list[str]]
     ) -> dict[str, list[dict[str, Any]]]:
         """Read all sheets in the workbook.
-        
+
         Returns:
             A dictionary of the format
             {table_name: list[{column_name: value, ...}], ...}.
@@ -226,15 +269,16 @@ class Synchronizer:
         for table_name in schema:
             wb_data[table_name] = self.read_sheet(table_name)
             schema_columns = set(schema[table_name])
-            wb_columns =  set(wb_data[table_name][0].keys())
+            wb_columns = set(wb_data[table_name][0].keys())
             if wb_columns != schema_columns:
                 raise SynchronizerError(
+                    SynchronizerError.ErrorType.COLUMN_MISMATCH,
                     f"Google sheet columns do not match schema for {table_name} table. "
                     f"Missing sheet columns: ({schema_columns - wb_columns}). "
-                    f"Extra sheet columns: ({wb_columns - schema_columns})."
+                    f"Extra sheet columns: ({wb_columns - schema_columns}).",
                 )
 
-        return wb_data       
+        return wb_data
 
     def clear_all_sheets(self) -> None:
         """Remove all worksheets from the spreadsheet."""
@@ -374,7 +418,10 @@ class RosterUpdater:
         roster_gyears = self.get_mapped_col_data("grad_year")
         roster_ids = []
         if roster_lnames is None or roster_fnames is None or roster_gyears is None:
-            raise SynchronizerError("Unable to read data from Google roster")
+            raise SynchronizerError(
+                SynchronizerError.ErrorType.COLUMN_MISMATCH,
+                "Unable to read data from Google roster",
+            )
         for last_name, first_name, grad_year in zip(
             roster_lnames, roster_fnames, roster_gyears
         ):

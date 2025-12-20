@@ -4,10 +4,10 @@ import json
 import pathlib
 
 import textual
-from textual import app, containers, reactive, widgets
+from textual import app, containers, message, reactive, screen, widgets
 
 from frcattend import config, model
-from frcattend.features import excel, summary
+from frcattend.features import excel, summary, sync
 import frcattend.view
 from frcattend.view import (
     attendance_screen,
@@ -18,6 +18,17 @@ from frcattend.view import (
     survey_screen,
     take_attendance,
 )
+
+
+class EnableUiMessage(message.Message):
+    """Direct the application to enable or disable the UI buttons on the screen."""
+
+    enable: bool
+
+    def __init__(self, enable: bool) -> None:
+        """Set enable status on initialization."""
+        super().__init__()
+        self.enable = enable
 
 
 class FrcAttend(app.App):
@@ -109,6 +120,16 @@ class FrcAttend(app.App):
                     id="main-import-database",
                     tooltip="Import data from a JSON file.",
                 )
+                yield widgets.Button(
+                    "Upload",
+                    id="main-upload-database",
+                    tooltip="Upload data to a Google Sheet.",
+                )
+                yield widgets.Button(
+                    "Download",
+                    id="main-download-database",
+                    tooltip="Download data from a Google Sheet.",
+                )
 
         # Configuration Controls
         with containers.VerticalGroup(classes="pane"):
@@ -128,9 +149,6 @@ class FrcAttend(app.App):
                     id="main-select-settings",
                     tooltip="Select a different settings file.",
                 )
-        # yield widgets.Label(
-        #     "Nothing to see here!", id="main-status-message", classes="debug"
-        # )
         yield widgets.Markdown(summary.get_summary(), id="main-db-summary")
         yield widgets.Footer()
 
@@ -270,6 +288,69 @@ class FrcAttend(app.App):
         )
         await self.app.push_screen(file_selector, _import_data_from_file)
 
+    @textual.on(widgets.Button.Pressed, "#main-upload-database")
+    def upload_database(self):
+        """Prepare to upload attendance data to a Google spreadsheet."""
+        try:
+            synchro = sync.Synchronizer()
+        except config.ConfigError as err:
+            self._notify_config_errors(err)
+            return
+        except sync.SynchronizerError as err:
+            self._notify_synchro_errors(err)
+            return
+        self.set_button_status(enabled=False)
+        self.notify("Starting upload...")
+        self.set_timer(0.1, lambda: self._do_upload(synchro))
+
+    @textual.work
+    async def _do_upload(self, synchro: sync.Synchronizer) -> None:
+        """Upload the database to a Google spreadsheet and show confirm dialog.
+
+        Async work method is needed to allow UI notification to be displayed.
+        """
+        row_counts = synchro.upload()
+        self.set_button_status(enabled=False)
+        confirm_prompt = UploadConfirmation(row_counts)
+        self.push_screen(confirm_prompt)
+
+    def _notify_synchro_errors(self, err: sync.SynchronizerError) -> None:
+        """Notify user of synchronization errors."""
+        if err.error_type == sync.SynchronizerError.ErrorType.ACCESS_DENIED:
+            self.notify(
+                "Access to Google workbook was denied. "
+                "Did you share the workbook with your Google service account?",
+                title="Access Denied!",
+                severity="error",
+            )
+
+    def _notify_config_errors(self, err: config.ConfigError) -> None:
+        """Notify user of missing or invalid configurations settings."""
+        if err.error_type == config.ConfigError.ErrorType.UNDEFINED_SETTING:
+            for setting in err.settings:
+                match setting:
+                    case "db_path":
+                        self.notify(
+                            "You must select a database before uploading attendance "
+                            "data. (db_path)",
+                            title="No Database Selected",
+                            severity="warning",
+                        )
+                    case "google_servie_account":
+                        self.notify(
+                            "Add a Google service account to the settings TOML file. "
+                            "(google_service_account)",
+                            title="No Google Service Account",
+                            severity="warning",
+                        )
+                    case "sync_sheet_key":
+                        self.notify(
+                            "Add synchronizer Google sheet key to the settings TOML "
+                            "file. (sync_sheet_key)",
+                            title="No Synchronizer Google Sheet Key",
+                            severity="warning",
+                        )
+
     @textual.on(widgets.Button.Pressed, "#main-select-settings")
     async def select_settings_file(self):
         """Display a file selection widget for the application settings file.
@@ -346,3 +427,43 @@ class FrcAttend(app.App):
                 )
             case _:
                 return True
+
+    def set_button_status(self, enabled: bool) -> None:
+        """Disable all buttons."""
+        for button in self.query(widgets.Button):
+            button.disabled = not enabled
+
+    @textual.on(EnableUiMessage)
+    def _set_button_status(self, message: EnableUiMessage) -> None:
+        """Enable or disable buttons."""
+        self.set_button_status(enabled=message.enable)
+
+
+class UploadConfirmation(screen.ModalScreen):
+    """Show confirmation for uploading data to Syncro Google Workbook to user."""
+
+    CSS_PATH = frcattend.view.CSS_FOLDER / "root.tcss"
+
+    row_counts: dict[str, int]
+    """Number of records uploaded for each table."""
+
+    def __init__(self, row_counts: dict[str, int]) -> None:
+        """Specify number of uploaded rows on initialization."""
+        super().__init__()
+        self.row_counts = row_counts
+
+    def compose(self) -> app.ComposeResult:
+        """Build the dialog box."""
+        with containers.Vertical(id="upload-confirm-dialog", classes="modal-dialog"):
+            yield widgets.Label("Uploaded Records!", classes="emphasis")
+            markdown = ["# Rows Uploaded"]
+            for table_name, count in self.row_counts.items():
+                markdown.append(f"    * {table_name:>12} {count}")
+            yield widgets.Markdown("\n".join(markdown))
+            yield widgets.Button("Ok", id="confirm-upload", classes="ok-cancel-row")
+
+    @textual.on(widgets.Button.Pressed, "#confirm-upload")
+    def on_button_pressed(self, event: widgets.Button.Pressed) -> None:
+        """Dismiss the dialog."""
+        self.post_message(EnableUiMessage(enable=True))
+        self.dismiss()

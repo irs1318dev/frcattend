@@ -192,13 +192,12 @@ class ScanScreen(screen.Screen):
         else:
             self.log_widget.write(
                 "\n[yellow]"
-                "*********************** WARNING ***********************************\n"
-                "** Your QR code has been marked as inactive! This is most likely **\n"
-                "** due to not completing all membership requirements.            **\n"
-                "**    [/][reverse]Please speak to Stacy or another mentor.[/]"
-                "[yellow]                   **\n"
-                "*******************************************************************"
-                "[/]\n"
+                "** WARNING ***********************************\n"
+                f"** {student.first_name:>12} {student.last_name:<12}\n"
+                "** Your QR code has been marked as inactive! This is most likely\n"
+                "** due to not completing all membership requirements.\n"
+                "**    [/][reverse]Please speak to a mentor.[/][yellow]\n"
+                "**********************************************[/]\n"
             )
 
     # Tried using Textual's set_timer method, but that didn't work.

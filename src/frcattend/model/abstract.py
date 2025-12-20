@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 class TableDef(abc.ABC):
     """A class that represents a database table."""
+
     table_name: ClassVar[str]
     """The SQL name of the table."""
     table_def: ClassVar[str]

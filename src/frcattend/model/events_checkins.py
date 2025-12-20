@@ -417,16 +417,17 @@ class Checkin(abstract.TableDef):
         conn.close()
         self.checkin_id = 0 if checkin_id is None else checkin_id
         return self.checkin_id
-    
+
     @classmethod
     def get_nongenerated_columns(cls, dbase) -> list[str]:
         """Remove 'checkin_id' from list of nongenerated columns.
-        
+
         The checkin_id column is an auto-generated primary key that should not
         be exported or imported.
         """
         return [
-            col for col in super().get_nongenerated_columns(dbase)
+            col
+            for col in super().get_nongenerated_columns(dbase)
             if col != "checkin_id"
         ]
 

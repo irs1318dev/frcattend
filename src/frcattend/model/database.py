@@ -90,8 +90,11 @@ class DBase:
     def __init__(self, db_path: pathlib.Path, create_new: bool = False) -> None:
         """Set database path."""
         self.tables = [
-            students.Student, events_checkins.Event, events_checkins.Checkin,
-            surveys.Survey, surveys.Answer
+            students.Student,
+            events_checkins.Event,
+            events_checkins.Checkin,
+            surveys.Survey,
+            surveys.Answer,
         ]
         self.db_path = db_path
         if create_new:
@@ -104,7 +107,6 @@ class DBase:
         else:
             if not db_path.exists():
                 raise DBaseError(f"Database file at {db_path} does not exist.")
-
 
     def get_db_connection(self, as_dict=False) -> sqlite3.Connection:
         """Get connection to the SQLite database. Create DB if it doesn't exist."""
@@ -125,7 +127,7 @@ class DBase:
 
     def get_schema(self) -> dict[str, list[str]]:
         """Get information about the database's tables and columns.
-        
+
         The schema does not include generated columns, like auto-incremented
         primary keys or dates that are generated from timestamps. The schema
         represents the minimum set of columns that fully defines the attendance

@@ -101,5 +101,5 @@ def full_synchro(
 ) -> sync.Synchronizer:
     """A synchronizer that points to a full spreadsheet."""
     data = full_dbase.to_dict()
-    empty_synchro.write_db_to_workbook(data)
+    empty_synchro.write_data_to_workbook(data)
     return empty_synchro
