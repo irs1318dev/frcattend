@@ -109,3 +109,8 @@ InactiveStudentToggle {
     width: 60;
     height: 24;
 }
+
+#download-confirm-dialog {
+    width: 60;
+    height: 24;
+}

@@ -51,6 +51,8 @@ class Settings:
     """Filesystem path to TOML configuration file."""
     qr_code_dir: Optional[pathlib.Path] = None
     """Filesystem path to folder where QR codes are written."""
+    backup_dir: Optional[pathlib.Path] = None
+    """Filesystem path to folder where database file is backed up."""
     schoolyear_start_month_and_day: tuple[int, int] = (9, 1)
     """Date on which next academic year starts.
     
@@ -171,6 +173,9 @@ class Settings:
                 case "qr_code_dir":
                     if setting_name is not None and value is not None:
                         self.qr_code_dir = self._convert_path_to_absolute(value)
+                case "backup_dir":
+                    if setting_name is not None and value is not None:
+                        self.backup_dir = self._convert_path_to_absolute(value)
                 case "google_service_account":
                     if isinstance(value, str):
                         self.google_service_account = json.loads(value)

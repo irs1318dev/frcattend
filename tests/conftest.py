@@ -33,10 +33,10 @@ def empty_output_folder() -> pathlib.Path:
 
 
 @pytest.fixture()
-def settings(full_dbase: model.DBase) -> config.Settings:
+def settings() -> config.Settings:
     """Get default settings for tests."""
     args = argparse.Namespace(
-        db_path=full_dbase.db_path,
+        db_path=None,
         config_path=CONFIG_PATH,
     )
     config.settings.update_from_args(args)
@@ -44,9 +44,12 @@ def settings(full_dbase: model.DBase) -> config.Settings:
 
 
 @pytest.fixture
-def empty_database(empty_output_folder: pathlib.Path) -> model.DBase:
+def empty_database(
+    empty_output_folder: pathlib.Path, settings: config.Settings
+) -> model.DBase:
     """An empty IrsAttend database, with tables created."""
-    return model.DBase(OUTPUT_FOLDER / "testdatabase.db", create_new=True)
+    settings.db_path = OUTPUT_FOLDER / "testdatabase.db"
+    return model.DBase(settings.db_path, create_new=True)
 
 
 @pytest.fixture
@@ -70,9 +73,12 @@ def noevents_dbase(empty_database: model.DBase) -> model.DBase:
 
 
 @pytest.fixture
-def empty_database2(empty_output_folder: pathlib.Path) -> model.DBase:
+def empty_database2(
+    empty_output_folder: pathlib.Path, settings: config.Settings
+) -> model.DBase:
     """An empty IrsAttend database, with tables created."""
-    return model.DBase(OUTPUT_FOLDER / "testdatabase2.db", create_new=True)
+    settings.db_path = OUTPUT_FOLDER / "testdatabase2.db"
+    return model.DBase(settings.db_path, create_new=True)
 
 
 @pytest.fixture
@@ -88,7 +94,9 @@ def attendance_test_data() -> dict[str, list]:
 
 
 @pytest.fixture
-def empty_synchro(settings: config.Settings) -> sync.Synchronizer:
+def empty_synchro(
+    settings: config.Settings, full_dbase: model.DBase
+) -> sync.Synchronizer:
     """A Synchronizer that points to an empty spreadsheet."""
     synchro = sync.Synchronizer()
     synchro.clear_all_sheets()

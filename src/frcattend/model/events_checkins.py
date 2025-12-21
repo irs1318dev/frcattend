@@ -444,6 +444,19 @@ class Checkin(abstract.TableDef):
         conn.close()
         return checkins
 
+    @staticmethod
+    def get_time_of_last_checkin(dbase: "database.DBase") -> datetime.datetime | None:
+        """Get the date and time of the most recent checkin in the database."""
+        query = "SELECT MAX(timestamp) FROM checkins;"
+        conn = dbase.get_db_connection()
+        max_timestamp = conn.execute(query).fetchone()[0]
+        if max_timestamp is None:  # No checkins in database.
+            tolc = None
+        else:
+            tolc = datetime.datetime.fromisoformat(conn.execute(query).fetchone()[0])
+        conn.close()
+        return tolc
+
     @classmethod
     def get_checkedin_students(
         cls,

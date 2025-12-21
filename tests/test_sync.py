@@ -1,5 +1,6 @@
 """Test synchronization between local app and Google workbook."""
 
+import pytest  # noqa: F401
 import rich  # noqa: F401
 
 from frcattend import config, model
@@ -41,10 +42,8 @@ def test_write_db(empty_synchro: sync.Synchronizer, full_dbase: model.DBase) -> 
 
 def test_read_db(full_synchro: sync.Synchronizer, empty_database2: model.DBase) -> None:
     """Read data from the synchro sheet."""
-    # Arrange
-    schema = empty_database2.get_schema()
     # Act
-    wb_data = full_synchro.read_workbook(schema)
+    wb_data = full_synchro.download()
     empty_database2.load_from_dict(wb_data)
     # Assert
     db_data = empty_database2.to_dict()

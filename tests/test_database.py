@@ -3,6 +3,7 @@
 import datetime
 import json
 import pathlib
+import re
 
 import pytest
 import rich  # noqa: F401
@@ -112,4 +113,39 @@ def test_from_dict(full_dbase: model.DBase, empty_database2: model.DBase) -> Non
 
 def test_get_schema(full_dbase: model.DBase) -> None:
     """Get information about database tables and their columns."""
-    rich.print(full_dbase.get_schema())
+    # Act
+    schema = full_dbase.get_schema()
+    # Assert
+    assert isinstance(schema, dict)
+    for table_name, columns in schema.items():
+        assert isinstance(table_name, str)
+        assert isinstance(columns, list)
+    for table_name in ["students", "events", "checkins", "surveys", "answers"]:
+        assert table_name in schema
+
+
+def test_backup_database(full_dbase: model.DBase) -> None:
+    """Create a backup of the database."""
+    # Act
+    bu_path = full_dbase.backup()
+    # Assert
+    assert bu_path.exists()
+    assert re.search(r"BU_\d{8}_\d{4}\.db", bu_path.name) is not None
+
+
+def test_record_counts(full_dbase: model.DBase) -> None:
+    """Get numbe of records in each table."""
+    # Act
+    counts = full_dbase.get_record_counts()
+    # Assert
+    for table_name in ["students", "events", "checkins", "surveys", "answers"]:
+        assert table_name in counts
+        assert counts[table_name] > 1
+
+
+def test_tolc(full_dbase: model.DBase) -> None:
+    """Get the Time Of Last Checkin from the checkins table."""
+    # Act
+    tolc = model.Checkin.get_time_of_last_checkin(full_dbase)
+    # Assert
+    assert isinstance(tolc, datetime.datetime)

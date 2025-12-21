@@ -7,9 +7,9 @@ import json
 import os
 import pathlib
 import sqlite3
-from typing import Any
+from typing import Any, Callable, Optional
 
-
+from frcattend import config
 from frcattend.model import abstract, events_checkins, students, surveys
 
 
@@ -231,3 +231,50 @@ class DBase:
             modification_time=datetime.datetime.fromtimestamp(file_info.st_mtime),
             creation_time=datetime.datetime.fromtimestamp(file_info.st_birthtime),
         )
+
+    def backup(
+        self,
+        pages: int = 100,
+        status_callback: Optional[Callable[[int, int, int], Any]] = None,
+    ) -> pathlib.Path:
+        """Backup the database file.
+
+        Put the backup in the folder specified by the 'backup_dir' setting in
+        the TOML configuration file. Or if the 'backup_dir' option isn't set,
+        put the backup in the current working directory.
+
+        Use the same filename as the curent database file, but add
+        "BU_YYMMDD_HHMM"
+        """
+        # Set backup path and file name.
+        if config.settings.backup_dir is None:
+            backup_dir = pathlib.Path.cwd()
+        else:
+            backup_dir = config.settings.backup_dir
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.datetime.now().strftime("_BU_%Y%m%d_%H%M")
+        backup_path = backup_dir / (self.db_path.stem + timestamp + ".db")
+        # Backup the database.
+        bu_conn = sqlite3.connect(backup_path)
+        conn = self.get_db_connection()
+        conn.backup(bu_conn, pages=pages, progress=status_callback)
+        bu_conn.commit()
+        bu_conn.close()
+        conn.close()
+        return backup_path
+
+    def get_record_counts(self) -> dict[str, int]:
+        """Get number of records in each table.
+
+        Returns:
+            A dictionary with table names for keys and number of records for
+            values.
+        """
+        return {tdef.table_name: tdef.count(self) for tdef in self.tables}
+
+    def delete_all(self) -> None:
+        """Delete all data from all tables."""
+        with self.get_db_connection() as conn:
+            for tdef in self.tables:
+                tdef.delete_all(conn)
+        conn.close()

@@ -30,6 +30,21 @@ class TableDef(abc.ABC):
         conn.execute(cls.table_def)
 
     @classmethod
+    def delete_all(cls, conn: sqlite3.Connection) -> None:
+        """Delete all data in the table."""
+        with conn:
+            conn.execute(f"DELETE FROM {cls.table_name}")
+
+    @classmethod
+    def count(cls, dbase: "database.DBase") -> int:
+        """Get number of records in table."""
+        query = f"SELECT COUNT(*) FROM {cls.table_name};"
+        conn = dbase.get_db_connection()
+        row_count = conn.execute(query).fetchone()[0]
+        conn.close()
+        return row_count
+
+    @classmethod
     def get_nongenerated_columns(cls, dbase: "database.DBase") -> list[str]:
         """Get list of non-generated columns used when importing and exporting."""
         query = f"PRAGMA table_info({cls.table_name});"

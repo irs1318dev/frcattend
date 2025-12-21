@@ -2,6 +2,7 @@
 
 import json
 import pathlib
+from typing import Any
 
 import textual
 from textual import app, containers, message, reactive, screen, widgets
@@ -289,7 +290,7 @@ class FrcAttend(app.App):
         await self.app.push_screen(file_selector, _import_data_from_file)
 
     @textual.on(widgets.Button.Pressed, "#main-upload-database")
-    def upload_database(self):
+    def upload_database(self) -> None:
         """Prepare to upload attendance data to a Google spreadsheet."""
         try:
             synchro = sync.Synchronizer()
@@ -313,6 +314,13 @@ class FrcAttend(app.App):
         self.set_button_status(enabled=False)
         confirm_prompt = UploadConfirmation(row_counts)
         self.push_screen(confirm_prompt)
+
+    @textual.work
+    @textual.on(widgets.Button.Pressed, "#main-download-database")
+    async def download_database(self) -> None:
+        """Display download dialog and download data."""
+        self.notify("Starting download...")
+        self.set_timer(0.1, self.push_screen(DownloadConfirmation()))
 
     def _notify_synchro_errors(self, err: sync.SynchronizerError) -> None:
         """Notify user of synchronization errors."""
@@ -466,4 +474,82 @@ class UploadConfirmation(screen.ModalScreen):
     def on_button_pressed(self, event: widgets.Button.Pressed) -> None:
         """Dismiss the dialog."""
         self.post_message(EnableUiMessage(enable=True))
+        self.dismiss()
+
+
+class DownloadConfirmation(screen.ModalScreen):
+    """Show summary of downloaded info and have user confirm overrwriting DB."""
+
+    CSS_PATH = frcattend.view.CSS_FOLDER / "root.tcss"
+
+    synchro: sync.Synchronizer
+    """Object that downloads data from a Google spreadsheet."""
+    sheet_data: dict[str, list[dict[str, Any]]]
+    """Data downloaded from Google spreadsheet."""
+
+    def __init__(self) -> None:
+        """Set up database on initialization."""
+        super().__init__()
+        self.synchro = sync.Synchronizer()
+        self.sheet_data = self.synchro.download()
+
+    def compose(self) -> app.ComposeResult:
+        """Build the dialog box."""
+        with containers.Vertical(id="download-confirm-dialog", classes="modal-dialog"):
+            yield widgets.Label("Download Attendance Data", classes="emphasis")
+            yield widgets.Label("Record Counts")
+            yield self.build_counts_table()
+            yield widgets.Label("Time of Last Checkin")
+            yield self.build_tolc_table()
+            with containers.Horizontal(classes="dialog-row"):
+                yield widgets.Button("Ok", id="main-download-ok")
+                yield widgets.Button("Cancel", id="main-download-cancel")
+
+    def build_counts_table(self) -> widgets.DataTable:
+        """Build table showing record counts in current DB and downloaded data."""
+        db_counts = self.synchro.dbase.get_record_counts()
+        sheet_counts = self.synchro.count_rows(self.sheet_data)
+        table = widgets.DataTable(id="download-confirm-counts-table")
+        for col in [
+            ("Table", "table"),
+            ("Local DB Records", "db_count"),
+            ("Google Sheets Records", "sheet_count"),
+        ]:
+            table.add_column(col[0], key=col[1])
+        for table_name in db_counts:
+            table.add_row(table_name, db_counts[table_name], sheet_counts[table_name])
+        return table
+
+    def build_tolc_table(self) -> widgets.Markdown:
+        """Build table showing time of last checkin for DB and downloaded data."""
+        db_tolc = model.Checkin.get_time_of_last_checkin(self.synchro.dbase)
+        if db_tolc is None:
+            db_tolc_str = "None"
+        else:
+            db_tolc_str = db_tolc.replace(microsecond=0).isoformat()
+        sheet_tolc = self.synchro.time_of_last_change(self.sheet_data)
+        if sheet_tolc is None:
+            sheet_tolc_str = "None"
+        else:
+            sheet_tolc_str = sheet_tolc.replace(microsecond=0).isoformat()
+        mdown = "\n".join(
+            [
+                "| Local Database | Google Sheet |",
+                "|----------------|--------------|",
+                f"|{db_tolc_str}|{sheet_tolc_str}|",
+            ]
+        )
+        return widgets.Markdown(mdown)
+
+    @textual.on(widgets.Button.Pressed, "#main-download-cancel")
+    def cancel_dialog(self) -> None:
+        """Close the dialog and take no action."""
+        self.dismiss()
+
+    @textual.on(widgets.Button.Pressed, "#main-download-ok")
+    def ok_dialog(self) -> None:
+        """Write the downloaded data to the database."""
+        self.synchro.dbase.backup()
+        self.synchro.dbase.delete_all()
+        self.synchro.dbase.load_from_dict(self.sheet_data)
         self.dismiss()

@@ -108,6 +108,8 @@ class Synchronizer:
     """Google workbook that contains attendance data."""
     dbase: model.DBase
     """Sqlite database that contains student attendance data."""
+    schema: dict[str, list[str]]
+    """Table names and columns."""
 
     def __init__(self) -> None:
         """Connect to Google workbook identifyed in sync_sheet_key setting."""
@@ -128,6 +130,7 @@ class Synchronizer:
             raise error
         self.dbase = model.DBase(config.settings.db_path)
         self.workbook = GoogleWorkbook(config.settings.sync_sheet_key)
+        self.schema = self.dbase.get_schema()
 
     def add_log_sheet(self) -> None:
         """Add a worksheet to log activities."""
@@ -184,9 +187,7 @@ class Synchronizer:
           columns.
         * Every field value in table_data is JSON-serializable.
         """
-        if len(table_data) == 0:
-            return 0
-        col_names = list(table_data[0].keys())
+        col_names = self.schema[table_name]
         sheet_data: list[list[Any] | dict[str, Any]] = [col_names]
         for row in table_data:
             sheet_data.append(
@@ -197,14 +198,11 @@ class Synchronizer:
                     for col_name in col_names
                 ]
             )
-
-        if len(table_data) < 1:
-            raise ValueError("table_data list cannot be empty.")
         if table_name in self.workbook.worksheet_titles:
             current_sheet = self._backup_and_clear_sheet(table_name)
         else:
             current_sheet = self.workbook.spreadsheet.add_worksheet(
-                table_name, rows=len(table_data), cols=len(table_data[0])
+                table_name, rows=len(table_data), cols=len(col_names)
             )
         current_sheet.update(sheet_data)
         return len(sheet_data)
@@ -222,6 +220,50 @@ class Synchronizer:
         )
         current_sheet.clear()
         return current_sheet
+
+    def download(self) -> dict[str, list[dict[str, Any]]]:
+        """Read all sheets in the workbook.
+
+        Returns:
+            A dictionary of the format
+            {table_name: list[{column_name: value, ...}], ...}.
+
+        Raises:
+            SynchronizerError with error_type = ErrorType.COLUMN_MISMATCH
+            if downloaded table names and columns don't match database schema.
+        """
+        wb_data: dict[str, list[dict[str, Any]]] = {}
+        for table_name, columns in self.schema.items():
+            wb_data[table_name] = self.read_sheet(table_name)
+            schema_columns = set(columns)
+            wb_columns = set(self.schema[table_name])
+            if wb_columns != schema_columns:
+                raise SynchronizerError(
+                    SynchronizerError.ErrorType.COLUMN_MISMATCH,
+                    f"Google sheet columns do not match schema for {table_name} table. "
+                    f"Missing sheet columns: ({schema_columns - wb_columns}). "
+                    f"Extra sheet columns: ({wb_columns - schema_columns}).",
+                )
+        return wb_data
+
+    @staticmethod
+    def count_rows(wb_data: dict[str, list[dict[str, Any]]]) -> dict[str, int]:
+        """Get count of records in each table."""
+        return {table_name: len(rows) for table_name, rows in wb_data.items()}
+
+    @staticmethod
+    def time_of_last_change(
+        wb_data: dict[str, list[dict[str, Any]]],
+    ) -> datetime.datetime | None:
+        """Get date and time of most recent checkin in attendace dataset.
+
+        Assumes checkin data is sorted in ascending order.
+        """
+        checkins = wb_data["checkins"]
+        if checkins is None or len(checkins) == 0:
+            return None
+        else:
+            return datetime.datetime.fromisoformat(checkins[-1]["timestamp"])
 
     def read_sheet(self, table_name: str) -> list[dict[str, Any]]:
         """Read the worksheet with title equal to table_name.
@@ -255,30 +297,6 @@ class Synchronizer:
                     case "FALSE" | "False" | "false":
                         table_data[index][col_name] = False
         return table_data
-
-    def read_workbook(
-        self, schema: dict[str, list[str]]
-    ) -> dict[str, list[dict[str, Any]]]:
-        """Read all sheets in the workbook.
-
-        Returns:
-            A dictionary of the format
-            {table_name: list[{column_name: value, ...}], ...}.
-        """
-        wb_data: dict[str, list[dict[str, Any]]] = {}
-        for table_name in schema:
-            wb_data[table_name] = self.read_sheet(table_name)
-            schema_columns = set(schema[table_name])
-            wb_columns = set(wb_data[table_name][0].keys())
-            if wb_columns != schema_columns:
-                raise SynchronizerError(
-                    SynchronizerError.ErrorType.COLUMN_MISMATCH,
-                    f"Google sheet columns do not match schema for {table_name} table. "
-                    f"Missing sheet columns: ({schema_columns - wb_columns}). "
-                    f"Extra sheet columns: ({wb_columns - schema_columns}).",
-                )
-
-        return wb_data
 
     def clear_all_sheets(self) -> None:
         """Remove all worksheets from the spreadsheet."""
