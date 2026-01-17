@@ -61,6 +61,7 @@ class FrcAttend(app.App):
                     "Take Attendance",
                     id="main-take-attendance",
                     tooltip="Scan some QR Codes!",
+                    classes="ok",
                 )
                 yield widgets.Button(
                     "Students",
@@ -74,6 +75,7 @@ class FrcAttend(app.App):
                         "View the number of checkins and "
                         "events attended for each student."
                     ),
+                    classes="ok",
                 )
                 yield widgets.Button(
                     "Attendance by Event",
@@ -82,6 +84,7 @@ class FrcAttend(app.App):
                         "View the number of checkins and students that attended "
                         "each event."
                     ),
+                    classes="ok",
                 )
                 yield widgets.Button(
                     "Surveys",
@@ -115,11 +118,13 @@ class FrcAttend(app.App):
                     tooltip=(
                         "Export attendance data to an Excel spreadsheet or JSON file."
                     ),
+                    classes="ok",
                 )
                 yield widgets.Button(
                     "Import",
                     id="main-import-database",
                     tooltip="Import data from a JSON file.",
+                    classes="ok",
                 )
                 yield widgets.Button(
                     "Upload",
@@ -263,6 +268,10 @@ class FrcAttend(app.App):
             [".json", ".xlsx"],
             create=True,
             id="main-export-data-file",
+            instructions=(
+                "Use a '.xlsx' file extension to export to an Excel file.\n"
+                "Use a '.json' file extension to export to a JSON text file."
+            ),
         )
         await self.app.push_screen(file_selector, _export_database_to_file)
 

@@ -98,7 +98,6 @@ ModalScreen {
     margin: 0;
 }
 
-
 InactiveStudentToggle {
     border: round green;
     background: darkslategrey;

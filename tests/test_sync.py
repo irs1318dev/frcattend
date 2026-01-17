@@ -7,12 +7,12 @@ from frcattend import config, model
 from frcattend.features import sync
 
 
-# pytestmark = pytest.mark.skip(
-#     reason="Prevent exceeding Google sheet rate limits. Run tests one at a time."
-# )
+pytestmark = pytest.mark.skip(
+    reason="Prevent exceeding Google sheet rate limits. Run tests one at a time."
+)
 
 
-def test_connect_to_sheet(settings: config.Settings) -> None:
+def test_connect_to_sheet(empty_database: model.DBase) -> None:
     """Get all data as a dictionary."""
     # Act
     synker = sync.Synchronizer()

@@ -83,6 +83,8 @@ class FileSelector(screen.ModalScreen[pathlib.Path | None]):
     """Filter directory tree to show only files with these suffixes."""
     start_path: pathlib.Path
     """Initial file system path for directory tree."""
+    instructions: Optional[str]
+    """Additional instructions to be displayed on dialog."""
 
     def __init__(
         self,
@@ -92,6 +94,7 @@ class FileSelector(screen.ModalScreen[pathlib.Path | None]):
         default_filename: Optional[str] = None,
         id: Optional[str] = None,
         classes: Optional[str] = None,
+        instructions: Optional[str] = None,
     ) -> None:
         """Set create or select mode on initialization."""
         super().__init__(id=id, classes=classes)
@@ -99,6 +102,7 @@ class FileSelector(screen.ModalScreen[pathlib.Path | None]):
         self.create = create
         self.default_filename = default_filename
         self.filetypes = filetypes
+        self.instructions = instructions
 
     def compose(self) -> app.ComposeResult:
         """Add widgets to screen."""
@@ -118,12 +122,15 @@ class FileSelector(screen.ModalScreen[pathlib.Path | None]):
                 with containers.Grid(id="file-create-pane"):
                     yield widgets.Label("Filename:", classes="emphasis")
                     yield widgets.Input(self.default_filename, id="filename")
-                    yield widgets.Static(
-                        "Click on [i]Create File[/] to create a file with the "
-                        "specified filename in the folder displayed in the "
-                        "directory tree, or select [i]Cancel[/] to take no action.",
-                        id="file-create-help",
-                    )
+                    if self.instructions is None:
+                        yield widgets.Static(
+                            "Click on [i]Create File[/] to create a file with the "
+                            "specified filename in the folder displayed in the "
+                            "directory tree, or select [i]Cancel[/] to take no action.",
+                            id="file-create-help",
+                        )
+                    else:
+                        yield widgets.Static(self.instructions, id="file-create-help")
             else:
                 yield widgets.Static(
                     "Select a file to open it, "

@@ -276,5 +276,5 @@ class DBase:
         """Delete all data from all tables."""
         with self.get_db_connection() as conn:
             for tdef in self.tables[::-1]:  # Delete tables in reverse order (relative
-                tdef.delete_all(conn)       #   to order of creation to prvent foriegn
-        conn.close()                        #   key violations. 
+                tdef.delete_all(conn)  #   to order of creation to prvent foriegn
+        conn.close()  #   key violations.
