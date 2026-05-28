@@ -91,6 +91,7 @@ class DBase:
         """Set database path."""
         self.tables = [
             students.Student,
+            students.Status,
             events_checkins.Event,
             events_checkins.Checkin,
             surveys.Survey,

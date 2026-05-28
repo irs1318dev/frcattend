@@ -2,6 +2,7 @@
 
 import dataclasses
 import datetime
+import enum
 import random
 import re
 import sqlite3
@@ -12,6 +13,143 @@ from frcattend.model import abstract
 if TYPE_CHECKING:
     from frcattend.model import database
 
+
+class Stage(enum.StrEnum):
+    """Allowed student stages."""
+    PROSPECT = "prospect"
+    """A new student who has commenced fall training."""
+    FORMER_PROSPECT = "former_prospect"
+    """Student who did not complete fall training or chose not to join team."""
+    MEMBER = "member"
+    """Completed membership requirements and joined the team for build season."""
+    ALUMNI = "alumni"
+    """Completed at least one full season but is no longer on team."""
+
+
+class Reason(enum.StrEnum):
+    """Reasons for a student for being in a specific stage."""
+    CHOICE = "choice"
+    """Student chose to leave team (FORMER_PROSPECT, ALUMNI)."""
+    GRADUATED = "graduated"
+    """Left team due to graduating from IHS (ALUMNI)."""
+    INCOMPLETE = "incomplete"
+    """Did not complete fall trainining (FORMER_PROSPECT)."""
+    TRANSFERRED = "transferred"
+    """Student transferred to a different high school."""
+
+
+def adapt_stage(val: Stage | str) -> str:
+    """Adapt Status objects to Sqlite TEXT values."""
+    if isinstance(val, Stage):
+        return val.value
+    return val
+
+
+def convert_status(val: bytes) -> Stage:
+    """Convert values from status column to an Status enum object."""
+    return Stage(val.decode())
+
+
+sqlite3.register_adapter(Stage, adapt_stage)
+sqlite3.register_converter("STATUS", convert_status)
+
+
+def adapt_reason(val: Reason | str) -> str:
+    """Adapt Reason objects to Sqlite TEXT values."""
+    if isinstance(val, Reason):
+        return val.value
+    return val
+
+
+def convert_reason(val: bytes) -> Reason:
+    """Convert values from reason column to an Reason enum object."""
+    return Reason(val.decode())
+
+
+sqlite3.register_adapter(Reason, adapt_reason)
+sqlite3.register_converter("REASON", convert_reason)
+
+
+@dataclasses.dataclass
+class Status(abstract.TableDef):
+    """Status of an FRC Student."""
+
+    status_id: int
+    student_id: str
+    stage: Stage
+    start_date: datetime.date
+    reason: Optional[Reason]
+    notes: Optional[str]
+
+    table_name: ClassVar[str] = "statuses"
+    table_def: ClassVar[str] = """
+        CREATE TABLE IF NOT EXISTS statuses (
+                  status_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 student_id TEXT NOT NULL,
+                      stage STAGE NOT NULL,
+                 start_date DATE,
+                     reason REASON,
+                      notes TEXT,
+                FOREIGN KEY (student_id) REFERENCES students (student_id)
+        );
+    """
+
+    def add(self, dbase: "database.DBase") -> int:
+        """Add the status record to the database.
+
+        Returns:
+            The status_id of the newly added record.
+        """
+        query = """
+                INSERT INTO statuses
+                            (student_id, stage, start_date, reason, notes)
+                     VALUES (:student_id, :stage, :start_date, :reason, :notes);
+        """
+        with dbase.get_db_connection() as conn:
+            cursor = conn.execute(
+                query,
+                {
+                    "student_id": self.student_id,
+                    "stage": self.stage,
+                    "start_date": self.start_date,
+                    "reason": self.reason,
+                    "notes": self.notes,
+                },
+            )
+            status_id = cursor.lastrowid
+        conn.close()
+        self.status_id = 0 if status_id is None else status_id
+        return self.status_id
+
+    @staticmethod
+    def get_by_student_id(dbase: "database.DBase", student_id: str) -> "list[Status]":
+        """Retrieve list of Status objects for specific student."""
+        query = """
+                SELECT status_id, student_id, stage, start_date, reason, notes
+                  FROM statuses
+                 WHERE student_id = ?
+              ORDER BY start_date DESC;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        statuses = [
+            Status(**status) for status in conn.execute(query, [student_id])
+        ]
+        conn.close()
+        return statuses
+
+
+    @staticmethod
+    def get_all(dbase: "database.DBase") -> list["Status"]:
+        """Retrieve a list of Student objects from the database."""
+        query = f"""
+                SELECT status_id, student_id, status, start_date, reason, notes
+                  FROM statuses
+              ORDER BY student_id, start_date;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        statuses = [Status(**status) for status in conn.execute(query)]
+        conn.close()
+        return statuses
 
 @dataclasses.dataclass
 class Student(abstract.TableDef):

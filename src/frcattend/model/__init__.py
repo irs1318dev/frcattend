@@ -1,7 +1,7 @@
 """The frcattend.model namespace."""
 
 # ruff: noqa: F401
-from frcattend.model.students import Student
+from frcattend.model.students import Reason, Stage, Status, Student
 from frcattend.model.surveys import Answer, Survey
 from frcattend.model.events_checkins import Event, EventType, EventUpateError, Checkin
 from frcattend.model.database import DBase, DBaseError
