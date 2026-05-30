@@ -60,6 +60,14 @@ def full_dbase(empty_database: model.DBase) -> model.DBase:
     empty_database.load_from_dict(attendance_data)
     return empty_database
 
+@pytest.fixture
+def status_dbase(empty_database: model.DBase) -> model.DBase:
+    """Database with students, statuses, appearances, and events."""
+    with open(DATA_FOLDER / "testdata-status.json") as jfile:
+        attendance_data = json.load(jfile)
+    empty_database.load_from_dict(attendance_data)
+    return empty_database
+
 
 @pytest.fixture
 def noevents_dbase(empty_database: model.DBase) -> model.DBase:

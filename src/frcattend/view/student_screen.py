@@ -165,7 +165,7 @@ class StudentScreen(screen.Screen):
         status_widget = self.query_one("#status-message", widgets.Static)
         status_widget.update(success(f"Loaded {len(self._students)} students."))
 
-    def on_data_table_row_selected(self, event: widgets.DataTable.RowSelected) -> None:
+    def on_data_table_row_highlighted(self, event: widgets.DataTable.RowHighlighted) -> None:
         """Select a row in the datatable."""
         self._selected_student_id = event.row_key.value
         if self._selected_student_id is None:

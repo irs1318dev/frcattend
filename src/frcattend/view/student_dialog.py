@@ -4,7 +4,7 @@ from textual import app, containers, screen, widgets
 
 from frcattend import model
 import frcattend.view
-from frcattend.view import validators
+from frcattend.view import validators, status_table
 
 
 class StudentDialog(screen.ModalScreen):
@@ -66,6 +66,7 @@ class StudentDialog(screen.ModalScreen):
                 validators=[validators.DateValidator()],
                 id="s-deactivated",
             )
+            yield status_table.StatusTable(self.student, widget_id="s-status")
 
             yield widgets.Static()
             with containers.Horizontal(id="attendance-actions"):

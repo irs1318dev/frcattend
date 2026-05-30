@@ -180,6 +180,11 @@ class DBase:
                  VALUES (:student_id, :first_name, :last_name, :email, :grad_year,
                         :deactivated_on);
         """
+        statuses_query = """
+            INSERT INTO statuses
+                        (student_id, stage, start_date, reason, notes)
+                 VALUES (:student_id, :stage, :start_date, :reason, :notes);
+        """
         checkins_query = """
             INSERT INTO checkins
                         (student_id, event_type, timestamp, inactive)
@@ -217,6 +222,7 @@ class DBase:
 
         with self.get_db_connection() as conn:
             conn.executemany(student_query, db_data_dict["students"])
+            conn.executemany(statuses_query, db_data_dict["statuses"])
             conn.executemany(event_query, db_data_dict["events"])
         with conn:
             conn.executemany(checkins_query, db_data_dict["checkins"])

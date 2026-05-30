@@ -50,6 +50,14 @@ def test_attendance_table(full_dbase: model.DBase) -> None:
     assert len(checkins) > 4000
     assert isinstance(checkins[0], model.Checkin)
 
+def test_attendance_table_with_status(status_dbase: model.DBase) -> None:
+    """Attendance table has many rows and 5 columns of data."""
+    # Act
+    checkins = model.Checkin.get_all(status_dbase)
+    # Assert
+    assert len(checkins) > 4000
+    assert isinstance(checkins[0], model.Checkin)
+
 
 def test_attendance_counts(full_dbase: model.DBase) -> None:
     """Get count of student appearances."""
