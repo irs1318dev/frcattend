@@ -25,6 +25,9 @@ class Stage(enum.StrEnum):
     ALUMNI = "alumni"
     """Completed at least one full season but is no longer on team."""
 
+    valid_reasons: ClassVar[dict["Stage", list["Reason"]]] 
+    """Maps each stage to the Reason values that are valid for it."""
+
 
 class Reason(enum.StrEnum):
     """Reasons for a student for being in a specific stage."""
@@ -35,7 +38,15 @@ class Reason(enum.StrEnum):
     INCOMPLETE = "incomplete"
     """Did not complete fall trainining (FORMER_PROSPECT)."""
     TRANSFERRED = "transferred"
-    """Student transferred to a different high school."""
+    """Student transferred to a different high school (FORMER_PROSPECT, ALUMNI)."""
+
+
+Stage.valid_reasons = {
+    Stage.PROSPECT: [],
+    Stage.FORMER_PROSPECT: [Reason.CHOICE, Reason.INCOMPLETE, Reason.TRANSFERRED],
+    Stage.MEMBER: [],
+    Stage.ALUMNI: [Reason.CHOICE, Reason.GRADUATED, Reason.TRANSFERRED],
+}
 
 
 def adapt_stage(val: Stage | str) -> str:
@@ -120,6 +131,42 @@ class Status(abstract.TableDef):
         conn.close()
         self.status_id = 0 if status_id is None else status_id
         return self.status_id
+
+
+    def update(self, dbase: "database.DBase") -> None:
+        """Update the status record in the database."""
+        query = """
+                UPDATE statuses
+                   SET stage = :stage,
+                       start_date = :start_date,
+                       reason = :reason,
+                       notes = :notes
+                 WHERE status_id = :status_id;
+        """
+        with dbase.get_db_connection() as conn:
+            conn.execute(
+                query,
+                {
+                    "status_id": self.status_id,
+                    "stage": self.stage,
+                    "start_date": self.start_date,
+                    "reason": self.reason,
+                    "notes": self.notes,
+                },
+            )
+        conn.close()
+
+    @staticmethod
+    def get_by_status_id(dbase: "database.DBase", status_id: int) -> "Status":
+        """Retrieve a single status record."""
+        query = """
+                  SELECT status_id, student_id, stage, start_date, reason, notes
+                  FROM statuses
+                 WHERE status_id = ?;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        status = Status(**conn.execute(query, [status_id]).fetchone())
+        return status
 
     @staticmethod
     def get_by_student_id(dbase: "database.DBase", student_id: str) -> "list[Status]":

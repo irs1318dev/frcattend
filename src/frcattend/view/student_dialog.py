@@ -67,6 +67,7 @@ class StudentDialog(screen.ModalScreen):
                 id="s-deactivated",
             )
             yield status_table.StatusTable(self.student, widget_id="s-status")
+            yield widgets.Button("Add Status", id="add-status")
 
             yield widgets.Static()
             with containers.Horizontal(id="attendance-actions"):
@@ -89,6 +90,16 @@ class StudentDialog(screen.ModalScreen):
                 self.count -= 1
                 self.query_one("#attendance-label", widgets.Label).update(
                     f"Attendance Count: {self.count}"
+                )
+
+        elif event.button.id == "add-status":
+            if self.student is not None:
+                table = self.query_one("#s-status", status_table.StatusTable)
+                self.app.push_screen(
+                    status_table.EditStatusDialog(
+                        dbase=table._dbase, student=self.student, status_id=None
+                    ),
+                    callback=lambda saved: table.populate_rows() if saved else None,
                 )
 
         elif event.button.id == "save-student":
