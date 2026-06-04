@@ -151,6 +151,9 @@ class DBase:
             student.to_dict()
             for student in students.Student.get_all(self, include_inactive=True)
         ]
+        db_data["statuses"] = [
+            status.to_dict() for status in students.Status.get_all(self)
+        ]
         db_data["surveys"] = [
             survey.to_dict() for survey in surveys.Survey.get_all(self)
         ]

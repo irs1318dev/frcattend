@@ -116,19 +116,22 @@ class Status(abstract.TableDef):
                             (student_id, stage, start_date, reason, notes)
                      VALUES (:student_id, :stage, :start_date, :reason, :notes);
         """
-        with dbase.get_db_connection() as conn:
-            cursor = conn.execute(
-                query,
-                {
-                    "student_id": self.student_id,
-                    "stage": self.stage,
-                    "start_date": self.start_date,
-                    "reason": self.reason,
-                    "notes": self.notes,
-                },
-            )
+        conn = dbase.get_db_connection()
+        try:
+            with conn:
+                cursor = conn.execute(
+                    query,
+                    {
+                        "student_id": self.student_id,
+                        "stage": self.stage,
+                        "start_date": self.start_date,
+                        "reason": self.reason,
+                        "notes": self.notes,
+                    },
+                )
             status_id = cursor.lastrowid
-        conn.close()
+        finally:
+            conn.close()
         self.status_id = 0 if status_id is None else status_id
         return self.status_id
 
@@ -166,6 +169,7 @@ class Status(abstract.TableDef):
         """
         conn = dbase.get_db_connection(as_dict=True)
         status = Status(**conn.execute(query, [status_id]).fetchone())
+        conn.close()
         return status
 
     @staticmethod
@@ -185,11 +189,21 @@ class Status(abstract.TableDef):
         return statuses
 
 
+    def to_dict(self) -> dict:
+        """Convert the Status dataclass to a dictionary."""
+        return {
+            "student_id": self.student_id,
+            "stage": str(self.stage),
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "reason": str(self.reason) if self.reason else None,
+            "notes": self.notes,
+        }
+
     @staticmethod
     def get_all(dbase: "database.DBase") -> list["Status"]:
         """Retrieve a list of Student objects from the database."""
-        query = f"""
-                SELECT status_id, student_id, status, start_date, reason, notes
+        query = """
+                SELECT status_id, student_id, stage, start_date, reason, notes
                   FROM statuses
               ORDER BY student_id, start_date;
         """

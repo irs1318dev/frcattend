@@ -27,6 +27,7 @@ def test_add_status(full_dbase: model.DBase) -> None:
     """Add a status for a student."""
     # Arrange
     student_id = "al_farsi-omar-2029-343"
+    initial_count = len(model.Status.get_by_student_id(full_dbase, student_id))
     status = model.Status(
         status_id=0,
         student_id=student_id,
@@ -39,7 +40,7 @@ def test_add_status(full_dbase: model.DBase) -> None:
     status.add(full_dbase)
     # Assert
     statuses = model.Status.get_by_student_id(full_dbase, student_id)
-    assert len(statuses) == 1
+    assert len(statuses) == initial_count + 1
     assert statuses[0].stage == model.Stage.MEMBER
 
 
@@ -47,6 +48,7 @@ def test_add_status_with_reason(full_dbase: model.DBase) -> None:
     """Add a status with a reason."""
     # Arrange
     student_id = "ahmed-daniel-2026-118"
+    initial_count = len(model.Status.get_by_student_id(full_dbase, student_id))
     note = "Did not submit application"
     status = model.Status(
         status_id=0,
@@ -60,7 +62,7 @@ def test_add_status_with_reason(full_dbase: model.DBase) -> None:
     status.add(full_dbase)
     # Assert
     statuses = model.Status.get_by_student_id(full_dbase, student_id)
-    assert len(statuses) == 1
+    assert len(statuses) == initial_count + 1
     assert statuses[0].stage == model.Stage.FORMER_PROSPECT
     assert statuses[0].reason == model.Reason.INCOMPLETE
     assert statuses[0].notes == note

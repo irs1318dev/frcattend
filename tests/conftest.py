@@ -54,14 +54,6 @@ def empty_database(
 
 @pytest.fixture
 def full_dbase(empty_database: model.DBase) -> model.DBase:
-    """Database with students, appearances, and events."""
-    with open(DATA_FOLDER / "testdata-full.json") as jfile:
-        attendance_data = json.load(jfile)
-    empty_database.load_from_dict(attendance_data)
-    return empty_database
-
-@pytest.fixture
-def status_dbase(empty_database: model.DBase) -> model.DBase:
     """Database with students, statuses, appearances, and events."""
     with open(DATA_FOLDER / "testdata-status.json") as jfile:
         attendance_data = json.load(jfile)
@@ -72,7 +64,7 @@ def status_dbase(empty_database: model.DBase) -> model.DBase:
 @pytest.fixture
 def noevents_dbase(empty_database: model.DBase) -> model.DBase:
     """Database with students."""
-    with open(DATA_FOLDER / "testdata-full.json") as jfile:
+    with open(DATA_FOLDER / "testdata-status.json") as jfile:
         attendance_data = json.load(jfile)
     attendance_data["events"] = []
     attendance_data["checkins"] = []
@@ -96,7 +88,7 @@ def attendance_test_data() -> dict[str, list]:
     Dictionary has three keys: students, attendance, and events, where each
     key is a list of dictionaries.
     """
-    with open(DATA_FOLDER / "testdata-full.json") as jfile:
+    with open(DATA_FOLDER / "testdata-status.json") as jfile:
         test_data = json.load(jfile)
     return test_data
 
