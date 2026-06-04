@@ -3,7 +3,7 @@
 import pytest  # noqa: F401
 import rich  # noqa: F401
 
-from frcattend import config, model
+from frcattend import model
 from frcattend.features import sync
 
 
