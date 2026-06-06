@@ -22,8 +22,10 @@ class Stage(enum.StrEnum):
     """Student who did not complete fall training or chose not to join team."""
     MEMBER = "member"
     """Completed membership requirements and joined the team for build season."""
+    FORMER_MEMBER = "former_member"
+    """Former member with limited participation (e.g., never lettered, just one year)."""
     ALUMNI = "alumni"
-    """Completed at least one full season but is no longer on team."""
+    """Former member with significant participation (had a role, lettered, etc.)"""
 
     valid_reasons: ClassVar[dict["Stage", list["Reason"]]] 
     """Maps each stage to the Reason values that are valid for it."""
@@ -32,19 +34,20 @@ class Stage(enum.StrEnum):
 class Reason(enum.StrEnum):
     """Reasons for a student for being in a specific stage."""
     CHOICE = "choice"
-    """Student chose to leave team (FORMER_PROSPECT, ALUMNI)."""
+    """Student chose to leave team (FORMER_PROSPECT, FORMER_MEMBER, ALUMNI)."""
     GRADUATED = "graduated"
-    """Left team due to graduating from IHS (ALUMNI)."""
+    """Left team due to graduating from IHS (FORMER_MEMBER, ALUMNI)."""
     INCOMPLETE = "incomplete"
     """Did not complete fall trainining (FORMER_PROSPECT)."""
     TRANSFERRED = "transferred"
-    """Student transferred to a different high school (FORMER_PROSPECT, ALUMNI)."""
+    """Transferred to different school (FORMER_PROSPECT, FORMER_MEMBER, ALUMNI)."""
 
 
 Stage.valid_reasons = {
     Stage.PROSPECT: [],
     Stage.FORMER_PROSPECT: [Reason.CHOICE, Reason.INCOMPLETE, Reason.TRANSFERRED],
     Stage.MEMBER: [],
+    Stage.FORMER_MEMBER: [Reason.CHOICE, Reason.TRANSFERRED, Reason.GRADUATED],
     Stage.ALUMNI: [Reason.CHOICE, Reason.GRADUATED, Reason.TRANSFERRED],
 }
 
@@ -62,7 +65,7 @@ def convert_status(val: bytes) -> Stage:
 
 
 sqlite3.register_adapter(Stage, adapt_stage)
-sqlite3.register_converter("STATUS", convert_status)
+sqlite3.register_converter("STAGE", convert_status)
 
 
 def adapt_reason(val: Reason | str) -> str:
@@ -89,8 +92,8 @@ class Status(abstract.TableDef):
     student_id: str
     stage: Stage
     start_date: datetime.date
-    reason: Optional[Reason]
-    notes: Optional[str]
+    reason: Optional[Reason] = None
+    notes: Optional[str] = None
 
     table_name: ClassVar[str] = "statuses"
     table_def: ClassVar[str] = """

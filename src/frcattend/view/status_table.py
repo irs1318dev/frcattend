@@ -103,6 +103,7 @@ class EditStatusDialog(screen.ModalScreen):
         title = "Add Change in Status" if self.status is None else "Edit Status"
         with containers.Vertical(id="student-status", classes="modal-dialog"):
             yield widgets.Label(title, classes="emphasis")
+            yield widgets.Label("Start Date")
             yield widgets.Input(
                 value=self.status.start_date.isoformat() if self.status else "",
                 placeholder="YYYY-MM-DD",
@@ -129,18 +130,26 @@ class EditStatusDialog(screen.ModalScreen):
                 if reason_disabled or initial_reason not in valid_reasons:
                     initial_reason = widgets.Select.NULL
 
+            yield widgets.Label("Stage")
             yield widgets.Select(
                 [(stage.value.title(), stage) for stage in model.Stage],
                 value=initial_stage,
                 prompt="Select Stage",
                 id="stage-select",
             )
+            yield widgets.Label("Reason")
             yield widgets.Select(
                 [(r.value.title(), r) for r in valid_reasons],
                 value=initial_reason,
                 prompt="Select Reason",
                 id="status-reason",
                 disabled=reason_disabled,
+            )
+            yield widgets.Label("Notes")
+            yield widgets.TextArea(
+                text=self.status.notes if self.status and self.status.notes else "",
+                id="status-notes",
+                show_line_numbers=False,
             )
             with containers.Horizontal(id="status-actions"):
                 yield widgets.Button("Cancel", id="cancel-status")
@@ -156,8 +165,11 @@ class EditStatusDialog(screen.ModalScreen):
         else:
             valid = model.Stage.valid_reasons[event.value]
             if valid:
+                prior_reason = reason_select.value
                 reason_select.set_options([(r.value.title(), r) for r in valid])
                 reason_select.disabled = False
+                if prior_reason in valid:
+                    reason_select.value = prior_reason
             else:
                 reason_select.set_options([])
                 reason_select.disabled = True
@@ -174,6 +186,7 @@ class EditStatusDialog(screen.ModalScreen):
         date_input = self.query_one("#status-start-date", widgets.Input)
         stage_select = self.query_one("#stage-select", widgets.Select)
         reason_select = self.query_one("#status-reason", widgets.Select)
+        notes_input = self.query_one("#status-notes", widgets.TextArea)
 
         if not date_input.is_valid or not date_input.value:
             self.app.notify("Please enter a valid date (YYYY-MM-DD).", severity="error")
@@ -185,6 +198,7 @@ class EditStatusDialog(screen.ModalScreen):
         start_date = datetime.date.fromisoformat(date_input.value)
         stage = stage_select.value
         reason = reason_select.value if isinstance(reason_select.value, model.Reason) else None
+        notes = notes_input.text if notes_input.text else None
 
         if self.status is None:
             new_status = model.Status(
@@ -193,13 +207,14 @@ class EditStatusDialog(screen.ModalScreen):
                 stage=stage,
                 start_date=start_date,
                 reason=reason,
-                notes=None,
+                notes=notes,
             )
             new_status.add(self._dbase)
         else:
             self.status.stage = stage
             self.status.start_date = start_date
             self.status.reason = reason
+            self.status.notes = notes
             self.status.update(self._dbase)
 
         self.dismiss(True)

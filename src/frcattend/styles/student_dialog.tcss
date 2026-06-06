@@ -15,3 +15,18 @@
     margin-top: 1;
     align: center middle;
 }
+
+#student-status {
+    width: 80;
+    height: auto;
+    overflow-y: auto;
+}
+
+#student-status Horizontal {
+    margin-top: 1;
+    align: center middle;
+}
+
+#status-notes {
+    height: 4;
+}
