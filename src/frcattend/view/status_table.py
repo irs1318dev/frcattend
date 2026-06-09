@@ -52,7 +52,7 @@ class StatusTable(widgets.DataTable):
                 )
 
     @textual.on(widgets.DataTable.RowSelected)
-    async def edit_status(self, event: widgets.DataTable.RowSelected) -> None:
+    def edit_status(self, event: widgets.DataTable.RowSelected) -> None:
         """Edit the status when a row is selected."""
         if self.student is None:
             raise StatusError("No student selected when changing status.")
@@ -64,12 +64,11 @@ class StatusTable(widgets.DataTable):
                 status_id = None
             case str():
                 status_id = int(event.row_key.value)
-        saved = await self.app.push_screen(
+        self.app.push_screen(
             EditStatusDialog(
-                dbase=self._dbase, student=self.student, status_id=status_id)
+                dbase=self._dbase, student=self.student, status_id=status_id),
+            callback=lambda saved: self.populate_rows() if saved else None,
         )
-        if saved:
-            self.populate_rows()
 
 
 class EditStatusDialog(screen.ModalScreen):

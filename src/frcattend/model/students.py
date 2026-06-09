@@ -38,7 +38,7 @@ class Reason(enum.StrEnum):
     GRADUATED = "graduated"
     """Left team due to graduating from IHS (FORMER_MEMBER, ALUMNI)."""
     INCOMPLETE = "incomplete"
-    """Did not complete fall trainining (FORMER_PROSPECT)."""
+    """Did not complete fall trainining (FORMER_PROSPECT, FORMER_MEMBER)."""
     TRANSFERRED = "transferred"
     """Transferred to different school (FORMER_PROSPECT, FORMER_MEMBER, ALUMNI)."""
 
@@ -47,7 +47,9 @@ Stage.valid_reasons = {
     Stage.PROSPECT: [],
     Stage.FORMER_PROSPECT: [Reason.CHOICE, Reason.INCOMPLETE, Reason.TRANSFERRED],
     Stage.MEMBER: [],
-    Stage.FORMER_MEMBER: [Reason.CHOICE, Reason.TRANSFERRED, Reason.GRADUATED],
+    Stage.FORMER_MEMBER: [
+        Reason.CHOICE, Reason.INCOMPLETE, Reason.TRANSFERRED, Reason.GRADUATED
+    ],
     Stage.ALUMNI: [Reason.CHOICE, Reason.GRADUATED, Reason.TRANSFERRED],
 }
 

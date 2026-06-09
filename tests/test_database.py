@@ -84,6 +84,7 @@ def test_to_dict(full_dbase: model.DBase) -> None:
     """Save database contents to a JSON file."""
     # Act
     data = full_dbase.to_dict()
+    print(data.keys())
     # Assert
     tables = ["students", "statuses", "checkins", "events", "surveys", "answers"]
     assert len(data) == len(tables)
