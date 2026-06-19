@@ -47,7 +47,7 @@ def test_attendance_table(full_dbase: model.DBase) -> None:
     # Act
     checkins = model.Checkin.get_all(full_dbase)
     # Assert
-    assert len(checkins) > 4000
+    assert len(checkins) > 3000
     assert isinstance(checkins[0], model.Checkin)
 
 

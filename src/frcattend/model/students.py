@@ -88,7 +88,10 @@ sqlite3.register_converter("REASON", convert_reason)
 
 @dataclasses.dataclass
 class Status(abstract.TableDef):
-    """Status of an FRC Student."""
+    """Status of an FRC Student.
+
+    A student cannot have more than one status with the same start_date.
+    """
 
     status_id: int
     student_id: str
@@ -106,7 +109,8 @@ class Status(abstract.TableDef):
                  start_date DATE,
                      reason REASON,
                       notes TEXT,
-                FOREIGN KEY (student_id) REFERENCES students (student_id)
+                FOREIGN KEY (student_id) REFERENCES students (student_id),
+                     UNIQUE (student_id, start_date)
         );
     """
 
@@ -227,6 +231,7 @@ class Student(abstract.TableDef):
     grad_year: int
     email: str
     deactivated_on: Optional[datetime.date]
+    status: Optional[Status] = dataclasses.field(default=None, kw_only=True)
 
     table_name: ClassVar[str] = "students"
     table_def: ClassVar[str] = """
@@ -280,6 +285,7 @@ class Student(abstract.TableDef):
         self.last_name = last_name
         self.grad_year = grad_year
         self.email = email
+        self.status = None
 
     @property
     def deactivated_iso(self) -> Optional[str]:
@@ -409,6 +415,52 @@ class Student(abstract.TableDef):
         student_ids = [row["student_id"] for row in conn.execute(query)]
         conn.close()
         return student_ids
+    
+    @staticmethod
+    def get_with_status(
+        dbase: "database.DBase",
+        asof_date: Optional[datetime.date] = None,
+        stages: Optional[list[Stage]] = None
+    ) -> list[Student]:
+        """Get all students with their current status.
+        
+        Args:
+            asof_date: If not None, students have status that was current on
+                that date, and students who had not joined yet will be omitted.
+                Otherwise returns all students in database.
+            stages: Only return students with the selected stages.
+
+        Returns:
+            A list of Student objects.
+        """
+        query = """
+            WITH ranked_status AS (
+                SELECT status_id, student_id,
+                    ROW_NUMBER() OVER student_window AS status_rank,
+                    stage, start_date, reason, notes
+                FROM statuses
+                WHERE start_date < ?
+                WINDOW student_window AS (PARTITION BY student_id ORDER BY start_date DESC)
+            )
+                SELECT stu.*, rs.status_id, rs.stage, rs.start_date, rs.reason, rs.notes
+                FROM students AS stu
+            LEFT JOIN ranked_status AS rs
+                    ON stu.student_id = rs.student_id
+                WHERE rs.status_rank = 1
+            ORDER BY stu.student_id;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        students = []
+        student_fields = frozenset(field.name for field in dataclasses.fields(Student))
+        status_fields = frozenset(field.name for field in dataclasses.fields(Status))
+        for row in conn.execute(query, [asof_date]):
+            student_data = {key: val for key, val in row.items() if key in student_fields}
+            student = Student(**student_data)
+            status_data = {key: val for key, val in row.items() if key in status_fields}
+            student.status = Status(**status_data)
+            students.append(student)
+        conn.close()
+        return students
 
     def to_dict(self) -> dict:
         """Convert the Student dataclass to a dictionary."""

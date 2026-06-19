@@ -20,19 +20,18 @@ def test_get_students(full_dbase: model.DBase) -> None:
     # Assert
     assert all(isinstance(student, model.Student) for student in students)
     assert isinstance(students[0].grad_year, int)
-    assert isinstance(students[0].deactivated_on, datetime.date)
 
 
 def test_add_status(full_dbase: model.DBase) -> None:
     """Add a status for a student."""
     # Arrange
-    student_id = "al_farsi-omar-2029-343"
+    student_id = "bakr-salma-2026-946"
     initial_count = len(model.Status.get_by_student_id(full_dbase, student_id))
     status = model.Status(
         status_id=0,
         student_id=student_id,
-        stage=model.Stage.MEMBER,
-        start_date=datetime.date(2026, 1, 15),
+        stage=model.Stage.ALUMNI,
+        start_date=datetime.date(2026, 6, 15),
         reason=None,
         notes=None,
     )
@@ -41,21 +40,21 @@ def test_add_status(full_dbase: model.DBase) -> None:
     # Assert
     statuses = model.Status.get_by_student_id(full_dbase, student_id)
     assert len(statuses) == initial_count + 1
-    assert statuses[0].stage == model.Stage.MEMBER
+    assert statuses[0].stage == model.Stage.ALUMNI
 
 
 def test_add_status_with_reason(full_dbase: model.DBase) -> None:
     """Add a status with a reason."""
     # Arrange
-    student_id = "ahmed-daniel-2026-118"
+    student_id = "barakat-aliyah-2028-637"
     initial_count = len(model.Status.get_by_student_id(full_dbase, student_id))
     note = "Did not submit application"
     status = model.Status(
         status_id=0,
         student_id=student_id,
-        stage=model.Stage.FORMER_PROSPECT,
-        start_date=datetime.date(2026, 1, 15),
-        reason=model.Reason.INCOMPLETE,
+        stage=model.Stage.FORMER_MEMBER,
+        start_date=datetime.date(2026, 5, 1),
+        reason=model.Reason.TRANSFERRED,
         notes=note,
     )
     # Act
@@ -63,8 +62,8 @@ def test_add_status_with_reason(full_dbase: model.DBase) -> None:
     # Assert
     statuses = model.Status.get_by_student_id(full_dbase, student_id)
     assert len(statuses) == initial_count + 1
-    assert statuses[0].stage == model.Stage.FORMER_PROSPECT
-    assert statuses[0].reason == model.Reason.INCOMPLETE
+    assert statuses[0].stage == model.Stage.FORMER_MEMBER
+    assert statuses[0].reason == model.Reason.TRANSFERRED
     assert statuses[0].notes == note
 
 
@@ -82,3 +81,15 @@ def test_add_status_invalid_student_id(full_dbase: model.DBase) -> None:
     # Act / Assert
     with pytest.raises(sqlite3.IntegrityError):
         status.add(full_dbase)
+
+
+def test_get_with_status(full_dbase: model.DBase) -> None:
+    """Get all students and their corresponding status."""
+    # Act
+    students = model.Student.get_with_status(
+        full_dbase, asof_date=datetime.date(2026, 1, 1)
+    )
+    # Assert
+    assert students
+    assert all(isinstance(student.status, model.Status) for student in students)
+

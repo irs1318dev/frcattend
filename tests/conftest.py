@@ -4,6 +4,7 @@ import argparse
 import json
 import pathlib
 import shutil
+from typing import Any
 
 import pytest
 
@@ -53,44 +54,45 @@ def empty_database(
 
 
 @pytest.fixture
-def full_dbase(empty_database: model.DBase) -> model.DBase:
+def empty_database2(
+    empty_output_folder: pathlib.Path, settings: config.Settings
+) -> model.DBase:
+    """An empty IrsAttend database, with tables created.
+    
+    Some tests require two different database files. Use this fixture
+    and the empty_database fixture to create two different database files.
+    """
+    settings.db_path = OUTPUT_FOLDER / "testdatabase2.db"
+    return model.DBase(settings.db_path, create_new=True)
+
+
+@pytest.fixture
+def attendance_test_data() -> dict[str, list[Any]]:
+    """Get test data as a dictionary."""
+    with open(DATA_FOLDER / "testdata.json") as jfile:
+        test_data = json.load(jfile)
+    return test_data
+
+
+@pytest.fixture
+def full_dbase(
+    empty_database: model.DBase,
+    attendance_test_data: dict[str, list[Any]]
+) -> model.DBase:
     """Database with students, statuses, appearances, and events."""
-    with open(DATA_FOLDER / "testdata-status.json") as jfile:
-        attendance_data = json.load(jfile)
-    empty_database.load_from_dict(attendance_data)
+    empty_database.load_from_dict(attendance_test_data)
     return empty_database
 
 
 @pytest.fixture
 def noevents_dbase(empty_database: model.DBase) -> model.DBase:
     """Database with students."""
-    with open(DATA_FOLDER / "testdata-status.json") as jfile:
+    with open(DATA_FOLDER / "testdata.json") as jfile:
         attendance_data = json.load(jfile)
     attendance_data["events"] = []
     attendance_data["checkins"] = []
     empty_database.load_from_dict(attendance_data)
     return empty_database
-
-
-@pytest.fixture
-def empty_database2(
-    empty_output_folder: pathlib.Path, settings: config.Settings
-) -> model.DBase:
-    """An empty IrsAttend database, with tables created."""
-    settings.db_path = OUTPUT_FOLDER / "testdatabase2.db"
-    return model.DBase(settings.db_path, create_new=True)
-
-
-@pytest.fixture
-def attendance_test_data() -> dict[str, list]:
-    """Get test data as a dictionary.
-
-    Dictionary has three keys: students, attendance, and events, where each
-    key is a list of dictionaries.
-    """
-    with open(DATA_FOLDER / "testdata-status.json") as jfile:
-        test_data = json.load(jfile)
-    return test_data
 
 
 @pytest.fixture
@@ -105,9 +107,10 @@ def empty_synchro(
 
 @pytest.fixture
 def full_synchro(
-    empty_synchro: sync.Synchronizer, full_dbase: model.DBase
+    empty_synchro: sync.Synchronizer,
+    attendance_test_data: dict[str, list[Any]]
 ) -> sync.Synchronizer:
     """A synchronizer that points to a full spreadsheet."""
-    data = full_dbase.to_dict()
-    empty_synchro.write_data_to_workbook(data)
+    # data = full_dbase.to_dict()
+    empty_synchro.write_data_to_workbook(attendance_test_data)
     return empty_synchro
