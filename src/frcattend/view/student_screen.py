@@ -10,7 +10,7 @@ from textual import app, binding, containers, screen, widgets
 from frcattend import config, model
 from frcattend.features import emailer, qr_code_generator
 import frcattend.view
-from frcattend.view import confirm_dialogs, student_dialog, inactive_toggle
+from frcattend.view import confirm_dialogs, student_dialog
 
 
 def success(message: str) -> str:
@@ -56,9 +56,6 @@ class StudentScreen(screen.Screen):
             with containers.Vertical(id="students-actions-container"):
                 yield widgets.Label("Actions", classes="emphasis")
                 with containers.ScrollableContainer():
-                    yield inactive_toggle.InactiveStudentToggle(
-                        id="students-show-inactive-toggle"
-                    )
                     yield widgets.Static(
                         "No student selected",
                         id="students-selection-indicator",
@@ -108,7 +105,7 @@ class StudentScreen(screen.Screen):
         self.table.add_columns(
             "ID", "Last Name", "First Name", "Email", "Grad Year", "Deactivated On"
         )
-        self.load_student_data(False)
+        self.load_student_data()
         self._selected_student_id = None
 
     def _add_progress_bar(self, total: int | None, name: str) -> widgets.ProgressBar:
@@ -142,15 +139,13 @@ class StudentScreen(screen.Screen):
             return
         pbar.remove()
 
-    def load_student_data(self, show_inactive: bool) -> None:
+    def load_student_data(self) -> None:
         """Load student data into the datatable widget."""
         self.table.clear()
-        textual.log(f"Loading student data, show_inactive={show_inactive}")
+        textual.log("Loading student data")
         self._students = {
             student.student_id: student
-            for student in model.Student.get_all(
-                self.dbase, include_inactive=show_inactive
-            )
+            for student in model.Student.get_all(self.dbase, include_inactive=True)
         }
         for student in self._students.values():
             self.table.add_row(
@@ -179,16 +174,6 @@ class StudentScreen(screen.Screen):
             f"[bold]Selected:[/bold]\n{student.first_name} "
             f"{student.last_name}\nID: {student.student_id}"
         )
-
-    @textual.on(widgets.Switch.Changed, ".toggle-inactive-students-switch")
-    def on_active_toggle_changed(self, message: widgets.Switch.Changed) -> None:
-        """Reload student data when the active/inactive toggle is changed."""
-        self.notify(f"Show inactive: {message.value}", timeout=4)
-        self.load_student_data(message.value)
-        self._selected_student_id = None
-        self.query_one("#edit-student", widgets.Button).disabled = True
-        self.query_one("#email-qr", widgets.Button).disabled = True
-        self.update_selected("No student selected")
 
     async def on_button_pressed(self, event: widgets.Button.Pressed) -> None:
         """Respond to button presses."""
@@ -219,11 +204,7 @@ class StudentScreen(screen.Screen):
                     f"Error Description:\n{err}"
                 )
             else:
-                self.load_student_data(
-                    self.query_one(
-                        "#students-show-inactive-switch", widgets.Switch
-                    ).value
-                )
+                self.load_student_data()
                 self.query_one("#status-message", widgets.Static).update(
                     success(f"Student added successfully. ID: {student.student_id}")
                 )
@@ -242,10 +223,7 @@ class StudentScreen(screen.Screen):
                 return
             student.update(self.dbase)
             self.update_status(success("Student updated successfully."))
-            inactive_switch = self.query_one(
-                "#students-show-inactive-toggle Switch", widgets.Switch
-            )
-            self.load_student_data(inactive_switch.value)
+            self.load_student_data()
 
         await self.app.push_screen(
             student_dialog.StudentDialog(student=student), callback=on_dialog_closed
