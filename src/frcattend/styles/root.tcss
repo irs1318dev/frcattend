@@ -98,12 +98,6 @@ ModalScreen {
     margin: 0;
 }
 
-InactiveStudentToggle {
-    border: round green;
-    background: darkslategrey;
-    height: 5;
-}
-
 #upload-confirm-dialog {
     width: 60;
     height: 24;
