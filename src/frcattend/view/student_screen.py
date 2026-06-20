@@ -102,9 +102,7 @@ class StudentScreen(screen.Screen):
         """Initialize the datatable widget."""
         self.table = self.query_one(widgets.DataTable)
         self.table.cursor_type = "row"
-        self.table.add_columns(
-            "ID", "Last Name", "First Name", "Email", "Grad Year", "Deactivated On"
-        )
+        self.table.add_columns("ID", "Last Name", "First Name", "Email", "Grad Year")
         self.load_student_data()
         self._selected_student_id = None
 
@@ -144,8 +142,7 @@ class StudentScreen(screen.Screen):
         self.table.clear()
         textual.log("Loading student data")
         self._students = {
-            student.student_id: student
-            for student in model.Student.get_all(self.dbase, include_inactive=True)
+            student.student_id: student for student in model.Student.get_all(self.dbase)
         }
         for student in self._students.values():
             self.table.add_row(
@@ -154,13 +151,14 @@ class StudentScreen(screen.Screen):
                 student.first_name,
                 student.email,
                 str(student.grad_year),
-                student.deactivated_on,
                 key=student.student_id,
             )
         status_widget = self.query_one("#status-message", widgets.Static)
         status_widget.update(success(f"Loaded {len(self._students)} students."))
 
-    def on_data_table_row_highlighted(self, event: widgets.DataTable.RowHighlighted) -> None:
+    def on_data_table_row_highlighted(
+        self, event: widgets.DataTable.RowHighlighted
+    ) -> None:
         """Select a row in the datatable."""
         self._selected_student_id = event.row_key.value
         if self._selected_student_id is None:

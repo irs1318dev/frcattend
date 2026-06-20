@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 class Stage(enum.StrEnum):
     """Allowed student stages."""
+
     PROSPECT = "prospect"
     """A new student who has commenced fall training."""
     FORMER_PROSPECT = "former_prospect"
@@ -27,12 +28,13 @@ class Stage(enum.StrEnum):
     ALUMNI = "alumni"
     """Former member with significant participation (had a role, lettered, etc.)"""
 
-    valid_reasons: ClassVar[dict["Stage", list["Reason"]]] 
+    valid_reasons: ClassVar[dict["Stage", list["Reason"]]]
     """Maps each stage to the Reason values that are valid for it."""
 
 
 class Reason(enum.StrEnum):
     """Reasons for a student for being in a specific stage."""
+
     CHOICE = "choice"
     """Student chose to leave team (FORMER_PROSPECT, FORMER_MEMBER, ALUMNI)."""
     GRADUATED = "graduated"
@@ -48,7 +50,10 @@ Stage.valid_reasons = {
     Stage.FORMER_PROSPECT: [Reason.CHOICE, Reason.INCOMPLETE, Reason.TRANSFERRED],
     Stage.MEMBER: [],
     Stage.FORMER_MEMBER: [
-        Reason.CHOICE, Reason.INCOMPLETE, Reason.TRANSFERRED, Reason.GRADUATED
+        Reason.CHOICE,
+        Reason.INCOMPLETE,
+        Reason.TRANSFERRED,
+        Reason.GRADUATED,
     ],
     Stage.ALUMNI: [Reason.CHOICE, Reason.GRADUATED, Reason.TRANSFERRED],
 }
@@ -144,7 +149,6 @@ class Status(abstract.TableDef):
         self.status_id = 0 if status_id is None else status_id
         return self.status_id
 
-
     def update(self, dbase: "database.DBase") -> None:
         """Update the status record in the database."""
         query = """
@@ -191,12 +195,9 @@ class Status(abstract.TableDef):
               ORDER BY start_date DESC;
         """
         conn = dbase.get_db_connection(as_dict=True)
-        statuses = [
-            Status(**status) for status in conn.execute(query, [student_id])
-        ]
+        statuses = [Status(**status) for status in conn.execute(query, [student_id])]
         conn.close()
         return statuses
-
 
     def to_dict(self) -> dict:
         """Convert the Status dataclass to a dictionary."""
@@ -221,6 +222,30 @@ class Status(abstract.TableDef):
         conn.close()
         return statuses
 
+    @staticmethod
+    def get_current(dbase: "database.DBase") -> list["Status"]:
+        """Get the most recent status for each student."""
+        query = """
+            WITH ranked_status AS (
+                SELECT status_id, student_id,
+                       ROW_NUMBER() OVER student_window AS status_rank,
+                       stage, start_date, reason, notes
+                  FROM statuses
+                WINDOW student_window AS (
+                       PARTITION BY student_id
+                       ORDER BY start_date DESC
+                       )
+            )
+            SELECT status_id, student_id, stage, start_date, reason, notes
+              FROM ranked_status
+             WHERE status_rank = 1;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        statuses = [Status(**status) for status in conn.execute(query)]
+        conn.close()
+        return statuses
+
+
 @dataclasses.dataclass
 class Student(abstract.TableDef):
     """An FRC student."""
@@ -230,7 +255,6 @@ class Student(abstract.TableDef):
     last_name: str
     grad_year: int
     email: str
-    deactivated_on: Optional[datetime.date]
     status: Optional[Status] = dataclasses.field(default=None, kw_only=True)
 
     table_name: ClassVar[str] = "students"
@@ -240,17 +264,9 @@ class Student(abstract.TableDef):
                 first_name TEXT NOT NULL,
                  last_name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
-                 grad_year INTEGER NOT NULL,
-            deactivated_on DATE
+                 grad_year INTEGER NOT NULL
         );
     """
-    active_students_view_def: ClassVar[str] = """
-        CREATE VIEW IF NOT EXISTS active_students AS
-            SELECT student_id, first_name, last_name, grad_year, email, deactivated_on
-              FROM students
-             WHERE deactivated_on IS NULL;
-    """
-
     _underscore_pattern: ClassVar[re.Pattern] = re.compile(r"[\s\-]+")
     """Replace whitespace and dashes with an underscore."""
     _remove_pattern: ClassVar[re.Pattern] = re.compile(r"[.!?;,:']+")
@@ -263,43 +279,18 @@ class Student(abstract.TableDef):
         last_name: str,
         grad_year: int,
         email: str,
-        deactivated_on: Optional[datetime.date | str] = None,
     ) -> None:
-        """Ensure deactivated_on is converted to datetime.date if needed.
-
-        Pass an empty string to student_id to auto-generate a unique ID.
-        """
+        """Pass an empty string to student_id to auto-generate a unique ID."""
         self.student_id = (
             student_id
             if student_id
             else self.generate_unique_student_id(first_name, last_name, grad_year)
         )
-        match deactivated_on:
-            case None:
-                self.deactivated_on = None
-            case str():
-                self.deactivated_on = datetime.date.fromisoformat(deactivated_on)
-            case datetime.date():
-                self.deactivated_on = deactivated_on
         self.first_name = first_name
         self.last_name = last_name
         self.grad_year = grad_year
         self.email = email
         self.status = None
-
-    @property
-    def deactivated_iso(self) -> Optional[str]:
-        """Deactivation date as an iso-formatted string, or None."""
-        if self.deactivated_on is None:
-            return None
-        else:
-            return self.deactivated_on.isoformat()
-
-    @classmethod
-    def create(cls, conn: sqlite3.Connection) -> None:
-        """Create the table and other associated items (views, indexes, etc.)."""
-        super().create(conn)
-        conn.execute(cls.active_students_view_def)
 
     @classmethod
     def _clean_name(cls, name: str) -> str:
@@ -323,10 +314,8 @@ class Student(abstract.TableDef):
         """Add the Student to the database."""
         query = """
                 INSERT INTO students
-                            (student_id, first_name, last_name, grad_year, email,
-                            deactivated_on)
-                     VALUES (:student_id, :first_name, :last_name, :grad_year,
-                            :email, :deactivated_on);
+                            (student_id, first_name, last_name, grad_year, email)
+                     VALUES (:student_id, :first_name, :last_name, :grad_year, :email);
         """
         with dbase.get_db_connection() as conn:
             conn.execute(
@@ -337,7 +326,6 @@ class Student(abstract.TableDef):
                     "last_name": self.last_name,
                     "grad_year": self.grad_year,
                     "email": self.email,
-                    "deactivated_on": self.deactivated_iso,
                 },
             )
         conn.close()
@@ -349,8 +337,7 @@ class Student(abstract.TableDef):
                    SET first_name = :first_name,
                        last_name = :last_name,
                        grad_year = :grad_year,
-                       email = :email,
-                       deactivated_on = :deactivated_on
+                       email = :email
                  WHERE student_id = :student_id;
         """
         with dbase.get_db_connection() as conn:
@@ -362,22 +349,16 @@ class Student(abstract.TableDef):
                     "last_name": self.last_name,
                     "grad_year": self.grad_year,
                     "email": self.email,
-                    "deactivated_on": self.deactivated_iso,
                 },
             )
         conn.close()
 
     @staticmethod
-    def get_all(
-        dbase: "database.DBase",
-        include_inactive: bool = False,
-    ) -> list["Student"]:
+    def get_all(dbase: "database.DBase") -> list["Student"]:
         """Retrieve a list of Student objects from the database."""
-        table_name = "students" if include_inactive else "active_students"
-        query = f"""
-                SELECT student_id, last_name, first_name, grad_year, email,
-                       deactivated_on
-                  FROM {table_name}
+        query = """
+                SELECT student_id, last_name, first_name, grad_year, email
+                  FROM students
               ORDER BY student_id;
         """
         conn = dbase.get_db_connection(as_dict=True)
@@ -389,8 +370,7 @@ class Student(abstract.TableDef):
     def get_by_id(dbase: "database.DBase", student_id: str) -> "Student | None":
         """Retrieve a Student object by student_id."""
         query = """
-                SELECT student_id, last_name, first_name, grad_year, email,
-                       deactivated_on
+                SELECT student_id, last_name, first_name, grad_year, email
                   FROM students
                  WHERE student_id = ?;
         """
@@ -402,9 +382,7 @@ class Student(abstract.TableDef):
         return Student(**result)
 
     @staticmethod
-    def get_all_ids(
-        dbase: "database.DBase", include_inactive: bool = False
-    ) -> list[str]:
+    def get_all_ids(dbase: "database.DBase") -> list[str]:
         """Retrieve a list of all student IDs from the database."""
         query = """
                 SELECT student_id
@@ -415,15 +393,15 @@ class Student(abstract.TableDef):
         student_ids = [row["student_id"] for row in conn.execute(query)]
         conn.close()
         return student_ids
-    
+
     @staticmethod
     def get_with_status(
         dbase: "database.DBase",
         asof_date: Optional[datetime.date] = None,
-        stages: Optional[list[Stage]] = None
+        stages: Optional[list[Stage]] = None,
     ) -> list[Student]:
         """Get all students with their current status.
-        
+
         Args:
             asof_date: If not None, students have status that was current on
                 that date, and students who had not joined yet will be omitted.
@@ -436,25 +414,30 @@ class Student(abstract.TableDef):
         query = """
             WITH ranked_status AS (
                 SELECT status_id, student_id,
-                    ROW_NUMBER() OVER student_window AS status_rank,
-                    stage, start_date, reason, notes
-                FROM statuses
-                WHERE start_date < ?
-                WINDOW student_window AS (PARTITION BY student_id ORDER BY start_date DESC)
+                       ROW_NUMBER() OVER student_window AS status_rank,
+                       stage, start_date, reason, notes
+                  FROM statuses
+                 WHERE start_date < ?
+                WINDOW student_window AS (
+                       PARTITION BY student_id
+                       ORDER BY start_date DESC
+                       )
             )
-                SELECT stu.*, rs.status_id, rs.stage, rs.start_date, rs.reason, rs.notes
-                FROM students AS stu
-            LEFT JOIN ranked_status AS rs
-                    ON stu.student_id = rs.student_id
-                WHERE rs.status_rank = 1
-            ORDER BY stu.student_id;
+            SELECT stu.*, rs.status_id, rs.stage, rs.start_date, rs.reason, rs.notes
+              FROM students AS stu
+         LEFT JOIN ranked_status AS rs
+                ON stu.student_id = rs.student_id
+             WHERE rs.status_rank = 1
+          ORDER BY stu.student_id;
         """
         conn = dbase.get_db_connection(as_dict=True)
         students = []
         student_fields = frozenset(field.name for field in dataclasses.fields(Student))
         status_fields = frozenset(field.name for field in dataclasses.fields(Status))
         for row in conn.execute(query, [asof_date]):
-            student_data = {key: val for key, val in row.items() if key in student_fields}
+            student_data = {
+                key: val for key, val in row.items() if key in student_fields
+            }
             student = Student(**student_data)
             status_data = {key: val for key, val in row.items() if key in status_fields}
             student.status = Status(**status_data)
@@ -470,27 +453,14 @@ class Student(abstract.TableDef):
             "last_name": self.last_name,
             "grad_year": self.grad_year,
             "email": self.email,
-            "deactivated_on": self.deactivated_iso,
         }
 
     @staticmethod
     def summary(dbase: "database.DBase") -> dict[str, int]:
-        """Get the number of active students in the attenance system."""
-        query = """
-            WITH totals AS (
-                SELECT count(*) AS total,
-                       count(deactivated_on) AS deactivated
-                  FROM students
-                )
-            SELECT total, (total - deactivated) AS active, deactivated
-            FROM totals;
-            """
+        """Get the number of students in the attendance system."""
+        query = "SELECT count(*) AS total FROM students;"
         conn = dbase.get_db_connection()
         row = conn.execute(query).fetchone()
-        result = {
-            "total": row["total"],
-            "active": row["active"],
-            "deactivated": row["deactivated"],
-        }
+        result = {"total": row["total"]}
         conn.close()
         return result

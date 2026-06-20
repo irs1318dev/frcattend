@@ -55,17 +55,6 @@ class StudentDialog(screen.ModalScreen):
                 id="s-gyear",
                 validators=[validators.NotEmpty(), validators.IsYear()],
             )
-            yield widgets.Label("Deactivated on:", classes="emphasis")
-            yield widgets.Input(
-                value=(
-                    self.student.deactivated_iso
-                    if self.student and self.student.deactivated_on
-                    else ""
-                ),
-                placeholder="YYYY-MM-DD or leave blank if active",
-                validators=[validators.DateValidator()],
-                id="s-deactivated",
-            )
             yield status_table.StatusTable(self.student, widget_id="s-status")
             yield widgets.Button("Add Status", id="add-status")
 
@@ -110,11 +99,6 @@ class StudentDialog(screen.ModalScreen):
                 "grad_year": (
                     int(self.query_one("#s-gyear", widgets.Input).value)
                     if self.query_one("#s-gyear", widgets.Input).value
-                    else None
-                ),
-                "deactivated_on": (
-                    self.query_one("#s-deactivated", widgets.Input).value
-                    if self.query_one("#s-deactivated", widgets.Input).value
                     else None
                 ),
             }

@@ -23,21 +23,17 @@ def test_generate_qr_codes(
     """Generate QR codes for all students."""
     # Arrange
     qr_folder = empty_output_folder / QR_FOLDER_NAME
-    students = model.Student.get_all(full_dbase, include_inactive=True)
-    num_active_students = len([s for s in students if s.deactivated_on is None])
+    students = model.Student.get_all(full_dbase)
     # Act
     generator = qr_code_generator.generate_all_qr_codes(qr_folder, full_dbase)
     results = list(generator)
     # Assert
-    assert results[0] == ("quantity-students", num_active_students)
-    assert len(results) == num_active_students + 1
+    assert results[0] == ("quantity-students", len(students))
+    assert len(results) == len(students) + 1
     assert all(result[1] is True for result in results[1:])
     for student in students:
         qr_path = qr_folder / f"{student.student_id}.png"
-        if student.deactivated_on is None:
-            assert qr_path.exists()
-        else:
-            assert not qr_path.exists()
+        assert qr_path.exists()
 
 
 def test_send_one_qr_code(

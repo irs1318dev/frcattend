@@ -84,7 +84,6 @@ def test_to_dict(full_dbase: model.DBase) -> None:
     """Save database contents to a JSON file."""
     # Act
     data = full_dbase.to_dict()
-    print(data.keys())
     # Assert
     tables = ["students", "statuses", "checkins", "events", "surveys", "answers"]
     assert len(data) == len(tables)
@@ -104,8 +103,8 @@ def test_from_dict(full_dbase: model.DBase, empty_database2: model.DBase) -> Non
     # Act
     empty_database2.load_from_dict(exported_data)
     # Assert
-    students1 = model.Student.get_all(full_dbase, include_inactive=True)
-    students2 = model.Student.get_all(empty_database2, include_inactive=True)
+    students1 = model.Student.get_all(full_dbase)
+    students2 = model.Student.get_all(empty_database2)
     assert len(students1) == len(students2)
     checkins1 = model.Checkin.get_all(full_dbase)
     checkins2 = model.Checkin.get_all(empty_database2)

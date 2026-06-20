@@ -14,7 +14,7 @@ DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 def test_add_active_checkin(full_dbase: model.DBase) -> None:
     """Add a checkin to the checkins table."""
     # Arrange
-    student_ids = model.Student.get_all_ids(full_dbase, include_inactive=False)
+    student_ids = model.Student.get_all_ids(full_dbase)
     event = model.Event(
         datetime.date(2027, 1, 1), model.EventType.VIRTUAL, "Pytest Event"
     )
@@ -38,7 +38,6 @@ def test_add_active_checkin(full_dbase: model.DBase) -> None:
     added_checkin = added_checkins[0]
     assert added_checkin.checkin_id == checkin_id
     assert added_checkin.timestamp == checkin.timestamp
-    assert added_checkin.inactive == checkin.inactive
 
 
 def test_get_checkin_count(full_dbase: model.DBase) -> None:

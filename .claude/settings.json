@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest tests/test_database.py::test_attendance_report_data tests/test_database.py::test_attendance_counts -v)"
+    ]
+  }
+}

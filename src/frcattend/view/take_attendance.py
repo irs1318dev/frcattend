@@ -53,8 +53,7 @@ class ScanScreen(screen.Screen):
             raise model.DBaseError("No database file selected.")
         self.dbase = model.DBase(config.settings.db_path)
         self._students = {
-            student.student_id: student
-            for student in model.Student.get_all(self.dbase, include_inactive=True)
+            student.student_id: student for student in model.Student.get_all(self.dbase)
         }
 
     class QrCodeFound(message.Message):
@@ -119,18 +118,17 @@ class ScanScreen(screen.Screen):
                     self._scanned_students.add(qr_data)
                     self.post_message(self.QrCodeFound(qr_data))
                     if self.survey is not None and qr_data in self._students:
-                        if self._students[qr_data].deactivated_on is None:
-                            self.app.push_screen(
-                                survey_screen.TakeSurveyDialog(
-                                    self.dbase,
-                                    self,
-                                    self.survey,
-                                    self._students[qr_data],
-                                )
+                        self.app.push_screen(
+                            survey_screen.TakeSurveyDialog(
+                                self.dbase,
+                                self,
+                                self.survey,
+                                self._students[qr_data],
                             )
-                            vcap.release()
-                            cv2.destroyAllWindows()
-                            return
+                        )
+                        vcap.release()
+                        cv2.destroyAllWindows()
+                        return
                     await asyncio.sleep(0.1)  # Allow log to update.
             wait_key = cv2.waitKey(50)  # Wait 50 miliseconds for key press.
             if wait_key in [ord("q"), ord("Q")]:
@@ -184,21 +182,10 @@ class ScanScreen(screen.Screen):
                 "[/]\n"
             )
             return
-        if student.deactivated_on is None:
-            self.log_widget.write(
-                f"[green]Success: {student.first_name} {student.last_name} "
-                f"checked in at {checkin.timestamp.strftime('%H:%M:%S')}[/]"
-            )
-        else:
-            self.log_widget.write(
-                "\n[yellow]"
-                "** WARNING ***********************************\n"
-                f"** {student.first_name:>12} {student.last_name:<12}\n"
-                "** Your QR code has been marked as inactive! This is most likely\n"
-                "** due to not completing all membership requirements.\n"
-                "**    [/][reverse]Please speak to a mentor.[/][yellow]\n"
-                "**********************************************[/]\n"
-            )
+        self.log_widget.write(
+            f"[green]Success: {student.first_name} {student.last_name} "
+            f"checked in at {checkin.timestamp.strftime('%H:%M:%S')}[/]"
+        )
 
     # Tried using Textual's set_timer method, but that didn't work.
     #   Non-threaded async workers didn't work either. Might be due to

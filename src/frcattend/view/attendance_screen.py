@@ -34,7 +34,7 @@ class StudentsTable(widgets.DataTable):
             ("Graduation Year", "grad_year"),
             ("[green]Build Season Checkins[/]", "build_checkins"),
             ("All Checkins", "season_checkins"),
-            ("Last Checkin", "last_checkin")
+            ("Last Checkin", "last_checkin"),
         ]:
             self.add_column(col[0], key=col[1])
 
@@ -43,9 +43,7 @@ class StudentsTable(widgets.DataTable):
         self.clear(columns=False)
         self.students = {
             student.student_id: student
-            for student in model.Attendance.get_student_attendance_students(
-                self.dbase, include_inactive=True
-            )
+            for student in model.Attendance.get_student_attendance_students(self.dbase)
         }
         for key, stu in self.students.items():
             self.add_row(

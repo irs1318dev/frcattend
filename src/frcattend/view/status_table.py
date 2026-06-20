@@ -14,11 +14,11 @@ class StatusError(Exception):
 
 class StatusTable(widgets.DataTable):
     """Display status records for a single student."""
+
     student: model.Student | None
     """Spcecify student whose data will be displayed."""
     _dbase: model.DBase
     """Connection to Sqlite database."""
-
 
     def __init__(self, student: model.Student | None, widget_id: str) -> None:
         """Set the student ID on initialization."""
@@ -30,7 +30,7 @@ class StatusTable(widgets.DataTable):
 
     def on_mount(self) -> None:
         """Configure and load table."""
-        self.cursor_type="row"
+        self.cursor_type = "row"
         self.add_columns("start_date", "stage", "reason", "notes")
         self.populate_rows()
 
@@ -39,8 +39,7 @@ class StatusTable(widgets.DataTable):
         self.clear()
         if self.student is not None:
             statuses = model.Status.get_by_student_id(
-                self._dbase,
-                self.student.student_id
+                self._dbase, self.student.student_id
             )
             for status in statuses:
                 self.add_row(
@@ -48,7 +47,7 @@ class StatusTable(widgets.DataTable):
                     status.stage,
                     status.reason,
                     status.notes,
-                    key=str(status.status_id)
+                    key=str(status.status_id),
                 )
 
     @textual.on(widgets.DataTable.RowSelected)
@@ -66,7 +65,8 @@ class StatusTable(widgets.DataTable):
                 status_id = int(event.row_key.value)
         self.app.push_screen(
             EditStatusDialog(
-                dbase=self._dbase, student=self.student, status_id=status_id),
+                dbase=self._dbase, student=self.student, status_id=status_id
+            ),
             callback=lambda saved: self.populate_rows() if saved else None,
         )
 
@@ -80,12 +80,8 @@ class EditStatusDialog(screen.ModalScreen):
     status: model.Status | None
     _dbase: model.DBase
 
-
     def __init__(
-        self,
-        dbase: model.DBase,
-        student: model.Student,
-        status_id: int | None
+        self, dbase: model.DBase, student: model.Student, status_id: int | None
     ) -> None:
         """Initialize for a specific student and status record."""
         super().__init__()
@@ -95,7 +91,6 @@ class EditStatusDialog(screen.ModalScreen):
             self.status = None
         else:
             self.status = model.Status.get_by_status_id(self._dbase, status_id)
-
 
     def compose(self) -> app.ComposeResult:
         """Create and arrange dialog widgets."""
@@ -115,7 +110,8 @@ class EditStatusDialog(screen.ModalScreen):
             else:
                 initial_stage = self.status.stage
                 initial_reason = (
-                    widgets.Select.NULL if self.status.reason is None
+                    widgets.Select.NULL
+                    if self.status.reason is None
                     else self.status.reason
                 )
 
@@ -196,7 +192,11 @@ class EditStatusDialog(screen.ModalScreen):
 
         start_date = datetime.date.fromisoformat(date_input.value)
         stage = stage_select.value
-        reason = reason_select.value if isinstance(reason_select.value, model.Reason) else None
+        reason = (
+            reason_select.value
+            if isinstance(reason_select.value, model.Reason)
+            else None
+        )
         notes = notes_input.text if notes_input.text else None
 
         if self.status is None:
@@ -217,5 +217,3 @@ class EditStatusDialog(screen.ModalScreen):
             self.status.update(self._dbase)
 
         self.dismiss(True)
-
-

@@ -22,9 +22,9 @@ def get_summary() -> str:
     summary.extend(
         [
             "## Students",
-            "| Active | Deactivated | Total |",
-            "| ------ | ----------- | ----- |",
-            f"| {students['active']} | {students['deactivated']} | {students['total']} |",
+            "| Total |",
+            "| ----- |",
+            f"| {students['total']} |",
         ]
     )
     events = model.Event.summary(dbase)

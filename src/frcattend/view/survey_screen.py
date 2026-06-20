@@ -99,7 +99,9 @@ class SurveyScreen(screen.Screen):
             self.survey_table.add_row(survey.title, survey.question, key=survey.title)
         self._selected_survey_title = None
 
-    def on_data_table_row_highlighted(self, event: widgets.DataTable.RowHighlighted) -> None:
+    def on_data_table_row_highlighted(
+        self, event: widgets.DataTable.RowHighlighted
+    ) -> None:
         """Select a row in the datatable."""
         self._selected_survey_title = event.row_key.value
         if self._selected_survey_title is None:

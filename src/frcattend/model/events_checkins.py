@@ -337,7 +337,6 @@ class Checkin(abstract.TableDef):
            day_of_week INT GENERATED ALWAYS AS (strftime('%u', event_date)) VIRTUAL,
             event_type EVENT_TYPE,
              timestamp DATETIME NOT NULL,
-              inactive BOOL NOT NULL,
            FOREIGN KEY (student_id) REFERENCES students (student_id),
            FOREIGN KEY (event_date, event_type)
                        REFERENCES events (event_date, event_type)
@@ -355,7 +354,6 @@ class Checkin(abstract.TableDef):
         student_id: str,
         event_type: str | EventType,
         timestamp: datetime.datetime | str,
-        inactive: bool = False,
     ) -> None:
         """Ensure timestamp is converted to datetime.datetime.
 
@@ -369,7 +367,6 @@ class Checkin(abstract.TableDef):
         self.student_id = student_id
         self.event_type = event_type
         self.timestamp = timestamp
-        self.inactive = inactive
 
     @property
     def event_date(self) -> datetime.date:
@@ -400,8 +397,8 @@ class Checkin(abstract.TableDef):
         """
         query = """
                 INSERT INTO checkins
-                            (student_id, event_type, timestamp, inactive)
-                     VALUES (:student_id, :event_type, :timestamp, :inactive);
+                            (student_id, event_type, timestamp)
+                     VALUES (:student_id, :event_type, :timestamp);
         """
         with dbase.get_db_connection() as conn:
             cursor = conn.execute(
@@ -410,7 +407,6 @@ class Checkin(abstract.TableDef):
                     "student_id": self.student_id,
                     "event_type": self.event_type.value,
                     "timestamp": self.timestamp,
-                    "inactive": self.inactive,
                 },
             )
             checkin_id = cursor.lastrowid
@@ -435,7 +431,7 @@ class Checkin(abstract.TableDef):
     def get_all(dbase: "database.DBase") -> list["Checkin"]:
         """Retrieve a list of Checkin objects from the database."""
         query = """
-                SELECT checkin_id, student_id, event_type, timestamp, inactive
+                SELECT checkin_id, student_id, event_type, timestamp
                   FROM checkins
               ORDER BY timestamp;
         """
@@ -484,7 +480,7 @@ class Checkin(abstract.TableDef):
     ) -> list["Checkin"]:
         """Get a list of checkin objects for a single student."""
         query = """
-                SELECT checkin_id, student_id, event_type, timestamp, inactive
+                SELECT checkin_id, student_id, event_type, timestamp
                   FROM checkins
                  WHERE student_id = ?
               ORDER BY event_date;
@@ -502,10 +498,10 @@ class Checkin(abstract.TableDef):
         conn = dbase.get_db_connection()
         cursor = conn.execute(
             """
-                SELECT student_id, inactive, COUNT(student_id) as checkins
+                SELECT student_id, COUNT(student_id) as checkins
                   FROM checkins
                  WHERE timestamp >= ?
-              GROUP BY student_id, inactive
+              GROUP BY student_id
               ORDER BY student_id;
         """,
             (since,),
@@ -543,7 +539,7 @@ class Checkin(abstract.TableDef):
             given student and date.
         """
         query = """
-                SELECT checkin_id, student_id, event_type, timestamp, inactive
+                SELECT checkin_id, student_id, event_type, timestamp
                   FROM checkins
                  WHERE student_id = ?
                    AND event_date = ?;
@@ -563,7 +559,6 @@ class Checkin(abstract.TableDef):
             "student_id": self.student_id,
             "event_type": self.event_type,
             "timestamp": self.timestamp.isoformat(),
-            "inactive": self.inactive,
         }
 
     @staticmethod

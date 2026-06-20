@@ -16,7 +16,7 @@ DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 def test_get_students(full_dbase: model.DBase) -> None:
     """Get students as Student objects."""
     # Act
-    students = model.Student.get_all(full_dbase, include_inactive=True)
+    students = model.Student.get_all(full_dbase)
     # Assert
     assert all(isinstance(student, model.Student) for student in students)
     assert isinstance(students[0].grad_year, int)
@@ -83,6 +83,19 @@ def test_add_status_invalid_student_id(full_dbase: model.DBase) -> None:
         status.add(full_dbase)
 
 
+def test_get_current(full_dbase: model.DBase) -> None:
+    """Get the current (most recent) status for every student."""
+    # Act
+    statuses = model.Status.get_current(full_dbase)
+    # Assert
+    student_ids = [status.student_id for status in statuses]
+    assert len(student_ids) == len(set(student_ids))
+    by_student = {status.student_id: status for status in statuses}
+    current = by_student["davis-isabella-2029-060"]
+    assert current.stage == model.Stage.MEMBER
+    assert current.start_date == datetime.date(2026, 12, 1)
+
+
 def test_get_with_status(full_dbase: model.DBase) -> None:
     """Get all students and their corresponding status."""
     # Act
@@ -92,4 +105,3 @@ def test_get_with_status(full_dbase: model.DBase) -> None:
     # Assert
     assert students
     assert all(isinstance(student.status, model.Status) for student in students)
-

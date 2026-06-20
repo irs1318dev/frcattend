@@ -424,7 +424,7 @@ class RosterUpdater:
         Dictionary values are student IDs.
         """
         student_ids: dict[tuple[str, str, int], str] = {}
-        for s in model.Student.get_all(self.dbase, include_inactive=True):
+        for s in model.Student.get_all(self.dbase):
             student_ids[(s.last_name, s.first_name, s.grad_year)] = s.student_id
         return student_ids
 

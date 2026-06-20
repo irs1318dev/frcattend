@@ -148,8 +148,7 @@ class DBase:
         """
         db_data = {}
         db_data["students"] = [
-            student.to_dict()
-            for student in students.Student.get_all(self, include_inactive=True)
+            student.to_dict() for student in students.Student.get_all(self)
         ]
         db_data["statuses"] = [
             status.to_dict() for status in students.Status.get_all(self)
@@ -178,10 +177,8 @@ class DBase:
         """Import data into the Sqlite database."""
         student_query = """
             INSERT INTO students
-                        (student_id, first_name, last_name, email, grad_year,
-                        deactivated_on)
-                 VALUES (:student_id, :first_name, :last_name, :email, :grad_year,
-                        :deactivated_on);
+                        (student_id, first_name, last_name, email, grad_year)
+                 VALUES (:student_id, :first_name, :last_name, :email, :grad_year);
         """
         statuses_query = """
             INSERT INTO statuses
@@ -190,8 +187,8 @@ class DBase:
         """
         checkins_query = """
             INSERT INTO checkins
-                        (student_id, event_type, timestamp, inactive)
-                 VALUES (:student_id, :event_type, :timestamp, :inactive);
+                        (student_id, event_type, timestamp)
+                 VALUES (:student_id, :event_type, :timestamp);
         """
         event_query = """
             INSERT INTO events

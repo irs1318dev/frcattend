@@ -66,7 +66,7 @@ class EventStudent(model.Student):
         event_date, event_type = tuple(event_key.split("::"))
         query = """
                 SELECT s.student_id, s.first_name, s.last_name, s.grad_year, s.email,
-                       c.timestamp, s.deactivated_on
+                       c.timestamp
                     FROM events e
                 LEFT JOIN checkins c
                     ON c.event_date = e.event_date

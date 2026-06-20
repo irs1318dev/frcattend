@@ -58,7 +58,7 @@ def empty_database2(
     empty_output_folder: pathlib.Path, settings: config.Settings
 ) -> model.DBase:
     """An empty IrsAttend database, with tables created.
-    
+
     Some tests require two different database files. Use this fixture
     and the empty_database fixture to create two different database files.
     """
@@ -76,8 +76,7 @@ def attendance_test_data() -> dict[str, list[Any]]:
 
 @pytest.fixture
 def full_dbase(
-    empty_database: model.DBase,
-    attendance_test_data: dict[str, list[Any]]
+    empty_database: model.DBase, attendance_test_data: dict[str, list[Any]]
 ) -> model.DBase:
     """Database with students, statuses, appearances, and events."""
     empty_database.load_from_dict(attendance_test_data)
@@ -107,8 +106,7 @@ def empty_synchro(
 
 @pytest.fixture
 def full_synchro(
-    empty_synchro: sync.Synchronizer,
-    attendance_test_data: dict[str, list[Any]]
+    empty_synchro: sync.Synchronizer, attendance_test_data: dict[str, list[Any]]
 ) -> sync.Synchronizer:
     """A synchronizer that points to a full spreadsheet."""
     # data = full_dbase.to_dict()
