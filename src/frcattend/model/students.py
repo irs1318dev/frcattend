@@ -119,6 +119,14 @@ class Status(abstract.TableDef):
         );
     """
 
+    def is_rookie(self, asof: Optional[datetime.date]) -> bool:
+        """Return True if student is a rookie.
+
+        Students transition from being a rookie to a veteran at the end of their
+        first competition season. Competition season ends on 1 May each year.
+        """
+        return False
+
     def add(self, dbase: "database.DBase") -> int:
         """Add the status record to the database.
 
@@ -441,7 +449,8 @@ class Student(abstract.TableDef):
             student = Student(**student_data)
             status_data = {key: val for key, val in row.items() if key in status_fields}
             student.status = Status(**status_data)
-            students.append(student)
+            if stages is None or student.status.stage in stages:
+                students.append(student)
         conn.close()
         return students
 

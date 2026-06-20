@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -m pytest tests/test_database.py::test_attendance_report_data tests/test_database.py::test_attendance_counts -v)"
+      "Bash(python -m pytest tests/test_database.py::test_attendance_report_data tests/test_database.py::test_attendance_counts -v)",
+      "Bash(python -c \"import textual.widgets, inspect; print\\(inspect.signature\\(textual.widgets.SelectionList.__init__\\)\\)\")",
+      "Bash(python -c \"from frcattend.view.status_widgets import StatusSelector; s = StatusSelector\\(\\); print\\(s._options\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python -m pytest tests/test_students.py -q)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/frcattend/view/student_screen.py'\\).read\\(\\)\\)\")"
     ]
   }
 }

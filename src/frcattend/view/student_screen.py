@@ -1,16 +1,17 @@
 """View roster and add new students."""
 
+import datetime
 import sqlite3
 from typing import Optional
 
 import textual
 import textual.css.query
-from textual import app, binding, containers, screen, widgets
+from textual import app, binding, containers, events, message, screen, widgets
 
 from frcattend import config, model
 from frcattend.features import emailer, qr_code_generator
 import frcattend.view
-from frcattend.view import confirm_dialogs, student_dialog
+from frcattend.view import confirm_dialogs, status_widgets, student_dialog
 
 
 def success(message: str) -> str:
@@ -21,6 +22,36 @@ def success(message: str) -> str:
 def error(message: str) -> str:
     """Format an error message for display in the status widget."""
     return f"[ansi_bright_red]{message}[/]"
+
+
+class StudentTable(widgets.DataTable):
+    """DataTable for the student roster that exposes raw click events.
+
+    DataTable's own click handling calls `event.stop()` for row/cell clicks,
+    so a click handler on this widget can't be registered on an ancestor.
+    """
+
+    class RowDoubleClicked(message.Message):
+        """Sent when a row is double-clicked."""
+
+        student_id: str
+
+        def __init__(self, student_id: str) -> None:
+            """Set the student ID of the double-clicked row."""
+            super().__init__()
+            self.student_id = student_id
+
+    def on_click(self, event: events.Click) -> None:
+        """Notify the parent screen when a row is double-clicked."""
+        if event.chain < 2:
+            return
+        row_index = event.style.meta.get("row")
+        if row_index is None or row_index < 0 or row_index >= len(self.ordered_rows):
+            return
+        student_id = self.ordered_rows[row_index].key.value
+        if student_id is None:
+            return
+        self.post_message(self.RowDoubleClicked(student_id))
 
 
 class StudentScreen(screen.Screen):
@@ -52,15 +83,11 @@ class StudentScreen(screen.Screen):
         with containers.Horizontal():
             with containers.Vertical(id="student-list-container"):
                 yield widgets.Label("Student List")
-                yield widgets.DataTable(zebra_stripes=True, id="student-table")
+                yield StudentTable(zebra_stripes=True, id="student-table")
             with containers.Vertical(id="students-actions-container"):
+                yield status_widgets.StatusSelector(id="status-selector")
                 yield widgets.Label("Actions", classes="emphasis")
                 with containers.ScrollableContainer():
-                    yield widgets.Static(
-                        "No student selected",
-                        id="students-selection-indicator",
-                        classes="selection-info",
-                    )
                     yield widgets.Static()
                     yield widgets.Button(
                         "Add Student",
@@ -95,6 +122,11 @@ class StudentScreen(screen.Screen):
                         id="email-all-qr",
                         tooltip="Email QR codes to ALL students.",
                     )
+                    yield widgets.Static(
+                        "No student selected",
+                        id="students-selection-indicator",
+                        classes="selection-info",
+                    )
                     yield widgets.Static(id="status-message", classes="status")
         yield widgets.Footer()
 
@@ -102,7 +134,7 @@ class StudentScreen(screen.Screen):
         """Initialize the datatable widget."""
         self.table = self.query_one(widgets.DataTable)
         self.table.cursor_type = "row"
-        self.table.add_columns("ID", "Last Name", "First Name", "Email", "Grad Year")
+        self.table.add_columns("ID", "Last Name", "First Name", "Status", "Grad Year")
         self.load_student_data()
         self._selected_student_id = None
 
@@ -141,20 +173,38 @@ class StudentScreen(screen.Screen):
         """Load student data into the datatable widget."""
         self.table.clear()
         textual.log("Loading student data")
+        selected_stages = self.query_one(
+            "#status-selector", status_widgets.StatusSelector
+        ).selected
         self._students = {
-            student.student_id: student for student in model.Student.get_all(self.dbase)
+            student.student_id: student
+            for student in model.Student.get_with_status(
+                self.dbase, asof_date=datetime.date.today(), stages=selected_stages
+            )
         }
         for student in self._students.values():
             self.table.add_row(
                 student.student_id,
                 student.last_name,
                 student.first_name,
-                student.email,
+                student.status.stage.value if student.status else "",
                 str(student.grad_year),
                 key=student.student_id,
             )
         status_widget = self.query_one("#status-message", widgets.Static)
         status_widget.update(success(f"Loaded {len(self._students)} students."))
+
+    @textual.on(widgets.SelectionList.SelectedChanged, "#status-selector")
+    def on_status_selector_changed(self) -> None:
+        """Reload student data when the selected stages change."""
+        self.load_student_data()
+
+    async def on_student_table_row_double_clicked(
+        self, event: StudentTable.RowDoubleClicked
+    ) -> None:
+        """Open the edit dialog for the double-clicked student."""
+        self._selected_student_id = event.student_id
+        await self.action_edit_student()
 
     def on_data_table_row_highlighted(
         self, event: widgets.DataTable.RowHighlighted
