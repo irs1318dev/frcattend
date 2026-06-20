@@ -172,7 +172,6 @@ class StudentScreen(screen.Screen):
     def load_student_data(self) -> None:
         """Load student data into the datatable widget."""
         self.table.clear()
-        textual.log("Loading student data")
         selected_stages = self.query_one(
             "#status-selector", status_widgets.StatusSelector
         ).selected

@@ -6,7 +6,13 @@
       "Bash(python -c \"from frcattend.view.status_widgets import StatusSelector; s = StatusSelector\\(\\); print\\(s._options\\)\")",
       "Bash(python -c ' *)",
       "Bash(python -m pytest tests/test_students.py -q)",
-      "Bash(python -c \"import ast; ast.parse\\(open\\('src/frcattend/view/student_screen.py'\\).read\\(\\)\\)\")"
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/frcattend/view/student_screen.py'\\).read\\(\\)\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/frcattend/model/students.py'\\).read\\(\\)\\)\")",
+      "Bash(python -m pytest tests/test_tmp_veteran.py -s -q)",
+      "Bash(rm c:/Users/stacy/dev/attendance/frcattend/tests/test_tmp_veteran.py)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\stacy\\dev\\attendance\\frcattend\\tests"
     ]
   }
 }

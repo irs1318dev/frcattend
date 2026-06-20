@@ -1362,17 +1362,17 @@
     },
     {
       "student_id": "davis-isabella-2029-060",
+      "stage": "member",
+      "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "davis-isabella-2029-060",
       "stage": "former_member",
       "start_date": "2026-03-01",
       "reason": "choice",
       "notes": "Stopped attending"
-    },
-    {
-      "student_id": "davis-isabella-2029-060",
-      "stage": "member",
-      "start_date": "2026-12-01",
-      "reason": null,
-      "notes": null
     },
     {
       "student_id": "desai-isha-2028-550",

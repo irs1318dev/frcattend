@@ -93,7 +93,26 @@ def test_get_current(full_dbase: model.DBase) -> None:
     by_student = {status.student_id: status for status in statuses}
     current = by_student["davis-isabella-2029-060"]
     assert current.stage == model.Stage.MEMBER
-    assert current.start_date == datetime.date(2026, 12, 1)
+    assert current.start_date == datetime.date(2026, 3, 1)
+
+
+def test_get_veteran_dates(full_dbase: model.DBase) -> None:
+    """Get the rookie-to-veteran transition date for current members/prospects."""
+    # Act
+    veteran_dates = model.Student.get_veteran_dates(full_dbase)
+    # Assert
+    # davis-isabella-2029-060 stopped attending during build season
+    assert "davis-isabella-2029-060" not in veteran_dates
+    # bakr-salma-2026-946 has been a member since 2023-12-01.
+    assert veteran_dates["bakr-salma-2026-946"] == "2024-05-01"
+    # anderson-mason-2029-608 started as a prospect on 2025-09-25 and is
+    # currently a member.
+    assert veteran_dates["anderson-mason-2029-608"] == "2026-05-01"
+    # das-shreya-2026-285 has been a member since 2022-12-01.
+    assert veteran_dates["das-shreya-2026-285"] == "2023-05-01"
+    # campbell-benjamin-2026-840 is currently a former_member, so they are
+    # excluded from the result.
+    assert "campbell-benjamin-2026-840" not in veteran_dates
 
 
 def test_get_with_status(full_dbase: model.DBase) -> None:

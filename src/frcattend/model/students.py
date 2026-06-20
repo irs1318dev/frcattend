@@ -119,14 +119,6 @@ class Status(abstract.TableDef):
         );
     """
 
-    def is_rookie(self, asof: Optional[datetime.date]) -> bool:
-        """Return True if student is a rookie.
-
-        Students transition from being a rookie to a veteran at the end of their
-        first competition season. Competition season ends on 1 May each year.
-        """
-        return False
-
     def add(self, dbase: "database.DBase") -> int:
         """Add the status record to the database.
 
@@ -287,6 +279,7 @@ class Student(abstract.TableDef):
         last_name: str,
         grad_year: int,
         email: str,
+        is_rookie: Optional[bool] = None
     ) -> None:
         """Pass an empty string to student_id to auto-generate a unique ID."""
         self.student_id = (
@@ -401,6 +394,64 @@ class Student(abstract.TableDef):
         student_ids = [row["student_id"] for row in conn.execute(query)]
         conn.close()
         return student_ids
+
+    @staticmethod
+    def get_veteran_dates(dbase: "database.DBase") -> dict[str, datetime.date]:
+        """Get dates on which student transitions from rookie to veteran."""
+        query = """
+            with ranked_status AS (
+                -- Assign integer ranks to statuses, from newest to oldest
+                SELECT student_id, stage, start_date,
+                       ROW_NUMBER() OVER student_window AS status_rank
+                  FROM statuses
+                WINDOW student_window AS (
+                           PARTITION BY student_id
+                           ORDER BY start_date DESC
+                       )
+            ),
+            selected_students AS (
+                -- Filter students by current status.
+                SELECT student_id
+                  FROM ranked_status
+                 WHERE status_rank = 1
+                   AND stage IN ('member', 'prospect')
+            ),   
+            ranked_start_dates AS (
+                -- Re-assign integer ranks to statuses, from oldest to newest
+                SELECT student_id, start_date, stage,
+                       rank() OVER student_window AS date_rank
+                  FROM statuses
+                 WHERE student_id IN selected_students
+                   AND stage IN ('member', 'prospect')
+                WINDOW student_window AS (PARTITION BY student_id ORDER BY start_date)
+            ),
+            start_dates AS (
+                -- Get start dates for earliest statuses
+                SELECT student_id, start_date
+                  FROM ranked_start_dates
+                 WHERE date_rank = 1
+              ORDER BY student_id, start_date
+            ),
+            date_parts AS (
+                -- Split start_date into year and month
+                SELECT student_id, start_date,
+                       CAST(strftime("%Y", start_date) AS INTEGER) AS start_year,
+                       CAST(strftime("%m", start_date) AS INTEGER) AS start_month
+                  FROM start_dates
+            )
+            -- Veteran data is the May 1st of year following start year
+            SELECT student_id,
+                   concat(start_year + 1,"-05-01") AS veteran_date
+              FROM date_parts
+          ORDER BY student_id;
+        """
+        conn = dbase.get_db_connection()
+        veteran_dates = {
+            row["student_id"]: row["veteran_date"]
+            for row in conn.execute(query)
+        }
+        conn.close()
+        return veteran_dates
 
     @staticmethod
     def get_with_status(
