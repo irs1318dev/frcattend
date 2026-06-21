@@ -526,6 +526,20 @@ class Student(abstract.TableDef):
                 students.append(student)
         conn.close()
         return students
+    
+    @staticmethod
+    def grad_years(dbase: "database.DBase") -> list[int]:
+        """Get available graduation years."""
+        query = """
+            SELECT DISTINCT(grad_year)
+              FROM students
+          ORDER BY grad_year;
+        """
+        conn = dbase.get_db_connection()
+        grad_years = [row["grad_year"] for row in conn.execute(query)]
+        conn.close()
+        return grad_years
+
 
     def to_dict(self) -> dict:
         """Convert the Student dataclass to a dictionary."""

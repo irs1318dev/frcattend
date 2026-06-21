@@ -147,6 +147,15 @@ def test_get_past_veteran_dates(full_dbase: model.DBase) -> None:
     assert len(veteran_dates) == 52
 
 
+def test_grad_years(full_dbase: model.DBase) -> None:
+    """Get available graduation years without filtering by stage."""
+    # Act
+    grad_years = model.Student.grad_years(full_dbase)
+    # Assert
+    assert all(isinstance(grad_year, int) for grad_year in grad_years)
+    assert grad_years == sorted(grad_years)
+
+
 def test_get_with_status(full_dbase: model.DBase) -> None:
     """Get all students and their corresponding status."""
     # Act

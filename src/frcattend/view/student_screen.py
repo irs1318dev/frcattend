@@ -11,7 +11,7 @@ from textual import app, binding, containers, events, message, screen, widgets
 from frcattend import config, model
 from frcattend.features import emailer, qr_code_generator
 import frcattend.view
-from frcattend.view import confirm_dialogs, status_widgets, student_dialog
+from frcattend.view import confirm_dialogs, selector_widgets, student_dialog
 
 
 def success(message: str) -> str:
@@ -26,9 +26,7 @@ def error(message: str) -> str:
 
 def format_rookie(is_rookie: Optional[bool]) -> str:
     """Format the is_rookie field for display in the student table."""
-    if is_rookie is None:
-        return "n/a"
-    return "[yellow]yes[/]" if is_rookie else "no"
+    return "[yellow]yes[/]" if is_rookie else ""
 
 
 class StudentTable(widgets.DataTable):
@@ -92,7 +90,10 @@ class StudentScreen(screen.Screen):
                 yield widgets.Label("Student List")
                 yield StudentTable(zebra_stripes=True, id="student-table")
             with containers.Vertical(id="students-actions-container"):
-                yield status_widgets.StatusSelector(id="status-selector")
+                yield selector_widgets.StatusSelector(id="status-selector")
+                yield selector_widgets.GradYearSelector(
+                    self.dbase, id="grad-year-selector"
+                )
                 yield widgets.Label("Actions", classes="emphasis")
                 with containers.ScrollableContainer():
                     yield widgets.Static()
@@ -182,14 +183,19 @@ class StudentScreen(screen.Screen):
         """Load student data into the datatable widget."""
         self.table.clear()
         selected_stages = self.query_one(
-            "#status-selector", status_widgets.StatusSelector
+            "#status-selector", selector_widgets.StatusSelector
         ).selected
-        self._students = {
-            student.student_id: student
-            for student in model.Student.get_with_status(
-                self.dbase, asof_date=datetime.date.today(), stages=selected_stages
-            )
-        }
+        grad_year = self.query_one(
+            "#grad-year-selector", selector_widgets.GradYearSelector
+        ).value
+        students = model.Student.get_with_status(
+            self.dbase, asof_date=datetime.date.today(), stages=selected_stages
+        )
+        if len(grad_year) == 4:
+            students = [
+                student for student in students if student.grad_year == int(grad_year)
+            ]
+        self._students = {student.student_id: student for student in students}
         for student in self._students.values():
             self.table.add_row(
                 student.student_id,
@@ -206,6 +212,11 @@ class StudentScreen(screen.Screen):
     @textual.on(widgets.SelectionList.SelectedChanged, "#status-selector")
     def on_status_selector_changed(self) -> None:
         """Reload student data when the selected stages change."""
+        self.load_student_data()
+
+    @textual.on(widgets.Input.Changed, "#grad-year-selector")
+    def on_grad_year_selector_changed(self) -> None:
+        """Reload student data when the grad year filter changes."""
         self.load_student_data()
 
     async def on_student_table_row_double_clicked(
