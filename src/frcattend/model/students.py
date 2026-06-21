@@ -279,7 +279,7 @@ class Student(abstract.TableDef):
         last_name: str,
         grad_year: int,
         email: str,
-        is_rookie: Optional[bool] = None
+        is_rookie: Optional[bool] = None,
     ) -> None:
         """Pass an empty string to student_id to auto-generate a unique ID."""
         self.student_id = (
@@ -396,8 +396,13 @@ class Student(abstract.TableDef):
         return student_ids
 
     @staticmethod
-    def get_veteran_dates(dbase: "database.DBase") -> dict[str, datetime.date]:
+    def get_veteran_dates(
+        dbase: "database.DBase",
+        stages: Optional[list[str]] = None,
+        as_of: Optional[datetime.date] = None,
+    ) -> dict[str, datetime.date]:
         """Get dates on which student transitions from rookie to veteran."""
+
         query = """
             with ranked_status AS (
                 -- Assign integer ranks to statuses, from newest to oldest
@@ -414,7 +419,8 @@ class Student(abstract.TableDef):
                 SELECT student_id
                   FROM ranked_status
                  WHERE status_rank = 1
-                   AND stage IN ('member', 'prospect')
+                   AND start_date <= ?
+                   <<STAGE-SELECTOR>>
             ),   
             ranked_start_dates AS (
                 -- Re-assign integer ranks to statuses, from oldest to newest
@@ -445,10 +451,18 @@ class Student(abstract.TableDef):
               FROM date_parts
           ORDER BY student_id;
         """
+        if stages is None:
+            query = query.replace("<<STAGE-SELECTOR>>", "")
+        else:
+            query = query.replace(
+                "<<STAGE-SELECTOR>>", f"AND stage in {repr(tuple(stages))}"
+            )
+        if as_of is None:
+            as_of = datetime.date.today()
         conn = dbase.get_db_connection()
         veteran_dates = {
             row["student_id"]: row["veteran_date"]
-            for row in conn.execute(query)
+            for row in conn.execute(query, (as_of.isoformat(),))
         }
         conn.close()
         return veteran_dates
