@@ -99,7 +99,8 @@ def test_get_current(full_dbase: model.DBase) -> None:
 def test_get_current_member_veteran_dates(full_dbase: model.DBase) -> None:
     """Get the rookie-to-veteran transition date for current members/prospects."""
     # Act
-    veteran_dates = model.Student.get_veteran_dates(full_dbase, ["member", "prospect"])
+    stages = [model.Stage.MEMBER, model.Stage.PROSPECT]
+    veteran_dates = model.Student.get_veteran_dates(full_dbase, stages)
     # Assert
     # davis-isabella-2029-060 stopped attending during build season
     assert "davis-isabella-2029-060" not in veteran_dates

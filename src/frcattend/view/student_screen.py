@@ -24,6 +24,13 @@ def error(message: str) -> str:
     return f"[ansi_bright_red]{message}[/]"
 
 
+def format_rookie(is_rookie: Optional[bool]) -> str:
+    """Format the is_rookie field for display in the student table."""
+    if is_rookie is None:
+        return "n/a"
+    return "[yellow]yes[/]" if is_rookie else "no"
+
+
 class StudentTable(widgets.DataTable):
     """DataTable for the student roster that exposes raw click events.
 
@@ -134,7 +141,9 @@ class StudentScreen(screen.Screen):
         """Initialize the datatable widget."""
         self.table = self.query_one(widgets.DataTable)
         self.table.cursor_type = "row"
-        self.table.add_columns("ID", "Last Name", "First Name", "Status", "Grad Year")
+        self.table.add_columns(
+            "ID", "Last Name", "First Name", "Status", "Rookie", "Grad Year"
+        )
         self.load_student_data()
         self._selected_student_id = None
 
@@ -187,6 +196,7 @@ class StudentScreen(screen.Screen):
                 student.last_name,
                 student.first_name,
                 student.status.stage.value if student.status else "",
+                format_rookie(student.is_rookie),
                 str(student.grad_year),
                 key=student.student_id,
             )

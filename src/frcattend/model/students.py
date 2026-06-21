@@ -256,6 +256,7 @@ class Student(abstract.TableDef):
     grad_year: int
     email: str
     status: Optional[Status] = dataclasses.field(default=None, kw_only=True)
+    is_rookie: Optional[bool]
 
     table_name: ClassVar[str] = "students"
     table_def: ClassVar[str] = """
@@ -292,6 +293,7 @@ class Student(abstract.TableDef):
         self.grad_year = grad_year
         self.email = email
         self.status = None
+        self.is_rookie = is_rookie
 
     @classmethod
     def _clean_name(cls, name: str) -> str:
@@ -398,7 +400,7 @@ class Student(abstract.TableDef):
     @staticmethod
     def get_veteran_dates(
         dbase: "database.DBase",
-        stages: Optional[list[str]] = None,
+        stages: Optional[list[Stage]] = None,
         as_of: Optional[datetime.date] = None,
     ) -> dict[str, datetime.date]:
         """Get dates on which student transitions from rookie to veteran."""
@@ -454,14 +456,15 @@ class Student(abstract.TableDef):
         if stages is None:
             query = query.replace("<<STAGE-SELECTOR>>", "")
         else:
+            stage_values = tuple(stg.value for stg in stages)
             query = query.replace(
-                "<<STAGE-SELECTOR>>", f"AND stage in {repr(tuple(stages))}"
+                "<<STAGE-SELECTOR>>", f"AND stage in {repr(stage_values)}"
             )
         if as_of is None:
             as_of = datetime.date.today()
         conn = dbase.get_db_connection()
         veteran_dates = {
-            row["student_id"]: row["veteran_date"]
+            row["student_id"]: datetime.date.fromisoformat(row["veteran_date"])
             for row in conn.execute(query, (as_of.isoformat(),))
         }
         conn.close()
@@ -484,6 +487,8 @@ class Student(abstract.TableDef):
         Returns:
             A list of Student objects.
         """
+        if asof_date is None:
+            asof_date = datetime.date.today()
         query = """
             WITH ranked_status AS (
                 SELECT status_id, student_id,
@@ -507,6 +512,7 @@ class Student(abstract.TableDef):
         students = []
         student_fields = frozenset(field.name for field in dataclasses.fields(Student))
         status_fields = frozenset(field.name for field in dataclasses.fields(Status))
+        veteran_dates = Student.get_veteran_dates(dbase, stages)
         for row in conn.execute(query, [asof_date]):
             student_data = {
                 key: val for key, val in row.items() if key in student_fields
@@ -514,6 +520,8 @@ class Student(abstract.TableDef):
             student = Student(**student_data)
             status_data = {key: val for key, val in row.items() if key in status_fields}
             student.status = Status(**status_data)
+            if student.student_id in veteran_dates:
+                student.is_rookie = asof_date < veteran_dates[student.student_id]
             if stages is None or student.status.stage in stages:
                 students.append(student)
         conn.close()
