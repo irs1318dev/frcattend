@@ -94,7 +94,10 @@ class StudentScreen(screen.Screen):
                 yield selector_widgets.GradYearSelector(
                     self.dbase, id="grad-year-selector"
                 )
-                yield widgets.Label("Actions", classes="emphasis")
+                yield selector_widgets.AsOfSelector(
+                    value=datetime.date.today().isoformat(), id="asof-selector"
+                )
+                yield widgets.Static(classes="spacer")
                 with containers.ScrollableContainer():
                     yield widgets.Static()
                     yield widgets.Button(
@@ -110,7 +113,7 @@ class StudentScreen(screen.Screen):
                         tooltip="Edit data for a student.",
                     )
                     yield widgets.Static()
-                    yield widgets.Label("Communication", classes="emphasis")
+                    yield widgets.Static(classes="spacer")
                     yield widgets.Button(
                         "Generate QR Codes",
                         id="generate-qr-codes",
@@ -188,8 +191,13 @@ class StudentScreen(screen.Screen):
         grad_year = self.query_one(
             "#grad-year-selector", selector_widgets.GradYearSelector
         ).value
+        asof_selector = self.query_one("#asof-selector", selector_widgets.AsOfSelector)
+        if asof_selector.is_valid and asof_selector.value:
+            asof_date = datetime.date.fromisoformat(asof_selector.value)
+        else:
+            asof_date = datetime.date.today()
         students = model.Student.get_with_status(
-            self.dbase, asof_date=datetime.date.today(), stages=selected_stages
+            self.dbase, asof_date=asof_date, stages=selected_stages
         )
         if len(grad_year) == 4:
             students = [
@@ -218,6 +226,12 @@ class StudentScreen(screen.Screen):
     def on_grad_year_selector_changed(self) -> None:
         """Reload student data when the grad year filter changes."""
         self.load_student_data()
+
+    @textual.on(widgets.Input.Changed, "#asof-selector")
+    def on_asof_selector_changed(self, event: widgets.Input.Changed) -> None:
+        """Reload student data when the as-of date filter changes."""
+        if event.input.is_valid:
+            self.load_student_data()
 
     async def on_student_table_row_double_clicked(
         self, event: StudentTable.RowDoubleClicked

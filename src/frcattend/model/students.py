@@ -456,10 +456,18 @@ class Student(abstract.TableDef):
         if stages is None:
             query = query.replace("<<STAGE-SELECTOR>>", "")
         else:
-            stage_values = tuple(stg.value for stg in stages)
-            query = query.replace(
-                "<<STAGE-SELECTOR>>", f"AND stage in {repr(stage_values)}"
-            )
+            match len(stages):
+                case 0:
+                    query = query.replace("<<STAGE-SELECTOR>>", "")
+                case 1:
+                    query = query.replace(
+                        "<<STAGE-SELECTOR>>", f"AND stage = '{stages[0]}'"
+                    )
+                case _:
+                    stage_values = tuple(stg.value for stg in stages)
+                    query = query.replace(
+                        "<<STAGE-SELECTOR>>", f"AND stage in {repr(stage_values)}"
+                    )
         if as_of is None:
             as_of = datetime.date.today()
         conn = dbase.get_db_connection()
@@ -512,7 +520,7 @@ class Student(abstract.TableDef):
         students = []
         student_fields = frozenset(field.name for field in dataclasses.fields(Student))
         status_fields = frozenset(field.name for field in dataclasses.fields(Status))
-        veteran_dates = Student.get_veteran_dates(dbase, stages)
+        veteran_dates = Student.get_veteran_dates(dbase, stages, as_of=asof_date)
         for row in conn.execute(query, [asof_date]):
             student_data = {
                 key: val for key, val in row.items() if key in student_fields
@@ -526,7 +534,7 @@ class Student(abstract.TableDef):
                 students.append(student)
         conn.close()
         return students
-    
+
     @staticmethod
     def grad_years(dbase: "database.DBase") -> list[int]:
         """Get available graduation years."""
@@ -539,7 +547,6 @@ class Student(abstract.TableDef):
         grad_years = [row["grad_year"] for row in conn.execute(query)]
         conn.close()
         return grad_years
-
 
     def to_dict(self) -> dict:
         """Convert the Student dataclass to a dictionary."""

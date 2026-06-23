@@ -1,5 +1,7 @@
 """Widgets for selecting student status."""
 
+import datetime
+import re
 from typing import Optional
 
 from textual import validation, widgets
@@ -75,6 +77,47 @@ class GradYearSelector(widgets.Input):
             restrict=r"\d{0,4}",
             max_length=4,
             validators=[GradYearValidator(grad_years)],
+            name=name,
+            id=id,
+            classes=classes,
+            disabled=disabled,
+        )
+
+
+class AsOfValidator(validation.Validator):
+    """Validate that a value is a real date in YYYY-MM-DD format."""
+
+    _format_re = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+    def validate(self, value: str) -> validation.ValidationResult:
+        """Check that the value is a real date in YYYY-MM-DD format."""
+        if not self._format_re.fullmatch(value):
+            return self.failure("Must be a date in YYYY-MM-DD format.", value)
+        try:
+            datetime.date.fromisoformat(value)
+        except ValueError:
+            return self.failure("Not a valid date.", value)
+        return self.success()
+
+
+class AsOfSelector(widgets.Input):
+    """Input restricted to dates in ISO Format."""
+
+    def __init__(
+        self,
+        value: Optional[str] = None,
+        name: Optional[str] = None,
+        id: Optional[str] = None,
+        classes: Optional[str] = None,
+        disabled: bool = False,
+    ) -> None:
+        """Restrict input to dates formatted as YYYY-MM-DD."""
+        super().__init__(
+            value=value,
+            placeholder="YYYY-MM-DD",
+            restrict=r"[\d-]{0,10}",
+            max_length=10,
+            validators=[AsOfValidator()],
             name=name,
             id=id,
             classes=classes,

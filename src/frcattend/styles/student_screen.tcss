@@ -14,6 +14,11 @@
     width: 100%;
 }
 
+.spacer {
+    height: 1;
+    background: black;
+}
+
 #students-selection-indicator {
     padding: 1;
     margin: 1 0 0 0;
