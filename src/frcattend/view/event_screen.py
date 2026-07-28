@@ -1,5 +1,7 @@
 """Manage team events."""
 
+import datetime
+
 import dateutil.parser
 import rich.text
 
@@ -107,6 +109,9 @@ class StudentsTable(widgets.DataTable):
             )
         }
         for key, student in self.students.items():
+            # if isinstance(student.timestamp, datetime.datetime):
+            #     timestamp = student.timestamp.replace()
+
             self.add_row(
                 student.student_id,
                 student.first_name,

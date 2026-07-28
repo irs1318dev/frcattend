@@ -23,7 +23,12 @@ class StatusSelector(widgets.SelectionList[model.Stage]):
 
         MEMBER and PROSPECT stages are checked by default.
         """
-        checked_stages = (model.Stage.MEMBER, model.Stage.PROSPECT)
+        checked_stages = (
+            model.Stage.MEMBER,
+            model.Stage.PROSPECT,
+            model.Stage.ROOKIE,
+            model.Stage.VETERAN
+        )
         super().__init__(
             *[
                 (stage.value.title(), stage, stage in checked_stages)

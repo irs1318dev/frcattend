@@ -146,7 +146,7 @@ class StudentScreen(screen.Screen):
         self.table = self.query_one(widgets.DataTable)
         self.table.cursor_type = "row"
         self.table.add_columns(
-            "ID", "Last Name", "First Name", "Status", "Rookie", "Grad Year"
+            "ID", "Last Name", "First Name", "Status", "Grad Year"
         )
         self.load_student_data()
         self._selected_student_id = None
@@ -210,7 +210,7 @@ class StudentScreen(screen.Screen):
                 student.last_name,
                 student.first_name,
                 student.status.stage.value if student.status else "",
-                format_rookie(student.is_rookie),
+                # format_rookie(student.is_rookie),
                 str(student.grad_year),
                 key=student.student_id,
             )

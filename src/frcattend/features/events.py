@@ -56,7 +56,7 @@ class EventStudent(model.Student):
     """Students who have checked in at a specific event."""
 
     event_key: str
-    timestamp: str
+    timestamp: datetime.datetime
 
     @staticmethod
     def get_students_for_event(

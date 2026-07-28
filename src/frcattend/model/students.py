@@ -22,7 +22,11 @@ class Stage(enum.StrEnum):
     FORMER_PROSPECT = "former_prospect"
     """Student who did not complete fall training or chose not to join team."""
     MEMBER = "member"
-    """Completed membership requirements and joined the team for build season."""
+    """To be replaced with veteran or rookie."""
+    ROOKIE = "rookie"
+    """Completed membeship requirments, joined team, in first season."""
+    VETERAN = "veteran"
+    """Completed a full competition season."""
     FORMER_MEMBER = "former_member"
     """Former member with limited participation (e.g., never lettered, just one year)."""
     ALUMNI = "alumni"
@@ -49,6 +53,8 @@ Stage.valid_reasons = {
     Stage.PROSPECT: [],
     Stage.FORMER_PROSPECT: [Reason.CHOICE, Reason.INCOMPLETE, Reason.TRANSFERRED],
     Stage.MEMBER: [],
+    Stage.ROOKIE: [],
+    Stage.VETERAN: [],
     Stage.FORMER_MEMBER: [
         Reason.CHOICE,
         Reason.INCOMPLETE,
@@ -256,7 +262,6 @@ class Student(abstract.TableDef):
     grad_year: int
     email: str
     status: Optional[Status] = dataclasses.field(default=None, kw_only=True)
-    is_rookie: Optional[bool]
 
     table_name: ClassVar[str] = "students"
     table_def: ClassVar[str] = """
@@ -279,8 +284,7 @@ class Student(abstract.TableDef):
         first_name: str,
         last_name: str,
         grad_year: int,
-        email: str,
-        is_rookie: Optional[bool] = None,
+        email: str
     ) -> None:
         """Pass an empty string to student_id to auto-generate a unique ID."""
         self.student_id = (
@@ -293,7 +297,6 @@ class Student(abstract.TableDef):
         self.grad_year = grad_year
         self.email = email
         self.status = None
-        self.is_rookie = is_rookie
 
     @classmethod
     def _clean_name(cls, name: str) -> str:
@@ -528,8 +531,6 @@ class Student(abstract.TableDef):
             student = Student(**student_data)
             status_data = {key: val for key, val in row.items() if key in status_fields}
             student.status = Status(**status_data)
-            if student.student_id in veteran_dates:
-                student.is_rookie = asof_date < veteran_dates[student.student_id]
             if stages is None or student.status.stage in stages:
                 students.append(student)
         conn.close()

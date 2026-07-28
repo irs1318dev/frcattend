@@ -12,8 +12,8 @@ from frcattend import model
 class AttendanceStudent(model.Student):
     """Student record with attendance totals."""
 
-    year_checkins: int
-    build_checkins: int
+    year_checkins: int = 0
+    build_checkins: int = 0
 
     def __init__(
         self,
