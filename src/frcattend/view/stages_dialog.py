@@ -163,6 +163,13 @@ class BatchAddStagesDialog(screen.ModalScreen):
                         prompt="Select Stage",
                         id="new-status-select",
                     )
+                    yield widgets.Label("New Reason")
+                    yield widgets.Select(
+                        [],
+                        prompt="Select Reason",
+                        id="new-reason-select",
+                        disabled=True,
+                    )
                     yield widgets.Label("New Stage Date")
                     yield selector_widgets.StageDateSelector(id="new-stage-date")
                     yield widgets.Static(id="new-stage-warning")
@@ -199,6 +206,25 @@ class BatchAddStagesDialog(screen.ModalScreen):
         """Reload the student table when the grad year filter changes."""
         self._reload_table()
 
+    @textual.on(widgets.Select.Changed, "#new-status-select")
+    def on_new_status_changed(self, event: widgets.Select.Changed) -> None:
+        """Update New Reason options when the New Status selection changes."""
+        reason_select = self.query_one("#new-reason-select", widgets.Select)
+        if not isinstance(event.value, model.Stage):
+            reason_select.set_options([])
+            reason_select.disabled = True
+        else:
+            valid = model.Stage.valid_reasons[event.value]
+            if valid:
+                prior_reason = reason_select.value
+                reason_select.set_options([(r.value.title(), r) for r in valid])
+                reason_select.disabled = False
+                if prior_reason in valid:
+                    reason_select.value = prior_reason
+            else:
+                reason_select.set_options([])
+                reason_select.disabled = True
+
     def on_button_pressed(self, event: widgets.Button.Pressed) -> None:
         """Handle button presses in the dialog."""
         if event.button.id == "cancel-batch-stages":
@@ -214,6 +240,7 @@ class BatchAddStagesDialog(screen.ModalScreen):
         """Add the selected stage/date to every selected student."""
         warning = self.query_one("#new-stage-warning", widgets.Static)
         stage_select = self.query_one("#new-status-select", widgets.Select)
+        reason_select = self.query_one("#new-reason-select", widgets.Select)
         date_input = self.query_one(
             "#new-stage-date", selector_widgets.StageDateSelector
         )
@@ -230,6 +257,11 @@ class BatchAddStagesDialog(screen.ModalScreen):
             return
         warning.update("")
 
+        reason = (
+            reason_select.value
+            if isinstance(reason_select.value, model.Reason)
+            else None
+        )
         start_date = datetime.date.fromisoformat(date_input.value)
         table = self.query_one(StudentTable)
         errors: list[tuple[str, str]] = []
@@ -239,6 +271,7 @@ class BatchAddStagesDialog(screen.ModalScreen):
                 student_id=student_id,
                 stage=stage,
                 start_date=start_date,
+                reason=reason,
             )
             try:
                 status.add_safe(self._dbase)
