@@ -60,6 +60,14 @@ Stage.valid_reasons = {
     ],
     Stage.ALUMNI: [Reason.CHOICE, Reason.GRADUATED, Reason.TRANSFERRED],
 }
+valid_prior_statuses: dict[Stage, list[Stage | None]] = {
+    Stage.ALUMNI: [Stage.VETERAN],
+    Stage.FORMER_MEMBER: [Stage.VETERAN, Stage.ROOKIE],
+    Stage.VETERAN: [Stage.ROOKIE],
+    Stage.ROOKIE: [Stage.PROSPECT, None],
+    Stage.FORMER_PROSPECT: [Stage.PROSPECT],
+    Stage.PROSPECT: [None],
+}
 
 
 def adapt_stage(val: Stage | str) -> str:
@@ -92,6 +100,26 @@ def convert_reason(val: bytes) -> Reason:
 
 sqlite3.register_adapter(Reason, adapt_reason)
 sqlite3.register_converter("REASON", convert_reason)
+
+
+class StatusErrorTypes(enum.Enum):
+    """Types of status errors."""
+
+    NOT_ELIGIBLE = 1
+    STATUS_EXISTS = 2
+    INVALID_DATE = 3
+    MISSING_STATUS = 4
+
+
+class StatusError(Exception):
+    """Status-related error."""
+
+    error_type: StatusErrorTypes
+
+    def __init__(self, message: str, error_type: StatusErrorTypes) -> None:
+        """Create a StatusError with a message and an error type."""
+        super().__init__(message)
+        self.error_type = error_type
 
 
 @dataclasses.dataclass
@@ -151,6 +179,47 @@ class Status(abstract.TableDef):
             conn.close()
         self.status_id = 0 if status_id is None else status_id
         return self.status_id
+
+    def add_safe(self, dbase: database.DBase) -> None:
+        """Safely add the new status to the database.
+
+        Status is only added to the database if it complies with these rules.
+        2. There are no status records for the student with the same stage.
+        3. There are no status records with a start_date later than the start
+           date for the status to be added.
+        4. The new status must be consistent with the student's current status.
+           A new status is consistent if the prior status is listed in the
+           valid_prior_statuses dictionary for the key value that corresponds to
+           the new status. A None value indicates that the new status can be
+           applied to a student with no prior status.
+
+        Raises:
+            StatusError if adding the status would violate one of the rules
+            above.
+        """
+        existing_statuses = Status.get_by_student_id(dbase, self.student_id)
+        if any(status.stage == self.stage for status in existing_statuses):
+            raise StatusError(
+                f"Student {self.student_id} already has a status with stage "
+                f"'{self.stage}'.",
+                StatusErrorTypes.STATUS_EXISTS,
+            )
+        if any(status.start_date > self.start_date for status in existing_statuses):
+            raise StatusError(
+                f"Student {self.student_id} has a status with a start_date "
+                "later than the new status's start_date.",
+                StatusErrorTypes.INVALID_DATE,
+            )
+        # existing_statuses is ordered by start_date DESC, so the first entry
+        # (if any) is the student's current status prior to this addition.
+        current_stage = existing_statuses[0].stage if existing_statuses else None
+        if current_stage not in valid_prior_statuses[self.stage]:
+            raise StatusError(
+                f"Stage '{self.stage}' cannot follow current stage "
+                f"'{current_stage}' for student {self.student_id}.",
+                StatusErrorTypes.NOT_ELIGIBLE,
+            )
+        self.add(dbase)
 
     def update(self, dbase: database.DBase) -> None:
         """Update the status record in the database."""
@@ -398,88 +467,6 @@ class Student(abstract.TableDef):
         return student_ids
 
     @staticmethod
-    def get_veteran_dates(
-        dbase: database.DBase,
-        stages: list[Stage] | None = None,
-        as_of: datetime.date | None = None,
-    ) -> dict[str, datetime.date]:
-        """Get dates on which student transitions from rookie to veteran."""
-
-        query = """
-            with ranked_status AS (
-                -- Assign integer ranks to statuses on or before the as-of date,
-                -- from newest to oldest.
-                SELECT student_id, stage, start_date,
-                       ROW_NUMBER() OVER student_window AS status_rank
-                  FROM statuses
-                 WHERE start_date <= ?
-                WINDOW student_window AS (
-                           PARTITION BY student_id
-                           ORDER BY start_date DESC
-                       )
-            ),
-            selected_students AS (
-                -- Filter students by current status.
-                SELECT student_id
-                  FROM ranked_status
-                 WHERE status_rank = 1
-                   <<STAGE-SELECTOR>>
-            ),
-            ranked_start_dates AS (
-                -- Re-assign integer ranks to statuses, from oldest to newest
-                SELECT student_id, start_date, stage,
-                       rank() OVER student_window AS date_rank
-                  FROM statuses
-                 WHERE student_id IN selected_students
-                   AND stage IN ('rookie', 'prospect')
-                WINDOW student_window AS (PARTITION BY student_id ORDER BY start_date)
-            ),
-            start_dates AS (
-                -- Get start dates for earliest statuses
-                SELECT student_id, start_date
-                  FROM ranked_start_dates
-                 WHERE date_rank = 1
-              ORDER BY student_id, start_date
-            ),
-            date_parts AS (
-                -- Split start_date into year and month
-                SELECT student_id, start_date,
-                       CAST(strftime("%Y", start_date) AS INTEGER) AS start_year,
-                       CAST(strftime("%m", start_date) AS INTEGER) AS start_month
-                  FROM start_dates
-            )
-            -- Veteran data is the May 1st of year following start year
-            SELECT student_id,
-                   concat(start_year + 1,"-05-01") AS veteran_date
-              FROM date_parts
-          ORDER BY student_id;
-        """
-        if stages is None:
-            query = query.replace("<<STAGE-SELECTOR>>", "")
-        else:
-            match len(stages):
-                case 0:
-                    query = query.replace("<<STAGE-SELECTOR>>", "")
-                case 1:
-                    query = query.replace(
-                        "<<STAGE-SELECTOR>>", f"AND stage = '{stages[0]}'"
-                    )
-                case _:
-                    stage_values = tuple(stg.value for stg in stages)
-                    query = query.replace(
-                        "<<STAGE-SELECTOR>>", f"AND stage in {stage_values!r}"
-                    )
-        if as_of is None:
-            as_of = datetime.date.today()
-        conn = dbase.get_db_connection()
-        veteran_dates = {
-            row["student_id"]: datetime.date.fromisoformat(row["veteran_date"])
-            for row in conn.execute(query, (as_of.isoformat(),))
-        }
-        conn.close()
-        return veteran_dates
-
-    @staticmethod
     def get_with_status(
         dbase: database.DBase,
         asof_date: datetime.date | None = None,
@@ -504,7 +491,7 @@ class Student(abstract.TableDef):
                        ROW_NUMBER() OVER student_window AS status_rank,
                        stage, start_date, reason, notes
                   FROM statuses
-                 WHERE start_date < ?
+                 WHERE start_date <= ?
                 WINDOW student_window AS (
                        PARTITION BY student_id
                        ORDER BY start_date DESC

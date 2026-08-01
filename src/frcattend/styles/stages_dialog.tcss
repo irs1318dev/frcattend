@@ -1,0 +1,36 @@
+/* Styles for the batch stage-change dialog in view/stages_dialog.py. */
+
+#batch-stages-dialog {
+    width: 90%;
+    height: 90%;
+}
+
+#batch-stages-body {
+    height: 1fr;
+}
+
+#batch-student-table {
+    width: 1fr;
+}
+
+/* Stack of controls on the right side of the dialog. */
+#batch-stages-selectors {
+    width: 30;
+    padding-left: 1;
+}
+
+#batch-stages-selectors Button {
+    width: 1fr;
+    margin-top: 1;
+}
+
+#batch-stages-actions {
+    align-horizontal: center;
+    height: auto;
+    margin-top: 1;
+}
+
+#new-stage-warning {
+    height: auto;
+    margin-top: 1;
+}

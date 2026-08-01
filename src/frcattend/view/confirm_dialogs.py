@@ -41,6 +41,38 @@ class DeleteConfirmDialog(screen.ModalScreen):
             self.dismiss(False)
 
 
+class InfoDialog(screen.ModalScreen):
+    """A dialog that displays a message with a single OK button."""
+
+    CSS_PATH = frcattend.view.CSS_FOLDER / "confirm_dialogs.tcss"
+
+    heading: str
+    """Heading displayed at the top of the dialog."""
+    message: str
+    """Message displayed to the user in the dialog body."""
+
+    def __init__(self, heading: str, message: str) -> None:
+        """Include a heading and message to display in the dialog."""
+        super().__init__()
+        self.heading = heading
+        self.message = message
+
+    def compose(self) -> app.ComposeResult:
+        """Layout the dialog box."""
+        with containers.Vertical(id="info-dialog", classes="modal-dialog"):
+            yield widgets.Label(f"[bold]{self.heading}[/bold]")
+            yield widgets.Static()
+            with containers.VerticalScroll():
+                yield widgets.Static(self.message)
+            with containers.Horizontal():
+                yield widgets.Button("OK", variant="primary", id="ok-info")
+
+    def on_button_pressed(self, event: widgets.Button.Pressed) -> None:
+        """Dismiss the dialog when OK is pressed."""
+        if event.button.id == "ok-info":
+            self.dismiss(None)
+
+
 class GeneralConfirmDialog(screen.ModalScreen):
     """General confirmation dialog."""
 

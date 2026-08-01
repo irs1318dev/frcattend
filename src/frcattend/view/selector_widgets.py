@@ -106,6 +106,34 @@ class AsOfValidator(validation.Validator):
         return self.success()
 
 
+class StageDateSelector(widgets.Input):
+    """Enter the date a batch stage change should take effect.
+
+    Input restricted to dates in ISO Format, defaulting to today.
+    """
+
+    def __init__(
+        self,
+        value: str | None = None,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
+    ) -> None:
+        """Restrict input to dates formatted as YYYY-MM-DD, defaulting to today."""
+        super().__init__(
+            value=value if value is not None else datetime.date.today().isoformat(),
+            placeholder="New Stage Date (YYYY-MM-DD)",
+            restrict=r"[\d-]{0,10}",
+            max_length=10,
+            validators=[AsOfValidator()],
+            name=name,
+            id=id,
+            classes=classes,
+            disabled=disabled,
+        )
+
+
 class GoBackSelector(widgets.Input):
     """Enter a date. Go back to that date and show it's status.
 

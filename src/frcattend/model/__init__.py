@@ -10,7 +10,14 @@ Suppressing the F401 rule allows unused variables.
 """
 
 # ruff: file-ignore[F401, I001]
-from frcattend.model.students import Reason, Stage, Status, Student
+from frcattend.model.students import (
+    Reason,
+    Stage,
+    Status,
+    StatusError,
+    StatusErrorTypes,
+    Student,
+)
 from frcattend.model.attendance import Attendance, AttendanceStudent
 from frcattend.model.database import DBase, DBaseError
 from frcattend.model.events_checkins import Checkin, Event, EventType, EventUpateError

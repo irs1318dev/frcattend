@@ -9,3 +9,15 @@
     width: 50;
     height: 18;
 }
+
+#info-dialog {
+    width: 60;
+    height: auto;
+    max-height: 80%;
+}
+
+#info-dialog Horizontal {
+    align-horizontal: center;
+    height: auto;
+    margin-top: 1;
+}

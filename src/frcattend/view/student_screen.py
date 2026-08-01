@@ -11,7 +11,12 @@ from textual.widgets.data_table import ColumnKey
 import frcattend.view
 from frcattend import config, model
 from frcattend.features import emailer, qr_code_generator
-from frcattend.view import confirm_dialogs, selector_widgets, student_dialog
+from frcattend.view import (
+    confirm_dialogs,
+    selector_widgets,
+    stages_dialog,
+    student_dialog,
+)
 
 
 def success(message: str) -> str:
@@ -119,6 +124,11 @@ class StudentScreen(screen.Screen):
                         id="edit-student",
                         disabled=True,
                         tooltip="Edit data for a student.",
+                    )
+                    yield widgets.Button(
+                        "Batch Edit Status",
+                        id="batch-edit-stages",
+                        tooltip="Change status for multiple students at once.",
                     )
                     yield widgets.Static()
                     yield widgets.Static(classes="spacer")
@@ -285,6 +295,8 @@ class StudentScreen(screen.Screen):
             await self.action_add_student()
         elif event.button.id == "edit-student":
             await self.action_edit_student()
+        elif event.button.id == "batch-edit-stages":
+            await self.action_batch_edit_stages()
         elif event.button.id == "email-qr":
             await self.action_email_qr(all_students=False)
         elif event.button.id == "email-all-qr":
@@ -315,6 +327,16 @@ class StudentScreen(screen.Screen):
 
         await self.app.push_screen(
             student_dialog.StudentDialog(), callback=on_dialog_closed
+        )
+
+    async def action_batch_edit_stages(self) -> None:
+        """Show the batch stage-change dialog."""
+
+        def on_dialog_closed(_: None) -> None:
+            self.load_student_data()
+
+        await self.app.push_screen(
+            stages_dialog.BatchAddStagesDialog(), callback=on_dialog_closed
         )
 
     async def action_edit_student(self) -> None:
