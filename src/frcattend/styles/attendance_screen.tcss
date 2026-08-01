@@ -1,5 +1,16 @@
-StudentsTable {
-    height: 48%
+#attendance-top-container {
+    height: 48%;
+}
+
+#attendance-top-container StudentsTable {
+    width: 70%;
+    height: 100%;
+}
+
+#attendance-actions-container {
+    width: 30%;
+    height: 100%;
+    align-horizontal: center;
 }
 
 CheckinTable {

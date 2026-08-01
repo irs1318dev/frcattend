@@ -6,6 +6,7 @@ import sqlite3
 import textual
 import textual.css.query
 from textual import app, binding, containers, events, message, screen, widgets
+from textual.widgets.data_table import ColumnKey
 
 import frcattend.view
 from frcattend import config, model
@@ -67,6 +68,10 @@ class StudentScreen(screen.Screen):
     """Currently selected student."""
     _students: dict[str, model.Student]
     """List of students currently loaded in the datatable."""
+    _sort_column_key: ColumnKey | None
+    """Column the student table is currently sorted by, if any."""
+    _sort_reverse: bool
+    """Whether the current column sort is descending."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "student_screen.tcss"
     # ruff: ignore[RUF012]
@@ -142,7 +147,15 @@ class StudentScreen(screen.Screen):
         """Initialize the datatable widget."""
         self.table = self.query_one(widgets.DataTable)
         self.table.cursor_type = "row"
-        self.table.add_columns("ID", "Last Name", "First Name", "Status", "Grad Year")
+        self.table.add_columns(
+            ("ID", "id"),
+            ("Last Name", "last_name"),
+            ("First Name", "first_name"),
+            ("Status", "status"),
+            ("Grad Year", "grad_year"),
+        )
+        self._sort_column_key = None
+        self._sort_reverse = False
         self.load_student_data()
         self._selected_student_id = None
 
@@ -253,6 +266,18 @@ class StudentScreen(screen.Screen):
             f"[bold]Selected:[/bold]\n{student.first_name} "
             f"{student.last_name}\nID: {student.student_id}"
         )
+
+    def on_data_table_header_selected(
+        self, event: widgets.DataTable.HeaderSelected
+    ) -> None:
+        """Sort the table by the clicked column, toggling direction on repeat clicks."""
+        if event.column_key == self._sort_column_key:
+            self._sort_reverse = not self._sort_reverse
+        else:
+            self._sort_column_key = event.column_key
+            self._sort_reverse = False
+        sort_key = int if event.column_key.value == "grad_year" else None
+        self.table.sort(event.column_key, key=sort_key, reverse=self._sort_reverse)
 
     async def on_button_pressed(self, event: widgets.Button.Pressed) -> None:
         """Respond to button presses."""
