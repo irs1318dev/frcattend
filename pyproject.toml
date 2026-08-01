@@ -1,6 +1,6 @@
 [project]
 name = "frcattend"
-version = "2.0.0"
+version = "3.0.0"
 description = "The Issaquah Robotics Society's Python program for managing attendance"
 readme = "README.md"
 authors = [
@@ -36,3 +36,8 @@ dev = [
 
 [project.scripts]
 attend = "frcattend.__main__:main"
+
+[tool.ruff.lint]
+ignore = [
+    "DTZ"          # Allow dates and times without explicit time zones.
+]

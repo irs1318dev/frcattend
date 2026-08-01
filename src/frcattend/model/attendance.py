@@ -4,8 +4,7 @@ import dataclasses
 import datetime
 import sqlite3
 
-from frcattend import config
-from frcattend import model
+from frcattend import config, model
 
 
 @dataclasses.dataclass

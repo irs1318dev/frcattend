@@ -2,15 +2,14 @@
 
 import datetime
 import sqlite3
-from typing import Optional
 
 import textual
 import textual.css.query
 from textual import app, binding, containers, events, message, screen, widgets
 
+import frcattend.view
 from frcattend import config, model
 from frcattend.features import emailer, qr_code_generator
-import frcattend.view
 from frcattend.view import confirm_dialogs, selector_widgets, student_dialog
 
 
@@ -24,7 +23,7 @@ def error(message: str) -> str:
     return f"[ansi_bright_red]{message}[/]"
 
 
-def format_rookie(is_rookie: Optional[bool]) -> str:
+def format_rookie(is_rookie: bool | None) -> str:
     """Format the is_rookie field for display in the student table."""
     return "[yellow]yes[/]" if is_rookie else ""
 
@@ -64,12 +63,13 @@ class StudentScreen(screen.Screen):
 
     dbase: model.DBase
     """Connection to Sqlite Database."""
-    _selected_student_id: Optional[str]
+    _selected_student_id: str | None
     """Currently selected student."""
     _students: dict[str, model.Student]
     """List of students currently loaded in the datatable."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "student_screen.tcss"
+    # ruff: ignore[RUF012]
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
     ]
@@ -94,10 +94,13 @@ class StudentScreen(screen.Screen):
                 yield selector_widgets.GradYearSelector(
                     self.dbase, id="grad-year-selector"
                 )
-                yield selector_widgets.AsOfSelector(
-                    value=datetime.date.today().isoformat(), id="asof-selector"
+                yield selector_widgets.GoBackSelector(value=None, id="asof-selector")
+                yield widgets.Static(id="status-message", classes="status")
+                yield widgets.Static(
+                    "No student selected",
+                    id="students-selection-indicator",
+                    classes="selection-info",
                 )
-                yield widgets.Static(classes="spacer")
                 with containers.ScrollableContainer():
                     yield widgets.Static()
                     yield widgets.Button(
@@ -133,21 +136,13 @@ class StudentScreen(screen.Screen):
                         id="email-all-qr",
                         tooltip="Email QR codes to ALL students.",
                     )
-                    yield widgets.Static(
-                        "No student selected",
-                        id="students-selection-indicator",
-                        classes="selection-info",
-                    )
-                    yield widgets.Static(id="status-message", classes="status")
         yield widgets.Footer()
 
     def on_mount(self) -> None:
         """Initialize the datatable widget."""
         self.table = self.query_one(widgets.DataTable)
         self.table.cursor_type = "row"
-        self.table.add_columns(
-            "ID", "Last Name", "First Name", "Status", "Grad Year"
-        )
+        self.table.add_columns("ID", "Last Name", "First Name", "Status", "Grad Year")
         self.load_student_data()
         self._selected_student_id = None
 
@@ -191,7 +186,9 @@ class StudentScreen(screen.Screen):
         grad_year = self.query_one(
             "#grad-year-selector", selector_widgets.GradYearSelector
         ).value
-        asof_selector = self.query_one("#asof-selector", selector_widgets.AsOfSelector)
+        asof_selector = self.query_one(
+            "#asof-selector", selector_widgets.GoBackSelector
+        )
         if asof_selector.is_valid and asof_selector.value:
             asof_date = datetime.date.fromisoformat(asof_selector.value)
         else:

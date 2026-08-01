@@ -1,4 +1,5 @@
 """Test EventStudent functionality."""
+
 import datetime
 
 import rich  # noqa: F401

@@ -5,7 +5,6 @@ import pathlib
 import sqlite3
 
 import pytest
-
 import rich  # noqa: F401
 
 from frcattend import model
@@ -73,7 +72,7 @@ def test_add_status_invalid_student_id(full_dbase: model.DBase) -> None:
     status = model.Status(
         status_id=0,
         student_id="nonexistent-student-id",
-        stage=model.Stage.MEMBER,
+        stage=model.Stage.ROOKIE,
         start_date=datetime.date(2026, 1, 15),
         reason=None,
         notes=None,
@@ -99,7 +98,7 @@ def test_get_current(full_dbase: model.DBase) -> None:
 def test_get_current_member_veteran_dates(full_dbase: model.DBase) -> None:
     """Get the rookie-to-veteran transition date for current members/prospects."""
     # Act
-    stages = [model.Stage.MEMBER, model.Stage.PROSPECT]
+    stages = [model.Stage.ROOKIE, model.Stage.VETERAN, model.Stage.PROSPECT]
     veteran_dates = model.Student.get_veteran_dates(full_dbase, stages)
     # Assert
     # davis-isabella-2029-060 stopped attending during build season
@@ -114,7 +113,7 @@ def test_get_current_member_veteran_dates(full_dbase: model.DBase) -> None:
     # campbell-benjamin-2026-840 is currently a former_member, so they are
     # excluded from the result.
     assert "campbell-benjamin-2026-840" not in veteran_dates
-    assert len(veteran_dates) == 87
+    assert len(veteran_dates) == 88
 
 
 def test_get_all_member_veteran_dates(full_dbase: model.DBase) -> None:
@@ -134,7 +133,7 @@ def test_get_all_member_veteran_dates(full_dbase: model.DBase) -> None:
     # campbell-benjamin-2026-840 is currently a former_member, so they are
     # excluded from the result.
     assert "campbell-benjamin-2026-840" in veteran_dates
-    assert len(veteran_dates) == 151
+    assert len(veteran_dates) == 152
 
 
 def test_get_past_veteran_dates(full_dbase: model.DBase) -> None:
@@ -144,7 +143,7 @@ def test_get_past_veteran_dates(full_dbase: model.DBase) -> None:
         full_dbase, as_of=datetime.date(2024, 12, 1)
     )
     # Assert
-    assert len(veteran_dates) == 52
+    assert len(veteran_dates) == 96
 
 
 def test_grad_years(full_dbase: model.DBase) -> None:

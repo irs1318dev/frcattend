@@ -1082,8 +1082,15 @@
     },
     {
       "student_id": "anderson-mason-2029-608",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "anderson-mason-2029-608",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1103,8 +1110,15 @@
     },
     {
       "student_id": "bakr-salma-2026-946",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "bakr-salma-2026-946",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1117,22 +1131,43 @@
     },
     {
       "student_id": "banerjee-vihaan-2029-180",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "banerjee-vihaan-2029-180",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "barakat-aliyah-2028-637",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "barakat-aliyah-2028-637",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "bose-arnav-2027-221",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "bose-arnav-2027-221",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1145,22 +1180,43 @@
     },
     {
       "student_id": "brown-emma-2029-103",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "brown-emma-2029-103",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "brown-olivia-2028-956",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "brown-olivia-2028-956",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "campbell-benjamin-2026-840",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "campbell-benjamin-2026-840",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1180,8 +1236,15 @@
     },
     {
       "student_id": "carter-ethan-2029-728",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "carter-ethan-2029-728",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1194,8 +1257,15 @@
     },
     {
       "student_id": "castillo-valentina-2029-395",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "castillo-valentina-2029-395",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1208,8 +1278,15 @@
     },
     {
       "student_id": "chakraborty-anika-2029-937",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "chakraborty-anika-2029-937",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1222,15 +1299,29 @@
     },
     {
       "student_id": "chatterjee-anvi-2029-491",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "chatterjee-anvi-2029-491",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "chaudhry-rehan-2026-286",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "chaudhry-rehan-2026-286",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1243,15 +1334,29 @@
     },
     {
       "student_id": "chen-henry-2029-113",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "chen-henry-2029-113",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "chen-li-2026-204",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "chen-li-2026-204",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1271,8 +1376,15 @@
     },
     {
       "student_id": "cheng-hui-2029-840",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "cheng-hui-2029-840",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1285,8 +1397,15 @@
     },
     {
       "student_id": "choi-ji_ho-2029-324",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "choi-ji_ho-2029-324",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1306,8 +1425,15 @@
     },
     {
       "student_id": "clark-amelia-2028-705",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "clark-amelia-2028-705",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1334,8 +1460,15 @@
     },
     {
       "student_id": "collins-victoria-2028-511",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "collins-victoria-2028-511",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1348,8 +1481,15 @@
     },
     {
       "student_id": "das-shreya-2026-285",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "das-shreya-2026-285",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1362,7 +1502,7 @@
     },
     {
       "student_id": "davis-isabella-2029-060",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
@@ -1376,8 +1516,15 @@
     },
     {
       "student_id": "desai-isha-2028-550",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "desai-isha-2028-550",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1390,8 +1537,15 @@
     },
     {
       "student_id": "evans-gabriel-2026-433",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "evans-gabriel-2026-433",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1404,8 +1558,15 @@
     },
     {
       "student_id": "evans-lucas-2028-453",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "evans-lucas-2028-453",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1432,8 +1593,15 @@
     },
     {
       "student_id": "fernandez-lucia-2027-657",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "fernandez-lucia-2027-657",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1446,15 +1614,29 @@
     },
     {
       "student_id": "fujita-daiki-2028-499",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "fujita-daiki-2028-499",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "garcia-ava-2026-105",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "garcia-ava-2026-105",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1467,8 +1649,15 @@
     },
     {
       "student_id": "garcia-sofia-2029-953",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "garcia-sofia-2029-953",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1481,15 +1670,29 @@
     },
     {
       "student_id": "green-jack-2029-493",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "green-jack-2029-493",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "gupta-aditya-2027-329",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "gupta-aditya-2027-329",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1502,8 +1705,15 @@
     },
     {
       "student_id": "gupta-rohan-2029-216",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "gupta-rohan-2029-216",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1530,15 +1740,29 @@
     },
     {
       "student_id": "haddad-yousef-2029-200",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "haddad-yousef-2029-200",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "hall-david-2026-417",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "hall-david-2026-417",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1551,15 +1775,29 @@
     },
     {
       "student_id": "hashimoto-akira-2029-750",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "hashimoto-akira-2029-750",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "hassan-amira-2028-592",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "hassan-amira-2028-592",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1586,22 +1824,43 @@
     },
     {
       "student_id": "hossain-farhan-2028-161",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "hossain-farhan-2028-161",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "huynh-trang-2028-384",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "huynh-trang-2028-384",
-      "stage": "member",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "ito-haru-2028-123",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "ito-haru-2028-123",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1614,8 +1873,15 @@
     },
     {
       "student_id": "ito-sakura-2028-833",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "ito-sakura-2028-833",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1628,8 +1894,15 @@
     },
     {
       "student_id": "iyer-aria-2028-558",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "iyer-aria-2028-558",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1642,15 +1915,29 @@
     },
     {
       "student_id": "iyer-kavya-2027-739",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "iyer-kavya-2027-739",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "jabari-leila-2026-495",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "jabari-leila-2026-495",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1663,15 +1950,29 @@
     },
     {
       "student_id": "jain-diya-2026-516",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2026-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "jain-diya-2026-516",
+      "stage": "veteran",
+      "start_date": "2027-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "johnson-liam-2026-102",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "johnson-liam-2026-102",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1691,8 +1992,15 @@
     },
     {
       "student_id": "jones-noah-2029-104",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "jones-noah-2029-104",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1726,7 +2034,7 @@
     },
     {
       "student_id": "kato-priya-2027-120",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
@@ -1740,8 +2048,15 @@
     },
     {
       "student_id": "kato-shin-2027-589",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "kato-shin-2027-589",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1754,15 +2069,29 @@
     },
     {
       "student_id": "khan-zara-2029-790",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "khan-zara-2029-790",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "kim-charlotte-2026-112",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "kim-charlotte-2026-112",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -1775,8 +2104,15 @@
     },
     {
       "student_id": "kim-min_jun-2028-466",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "kim-min_jun-2028-466",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1789,15 +2125,29 @@
     },
     {
       "student_id": "king-chloe-2028-029",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "king-chloe-2028-029",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "kobayashi-shota-2026-005",
+      "stage": "rookie",
       "start_date": "2023-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "kobayashi-shota-2026-005",
-      "stage": "member",
-      "start_date": "2023-12-01",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1817,8 +2167,15 @@
     },
     {
       "student_id": "kumar-arjun-2026-548",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "kumar-arjun-2026-548",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1831,15 +2188,29 @@
     },
     {
       "student_id": "lee-ji_woo-2027-657",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "lee-ji_woo-2027-657",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "lee-mason-2026-107",
+      "stage": "rookie",
       "start_date": "2023-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "lee-mason-2026-107",
-      "stage": "member",
-      "start_date": "2023-12-01",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1852,8 +2223,15 @@
     },
     {
       "student_id": "lewis-matthew-2028-203",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "lewis-matthew-2028-203",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1866,8 +2244,15 @@
     },
     {
       "student_id": "li-minseo-2028-125",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "li-minseo-2028-125",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1880,7 +2265,7 @@
     },
     {
       "student_id": "lim-su_bin-2029-223",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
@@ -1894,15 +2279,29 @@
     },
     {
       "student_id": "lin-xin-2027-241",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "lin-xin-2027-241",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "liu-grace-2026-115",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "liu-grace-2026-115",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1915,8 +2314,15 @@
     },
     {
       "student_id": "mansoor-karim-2026-638",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "mansoor-karim-2026-638",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1929,8 +2335,15 @@
     },
     {
       "student_id": "mansour-samir-2026-636",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "mansour-samir-2026-636",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -1943,8 +2356,15 @@
     },
     {
       "student_id": "martin-ethan-2027-811",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "martin-ethan-2027-811",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -1957,8 +2377,15 @@
     },
     {
       "student_id": "martinez-sophia-2029-106",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "martinez-sophia-2029-106",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -1971,29 +2398,57 @@
     },
     {
       "student_id": "mehta-krishna-2029-672",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "mehta-krishna-2029-672",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "miller-william-2027-562",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "miller-william-2027-562",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "mishra-pari-2026-783",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "mishra-pari-2026-783",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "mitchell-hannah-2028-281",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "mitchell-hannah-2028-281",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2006,15 +2461,29 @@
     },
     {
       "student_id": "moore-elijah-2027-063",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "moore-elijah-2027-063",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "morales-diego-2026-490",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "morales-diego-2026-490",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2027,8 +2496,15 @@
     },
     {
       "student_id": "mori-keiko-2026-853",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "mori-keiko-2026-853",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -2048,22 +2524,43 @@
     },
     {
       "student_id": "mukherjee-diya-2029-701",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "mukherjee-diya-2029-701",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "murphy-jack-2027-737",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "murphy-jack-2027-737",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "nasser-maya-2027-732",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "nasser-maya-2027-732",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -2076,8 +2573,15 @@
     },
     {
       "student_id": "ng-mei-2028-774",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "ng-mei-2028-774",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2118,15 +2622,29 @@
     },
     {
       "student_id": "nguyen-thanh-2028-280",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "nguyen-thanh-2028-280",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "nguyen-william-2028-116",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "nguyen-william-2028-116",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2139,15 +2657,29 @@
     },
     {
       "student_id": "oconnor-sean-2029-842",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "oconnor-sean-2029-842",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "ortega-mateo-2027-364",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "ortega-mateo-2027-364",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2160,8 +2692,15 @@
     },
     {
       "student_id": "pandey-riya-2026-213",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "pandey-riya-2026-213",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -2174,15 +2713,29 @@
     },
     {
       "student_id": "park-ananya-2026-121",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "park-ananya-2026-121",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "park-seo_yeon-2026-004",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "park-seo_yeon-2026-004",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -2195,8 +2748,15 @@
     },
     {
       "student_id": "parker-natalie-2027-587",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "parker-natalie-2027-587",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2216,15 +2776,29 @@
     },
     {
       "student_id": "patel-aarav-2028-565",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "patel-aarav-2028-565",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "patel-ethan-2027-109",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "patel-ethan-2027-109",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2237,8 +2811,15 @@
     },
     {
       "student_id": "patel-priya-2026-575",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "patel-priya-2026-575",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2251,15 +2832,29 @@
     },
     {
       "student_id": "perez-lucas-2028-363",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "perez-lucas-2028-363",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "pham-quang-2028-969",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "pham-quang-2028-969",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2272,8 +2867,15 @@
     },
     {
       "student_id": "pham-tu-2026-853",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "pham-tu-2026-853",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2286,29 +2888,57 @@
     },
     {
       "student_id": "phillips-chloe-2027-630",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "phillips-chloe-2027-630",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "qureshi-rayyan-2028-454",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "qureshi-rayyan-2028-454",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "rahim-imran-2027-010",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "rahim-imran-2027-010",
-      "stage": "member",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "rahman-noor-2027-758",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "rahman-noor-2027-758",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2321,8 +2951,15 @@
     },
     {
       "student_id": "ramirez-carlos-2027-819",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "ramirez-carlos-2027-819",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -2335,8 +2972,15 @@
     },
     {
       "student_id": "rana-simran-2029-150",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "rana-simran-2029-150",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -2363,22 +3007,43 @@
     },
     {
       "student_id": "reddy-ananya-2027-200",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "reddy-ananya-2027-200",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "reddy-sanvi-2028-139",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "reddy-sanvi-2028-139",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "rizvi-saad-2026-174",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "rizvi-saad-2026-174",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -2391,15 +3056,29 @@
     },
     {
       "student_id": "rizwan-ayaan-2026-249",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "rizwan-ayaan-2026-249",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "robinson-grace-2026-298",
+      "stage": "rookie",
       "start_date": "2022-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "robinson-grace-2026-298",
-      "stage": "member",
-      "start_date": "2022-12-01",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -2426,8 +3105,15 @@
     },
     {
       "student_id": "saleh-nour-2026-496",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "saleh-nour-2026-496",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
       "reason": null,
       "notes": null
     },
@@ -2440,15 +3126,29 @@
     },
     {
       "student_id": "salem-amal-2029-624",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "salem-amal-2029-624",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "sato-yuki-2026-042",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "sato-yuki-2026-042",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -2461,8 +3161,15 @@
     },
     {
       "student_id": "scott-alexander-2026-644",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "scott-alexander-2026-644",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2482,22 +3189,43 @@
     },
     {
       "student_id": "sengupta-arjun-2029-794",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "sengupta-arjun-2029-794",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "shah-mia-2027-111",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "shah-mia-2027-111",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "sharma-arjun-2028-588",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "sharma-arjun-2028-588",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2510,8 +3238,15 @@
     },
     {
       "student_id": "sharma-vihaan-2028-204",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "sharma-vihaan-2028-204",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2524,7 +3259,7 @@
     },
     {
       "student_id": "singh-ananya-2027-225",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
@@ -2552,36 +3287,71 @@
     },
     {
       "student_id": "singh-vikram-2026-695",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "singh-vikram-2026-695",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "smith-emily-2028-676",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "smith-emily-2028-676",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "smith-olivia-2027-101",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "smith-olivia-2027-101",
-      "stage": "member",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "srinivasan-meera-2027-252",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "srinivasan-meera-2027-252",
-      "stage": "member",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "st_clare-denise-2027-191",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "st_clare-denise-2027-191",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2608,22 +3378,43 @@
     },
     {
       "student_id": "sun-lei-2029-787",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "sun-lei-2029-787",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "suzuki-hana-2026-563",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "suzuki-hana-2026-563",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "tanaka-james-2026-114",
+      "stage": "rookie",
       "start_date": "2022-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "tanaka-james-2026-114",
-      "stage": "member",
-      "start_date": "2022-12-01",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -2636,8 +3427,15 @@
     },
     {
       "student_id": "tanaka-ren-2029-091",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "tanaka-ren-2029-091",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -2657,8 +3455,15 @@
     },
     {
       "student_id": "tran-anh-2028-878",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "tran-anh-2028-878",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2678,8 +3483,15 @@
     },
     {
       "student_id": "turner-lucas-2029-299",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "turner-lucas-2029-299",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -2699,22 +3511,43 @@
     },
     {
       "student_id": "van_buren-martin-2027-739",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2023-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "van_buren-martin-2027-739",
+      "stage": "veteran",
+      "start_date": "2024-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "vargas-camila-2027-791",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "vargas-camila-2027-791",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "verma-pranav-2026-514",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "verma-pranav-2026-514",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2727,8 +3560,15 @@
     },
     {
       "student_id": "walker-logan-2026-771",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2022-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "walker-logan-2026-771",
+      "stage": "veteran",
+      "start_date": "2023-05-01",
       "reason": null,
       "notes": null
     },
@@ -2741,8 +3581,15 @@
     },
     {
       "student_id": "wang-wei-2026-685",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "wang-wei-2026-685",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2755,8 +3602,15 @@
     },
     {
       "student_id": "white-henry-2028-671",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "white-henry-2028-671",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2769,15 +3623,29 @@
     },
     {
       "student_id": "williams-james-2029-462",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "williams-james-2029-462",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "wong-chun-2027-257",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "wong-chun-2027-257",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2790,15 +3658,29 @@
     },
     {
       "student_id": "wong-lucas-2027-108",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "wong-lucas-2027-108",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "yamada-haruki-2027-267",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "yamada-haruki-2027-267",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2811,15 +3693,29 @@
     },
     {
       "student_id": "yamamoto-haruto-2029-867",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "yamamoto-haruto-2029-867",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "yilmaz-deniz-2026-877",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "yilmaz-deniz-2026-877",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     },
@@ -2839,8 +3735,15 @@
     },
     {
       "student_id": "young-benjamin-2029-301",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "young-benjamin-2029-301",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
       "reason": null,
       "notes": null
     },
@@ -2853,22 +3756,43 @@
     },
     {
       "student_id": "zhang-mei-2029-124",
-      "stage": "member",
+      "stage": "rookie",
       "start_date": "2025-12-01",
       "reason": null,
       "notes": null
     },
     {
+      "student_id": "zhang-mei-2029-124",
+      "stage": "veteran",
+      "start_date": "2026-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
       "student_id": "zhang-yu-2027-424",
-      "stage": "member",
+      "stage": "rookie",
+      "start_date": "2024-12-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "zhang-yu-2027-424",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
+      "reason": null,
+      "notes": null
+    },
+    {
+      "student_id": "zhou-meilin-2026-200",
+      "stage": "rookie",
       "start_date": "2024-12-01",
       "reason": null,
       "notes": null
     },
     {
       "student_id": "zhou-meilin-2026-200",
-      "stage": "member",
-      "start_date": "2024-12-01",
+      "stage": "veteran",
+      "start_date": "2025-05-01",
       "reason": null,
       "notes": null
     }

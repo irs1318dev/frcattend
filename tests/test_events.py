@@ -1,13 +1,12 @@
 """Test Sqlite event functionality."""
 
-import pathlib
 import datetime
+import pathlib
 
 import rich  # noqa: F401
 
 from frcattend import model
 from frcattend.features import events
-
 
 DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 

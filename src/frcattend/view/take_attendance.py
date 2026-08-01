@@ -4,23 +4,22 @@ import asyncio
 import dataclasses
 import datetime
 import time
-from typing import cast, Optional
+from typing import cast
 
 import cv2
-
 import textual
 from textual import app, containers, message, screen, widgets
 from textual.widgets import option_list
 
-from frcattend import config, model
 import frcattend.view
+from frcattend import config, model
 from frcattend.view import pw_dialog, survey_screen
 
 
 class ScanScreen(screen.Screen):
     """UI for scanning QR codes while taking attendance."""
 
-    CSS_PATH = [frcattend.view.CSS_FOLDER / "take_attendance.tcss"]
+    CSS_PATH = frcattend.view.CSS_FOLDER / "take_attendance.tcss"
 
     dbase: model.DBase
     """Sqlte database connection object."""
@@ -30,13 +29,14 @@ class ScanScreen(screen.Screen):
     """Displays checking results."""
     event_type: model.EventType
     """Type of event at which we're taking attendance."""
-    survey: Optional[model.Survey]
+    survey: model.Survey | None
     """Students can be asked to complete a survey when they checkin."""
     _checkedin_students: set[str]
     """Recently scanned student IDs."""
     _scanned_students: set[str]
     """Students who have scanned their QR code within the last few seconds."""
 
+    # ruff: ignore[RUF012]
     BINDINGS = [
         (
             "q",
@@ -47,7 +47,6 @@ class ScanScreen(screen.Screen):
 
     def __init__(self) -> None:
         """Initialize databae connection."""
-        #
         super().__init__()
         if config.settings.db_path is None:
             raise model.DBaseError("No database file selected.")
@@ -76,9 +75,7 @@ class ScanScreen(screen.Screen):
             callback=self.set_event_type_and_start_scanning,
         )
 
-    def set_event_type_and_start_scanning(
-        self, result: Optional["DialogResult"]
-    ) -> None:
+    def set_event_type_and_start_scanning(self, result: DialogResult | None) -> None:
         """Set the event type"""
         if result is None or result.event_type is None:
             self.app.pop_screen()
@@ -110,26 +107,25 @@ class ScanScreen(screen.Screen):
                 disp_img = cv2.flip(img, 1)
                 cv2.imshow(window_title, disp_img)
 
-                qr_data, bbox, straight_code = detector.detectAndDecode(img)
+                qr_data, _bbox, _straight_code = detector.detectAndDecode(img)
             except cv2.error:
                 continue
-            if qr_data:
-                if qr_data not in self._scanned_students:
-                    self._scanned_students.add(qr_data)
-                    self.post_message(self.QrCodeFound(qr_data))
-                    if self.survey is not None and qr_data in self._students:
-                        self.app.push_screen(
-                            survey_screen.TakeSurveyDialog(
-                                self.dbase,
-                                self,
-                                self.survey,
-                                self._students[qr_data],
-                            )
+            if qr_data and qr_data not in self._scanned_students:
+                self._scanned_students.add(qr_data)
+                self.post_message(self.QrCodeFound(qr_data))
+                if self.survey is not None and qr_data in self._students:
+                    self.app.push_screen(
+                        survey_screen.TakeSurveyDialog(
+                            self.dbase,
+                            self,
+                            self.survey,
+                            self._students[qr_data],
                         )
-                        vcap.release()
-                        cv2.destroyAllWindows()
-                        return
-                    await asyncio.sleep(0.1)  # Allow log to update.
+                    )
+                    vcap.release()
+                    cv2.destroyAllWindows()
+                    return
+                await asyncio.sleep(0.1)  # Allow log to update.
             wait_key = cv2.waitKey(50)  # Wait 50 miliseconds for key press.
             if wait_key in [ord("q"), ord("Q")]:
                 break
@@ -214,11 +210,11 @@ class ScanScreen(screen.Screen):
 class DialogResult:
     """The Event type and survey selected in the dialog."""
 
-    event_type: Optional[model.EventType]
-    survey: Optional[model.Survey]
+    event_type: model.EventType | None
+    survey: model.Survey | None
 
 
-class ChooseTypeAndSurveyDialog(screen.ModalScreen[Optional[DialogResult]]):
+class ChooseTypeAndSurveyDialog(screen.ModalScreen[DialogResult | None]):
     """Select event type and a survey when opening scan attendance screen."""
 
     dbase: model.DBase

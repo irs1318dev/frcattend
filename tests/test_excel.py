@@ -5,7 +5,6 @@ import pathlib
 from frcattend.features import excel
 from frcattend.model import database
 
-
 OUTPUT_PATH = pathlib.Path(__file__).parent / "output"
 
 

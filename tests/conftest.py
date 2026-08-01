@@ -11,7 +11,6 @@ import pytest
 from frcattend import config, model
 from frcattend.features import sync
 
-
 TEST_FOLDER = pathlib.Path(__file__).parent
 DATA_FOLDER = TEST_FOLDER / "data"
 PRIVATE_FOLDER = DATA_FOLDER / "private"

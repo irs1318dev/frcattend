@@ -1,8 +1,8 @@
 """Generate QR codes with students IDs."""
 
-from collections.abc import Iterator
 import pathlib
 import shutil
+from collections.abc import Iterator
 
 import segno
 

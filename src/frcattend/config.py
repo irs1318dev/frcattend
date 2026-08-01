@@ -5,13 +5,11 @@ import dataclasses
 import datetime
 import enum
 import functools
-import json
 import hashlib
+import json
 import pathlib
 import shutil
 import tomllib
-from typing import Optional
-
 
 DB_FILE_NAME = "frc-attend.db"
 CONFIG_FILE_NAME = "frc-attend.toml"
@@ -45,13 +43,13 @@ class Settings:
     details.
     """
 
-    db_path: Optional[pathlib.Path] = None
+    db_path: pathlib.Path | None = None
     """Filesystem path to Sqlite database file with student and attendance data."""
-    config_path: Optional[pathlib.Path] = None
+    config_path: pathlib.Path | None = None
     """Filesystem path to TOML configuration file."""
-    qr_code_dir: Optional[pathlib.Path] = None
+    qr_code_dir: pathlib.Path | None = None
     """Filesystem path to folder where QR codes are written."""
-    backup_dir: Optional[pathlib.Path] = None
+    backup_dir: pathlib.Path | None = None
     """Filesystem path to folder where database file is backed up."""
     schoolyear_start_month_and_day: tuple[int, int] = (9, 1)
     """Date on which next academic year starts.
@@ -63,7 +61,7 @@ class Settings:
     
     Used for calculating attendance during build and competition season.
     """
-    password_hash: Optional[str] = (
+    password_hash: str | None = (
         "095eaa09cd36d1f1e7a963c9ad618edab13f466882c9027ab81ffc18b0eb727e"  # 1318
     )
     """Sets the password for opening application and leaving QR code scan mode."""
@@ -72,19 +70,19 @@ class Settings:
     
     Camera 0 is front facing camera on Windows OS.
     """
-    sender_email: Optional[str] = None
+    sender_email: str | None = None
     """Gmail email address used to send QR codes to students."""
-    email_sender_name: Optional[str] = None
+    email_sender_name: str | None = None
     """User-friendly app name that appears on QR code emails."""
-    smtp_server: Optional[str] = None
+    smtp_server: str | None = None
     """Gmail credentials."""
     smtp_port: int = 465
     """Gmail credentials."""
-    smtp_username: Optional[str] = None
+    smtp_username: str | None = None
     """Gmail credentials."""
-    smtp_password: Optional[str] = None
+    smtp_password: str | None = None
     """Gmail credentials."""
-    google_service_account: Optional[dict[str, str]] = None
+    google_service_account: dict[str, str] | None = None
     """Authentication credentials for connecting to Google worksheets.
 
     Credentials are downloaded as a JSON file. Paste the contents of the JSON
@@ -95,7 +93,7 @@ class Settings:
     charactes and allows the string to contain double quotes (essntial for
     JSON strings). See https://toml.io/en/
     """
-    sync_sheet_key: Optional[str] = None
+    sync_sheet_key: str | None = None
     """Key to Google sheet used for syncing data between different computers."""
 
     @functools.cached_property
@@ -142,7 +140,7 @@ class Settings:
     @staticmethod
     def _get_full_path(
         path: pathlib.Path, default_file_name: str
-    ) -> Optional[pathlib.Path]:
+    ) -> pathlib.Path | None:
         """Convert path arg to full filesystem path.
 
         If path is None, looks for file in current working directory. Otherwise
@@ -150,7 +148,7 @@ class Settings:
         point to an existing file.
         """
         cwd = pathlib.Path.cwd()
-        full_path: Optional[pathlib.Path] = None
+        full_path: pathlib.Path | None = None
         if path is None:
             full_path = cwd / default_file_name
         elif path.is_absolute():

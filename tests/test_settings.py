@@ -3,9 +3,7 @@
 import argparse
 import pathlib
 
-
 from frcattend import config
-
 
 DATA_PATH = pathlib.Path(__file__).parent / "data"
 

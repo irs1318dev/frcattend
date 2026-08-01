@@ -8,7 +8,6 @@ import rich  # noqa: F401
 from frcattend import config, model
 from frcattend.features import emailer, qr_code_generator
 
-
 DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 QR_FOLDER_NAME = "test_qr_codes"
 

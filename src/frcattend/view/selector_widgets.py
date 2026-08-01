@@ -2,7 +2,6 @@
 
 import datetime
 import re
-from typing import Optional
 
 from textual import validation, widgets
 
@@ -14,25 +13,27 @@ class StatusSelector(widgets.SelectionList[model.Stage]):
 
     def __init__(
         self,
-        name: Optional[str] = None,
-        id: Optional[str] = None,
-        classes: Optional[str] = None,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
         disabled: bool = False,
     ) -> None:
         """Populate options from the Stage enum.
 
-        MEMBER and PROSPECT stages are checked by default.
+        PROSPECT, ROOKIE, and VETERAN stages are checked by default.
         """
-        checked_stages = (
-            model.Stage.MEMBER,
-            model.Stage.PROSPECT,
+        all_stages = [
             model.Stage.ROOKIE,
-            model.Stage.VETERAN
-        )
+            model.Stage.VETERAN,
+            model.Stage.FORMER_PROSPECT,
+            model.Stage.FORMER_MEMBER,
+            model.Stage.ALUMNI,
+        ]
+        checked_stages = (model.Stage.PROSPECT, model.Stage.ROOKIE, model.Stage.VETERAN)
         super().__init__(
             *[
                 (stage.value.title(), stage, stage in checked_stages)
-                for stage in model.Stage
+                for stage in all_stages
             ],
             name=name,
             id=id,
@@ -47,7 +48,7 @@ class GradYearValidator(validation.Validator):
     def __init__(
         self,
         grad_years: set[int],
-        failure_description: Optional[str] = None,
+        failure_description: str | None = None,
     ) -> None:
         """Store the graduation years considered valid."""
         super().__init__(failure_description=failure_description)
@@ -68,17 +69,17 @@ class GradYearSelector(widgets.Input):
     def __init__(
         self,
         dbase: model.DBase,
-        value: Optional[str] = None,
-        name: Optional[str] = None,
-        id: Optional[str] = None,
-        classes: Optional[str] = None,
+        value: str | None = None,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
         disabled: bool = False,
     ) -> None:
         """Populate the validator with graduation years from the database."""
         grad_years = set(model.Student.grad_years(dbase))
         super().__init__(
             value=value,
-            placeholder="Grad Year",
+            placeholder="Grad Year (YYYY)",
             restrict=r"\d{0,4}",
             max_length=4,
             validators=[GradYearValidator(grad_years)],
@@ -105,21 +106,25 @@ class AsOfValidator(validation.Validator):
         return self.success()
 
 
-class AsOfSelector(widgets.Input):
-    """Input restricted to dates in ISO Format."""
+class GoBackSelector(widgets.Input):
+    """Enter a date. Go back to that date and show it's status.
+
+    Input restricted to dates in ISO Format.
+    """
 
     def __init__(
         self,
-        value: Optional[str] = None,
-        name: Optional[str] = None,
-        id: Optional[str] = None,
-        classes: Optional[str] = None,
+        value: str | None = None,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
         disabled: bool = False,
     ) -> None:
         """Restrict input to dates formatted as YYYY-MM-DD."""
+        ttip = "Display the student list as it would have appeared on a prior date"
         super().__init__(
             value=value,
-            placeholder="YYYY-MM-DD",
+            placeholder="Go Back (YYYY-MM-DD)",
             restrict=r"[\d-]{0,10}",
             max_length=10,
             validators=[AsOfValidator()],
@@ -127,4 +132,5 @@ class AsOfSelector(widgets.Input):
             id=id,
             classes=classes,
             disabled=disabled,
+            tooltip=ttip,
         )

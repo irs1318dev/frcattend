@@ -1,7 +1,6 @@
 """Classes for verifying user enters valid input into Textual widgets."""
 
 import dateutil.parser
-
 from textual import validation
 
 

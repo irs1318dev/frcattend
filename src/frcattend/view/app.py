@@ -7,9 +7,9 @@ from typing import Any
 import textual
 from textual import app, containers, message, reactive, screen, widgets
 
+import frcattend.view
 from frcattend import config, model
 from frcattend.features import excel, summary, sync
-import frcattend.view
 from frcattend.view import (
     attendance_screen,
     event_screen,
@@ -38,11 +38,13 @@ class FrcAttend(app.App):
     CSS_PATH = frcattend.view.CSS_FOLDER / "root.tcss"
 
     TITLE = "FRC Attendance System"
+    # ruff: ignore[RUF012]  # Textual requires mutable class variables.
     BINDINGS = [
         ("a", "take_attendance", "Take Attendance"),
         ("s", "manage_students", "Manage Students"),
         ("v", "view_records", "View Attendance Records"),
     ]
+    # ruff: ignore[RUF012]
     SCREENS = {
         "students": student_screen.StudentScreen,
     }
@@ -55,42 +57,42 @@ class FrcAttend(app.App):
         yield widgets.Header()
 
         # Main menu bar
-        with containers.HorizontalGroup(classes="pane"):
-            with containers.HorizontalGroup(id="main-top-menu", classes="toolbar"):
-                yield widgets.Button(
-                    "Take Attendance",
-                    id="main-take-attendance",
-                    tooltip="Scan some QR Codes!",
-                    classes="ok",
-                )
-                yield widgets.Button(
-                    "Students",
-                    id="main-manage-students",
-                    tooltip="Get a new student's info and generate a QR code.",
-                )
-                yield widgets.Button(
-                    "Attendance by Student",
-                    id="main-view-records",
-                    tooltip=(
-                        "View the number of checkins and "
-                        "events attended for each student."
-                    ),
-                    classes="ok",
-                )
-                yield widgets.Button(
-                    "Attendance by Event",
-                    id="main-manage-events",
-                    tooltip=(
-                        "View the number of checkins and students that attended "
-                        "each event."
-                    ),
-                    classes="ok",
-                )
-                yield widgets.Button(
-                    "Surveys",
-                    id="main-manage-surveys",
-                    tooltip="Create and edit surveys.",
-                )
+        with (
+            containers.HorizontalGroup(classes="pane"),
+            containers.HorizontalGroup(id="main-top-menu", classes="toolbar"),
+        ):
+            yield widgets.Button(
+                "Take Attendance",
+                id="main-take-attendance",
+                tooltip="Scan some QR Codes!",
+                classes="ok",
+            )
+            yield widgets.Button(
+                "Students",
+                id="main-manage-students",
+                tooltip="Get a new student's info and generate a QR code.",
+            )
+            yield widgets.Button(
+                "Attendance by Student",
+                id="main-view-records",
+                tooltip=(
+                    "View the number of checkins and events attended for each student."
+                ),
+                classes="ok",
+            )
+            yield widgets.Button(
+                "Attendance by Event",
+                id="main-manage-events",
+                tooltip=(
+                    "View the number of checkins and students that attended each event."
+                ),
+                classes="ok",
+            )
+            yield widgets.Button(
+                "Surveys",
+                id="main-manage-surveys",
+                tooltip="Create and edit surveys.",
+            )
 
         # Database Controls
         with containers.VerticalGroup(classes="pane"):

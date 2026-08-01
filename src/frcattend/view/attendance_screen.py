@@ -16,7 +16,7 @@ class StudentsTable(widgets.DataTable):
 
     def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
         """Set link to database."""
-        super().__init__(zebra_stripes=True, *args, **kwargs)
+        super().__init__(*args, **kwargs, zebra_stripes=True)
         self.dbase = dbase
         self.students = {}
 
@@ -70,7 +70,7 @@ class CheckinTable(widgets.DataTable):
 
     def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
         """Set link to database."""
-        super().__init__(zebra_stripes=True, *args, **kwargs)
+        super().__init__(*args, **kwargs, zebra_stripes=True)
         self.dbase = dbase
         self.checkins = {}
 
@@ -121,6 +121,7 @@ class AttendanceScreen(screen.Screen):
     """ID of selected student."""
 
     CSS_PATH = view.CSS_FOLDER / "attendance_screen.tcss"
+    # ruff: ignore[RUF012]
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
     ]

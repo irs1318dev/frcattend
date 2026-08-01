@@ -5,10 +5,10 @@ import pathlib
 
 import rich
 
+import frcattend.view.app
 from frcattend import config
 from frcattend.features import sync
 from frcattend.model import database
-import frcattend.view.app
 
 
 def build_parser() -> argparse.ArgumentParser:

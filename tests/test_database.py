@@ -6,10 +6,9 @@ import pathlib
 import re
 
 import pytest
-import rich  # noqa: F401
+import rich
 
 from frcattend import model
-
 
 DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 
@@ -19,7 +18,7 @@ def test_empty_database(empty_database: model.DBase) -> None:
     # Assert
     query = "SELECT name FROM sqlite_schema WHERE type = 'table';"
     with empty_database.get_db_connection() as conn:
-        tables = set(row["name"] for row in conn.execute(query))
+        tables = {row["name"] for row in conn.execute(query)}
     conn.close()
     assert len(tables) == 7
     assert "students" in tables

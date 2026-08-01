@@ -1,6 +1,7 @@
 """A DataTable widget for viewing and editing student status."""
 
 import datetime
+
 import textual
 from textual import app, containers, screen, widgets
 

@@ -72,4 +72,4 @@ def test_db_backup(full_dbase: database.DBase) -> None:
     # Assert
     output_files = [file for file in OUTPUT_PATH.iterdir()]
     assert len(output_files) == 2
-    assert any([f.name.startswith("attendance-backup") for f in output_files])
+    assert any(f.name.startswith("attendance-backup") for f in output_files)

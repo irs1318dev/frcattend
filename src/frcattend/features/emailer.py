@@ -1,12 +1,12 @@
 """Send QR Code Emails."""
 
-from collections.abc import Iterator
-from email import encoders
-from email.mime import base, image, multipart, text
 import pathlib
 import smtplib
 import time
-from typing import cast, Optional
+from collections.abc import Iterator
+from email import encoders
+from email.mime import base, image, multipart, text
+from typing import cast
 
 from frcattend import config, model
 from frcattend.features import qr_code_generator
@@ -19,7 +19,7 @@ class EmailError(Exception):
 def send_all_emails(
     qr_folder: pathlib.Path,
     students: list[model.Student],
-    email: Optional[str] = None,
+    email: str | None = None,
 ) -> Iterator[tuple[str, bool]]:
     """Send an email with a QR code to all students.
 
@@ -35,11 +35,7 @@ def send_all_emails(
                 f"{student.first_name} {student.last_name}",
                 qr_path,
             )
-        except (
-            smtplib.SMTPAuthenticationError,
-            smtplib.SMTPAuthenticationError,
-            smtplib.SMTPException,
-        ):
+        except smtplib.SMTPAuthenticationError, smtplib.SMTPException:
             yield student.student_id, False
         else:
             yield student.student_id, True

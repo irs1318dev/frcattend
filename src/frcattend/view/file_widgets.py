@@ -1,8 +1,8 @@
 """File selection and creation widgets."""
 
-from collections.abc import Iterable
 import pathlib
-from typing import cast, Optional
+from collections.abc import Iterable
+from typing import cast
 
 import textual
 from textual import app, containers, message, screen, widgets
@@ -23,13 +23,13 @@ class FileSelectorTree(widgets.DirectoryTree):
             super().__init__()
             self.path = path
 
-    filetypes: Optional[list[str]]
+    filetypes: list[str] | None
     """Filter directory tree to show only files with these suffixes.
     
     Include the period when specifying suffixes, e.g., [".db", ".sqlite3"]
     """
 
-    def __init__(self, path: pathlib.Path, filetypes: Optional[list[str]]) -> None:
+    def __init__(self, path: pathlib.Path, filetypes: list[str] | None) -> None:
         """Initialize with default DB file name."""
         super().__init__(path)
         self.filetypes = filetypes
@@ -65,10 +65,10 @@ class FileSelector(screen.ModalScreen[pathlib.Path | None]):
 
         path: pathlib.Path
         create: bool
-        id: Optional[str]
+        id: str | None
 
         def __init__(
-            self, path: pathlib.Path, create: bool = False, id: Optional[str] = None
+            self, path: pathlib.Path, create: bool = False, id: str | None = None
         ) -> None:
             super().__init__()
             self.path = path
@@ -77,24 +77,24 @@ class FileSelector(screen.ModalScreen[pathlib.Path | None]):
 
     create: bool
     """Set to True to create a new file. Can only select files when False."""
-    default_filename: Optional[str]
+    default_filename: str | None
     """Initial value for filename input widget."""
-    filetypes: Optional[list[str]]
+    filetypes: list[str] | None
     """Filter directory tree to show only files with these suffixes."""
     start_path: pathlib.Path
     """Initial file system path for directory tree."""
-    instructions: Optional[str]
+    instructions: str | None
     """Additional instructions to be displayed on dialog."""
 
     def __init__(
         self,
         start_path: pathlib.Path,
-        filetypes: Optional[list[str]],
+        filetypes: list[str] | None,
         create: bool = False,
-        default_filename: Optional[str] = None,
-        id: Optional[str] = None,
-        classes: Optional[str] = None,
-        instructions: Optional[str] = None,
+        default_filename: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        instructions: str | None = None,
     ) -> None:
         """Set create or select mode on initialization."""
         super().__init__(id=id, classes=classes)

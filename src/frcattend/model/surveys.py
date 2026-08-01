@@ -3,7 +3,7 @@
 import dataclasses
 import datetime
 import json
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from frcattend.model import abstract
 
@@ -64,7 +64,7 @@ class Survey(abstract.TableDef):
         choices: list[str] | str,
         multiselect: bool = False,
         allow_freetext: bool = False,
-        max_length: Optional[int] = None,
+        max_length: int | None = None,
         replace: bool = True,
     ) -> None:
         """Convert fields from Sqlite to Python datataypes as needed."""
@@ -88,7 +88,7 @@ class Survey(abstract.TableDef):
         """Convert survey to a dictionary."""
         return dataclasses.asdict(self)
 
-    def add(self, dbase: "database.DBase") -> bool:
+    def add(self, dbase: database.DBase) -> bool:
         """Add a survey to the database."""
         query = """
                 INSERT INTO surveys
@@ -105,7 +105,7 @@ class Survey(abstract.TableDef):
         conn.close()
         return rowcount == 1
 
-    def update(self, dbase: "database.DBase") -> bool:
+    def update(self, dbase: database.DBase) -> bool:
         """Update the survey in the database."""
         query = """
                 UPDATE surveys
@@ -126,7 +126,7 @@ class Survey(abstract.TableDef):
         return rowcount == 1
 
     @staticmethod
-    def delete_by_title(dbase: "database.DBase", title: str) -> bool:
+    def delete_by_title(dbase: database.DBase, title: str) -> bool:
         """Delete the survey's database record."""
         query = """
                 DELETE FROM surveys
@@ -139,7 +139,7 @@ class Survey(abstract.TableDef):
         return rowcount == 1
 
     @staticmethod
-    def get_by_title(dbase: "database.DBase", title: str) -> "Survey | None":
+    def get_by_title(dbase: database.DBase, title: str) -> Survey | None:
         """Get the survey with the givent title, or None if it doesn't exist."""
         query = """
                 SELECT title, question, choices, multiselect,
@@ -155,7 +155,7 @@ class Survey(abstract.TableDef):
         return None
 
     @staticmethod
-    def get_all(dbase: "database.DBase") -> list["Survey"]:
+    def get_all(dbase: database.DBase) -> list[Survey]:
         """Retrive all surveys from the database."""
         query = """
                 SELECT title, question, choices, multiselect,
@@ -242,12 +242,12 @@ class Answer(abstract.TableDef):
         ans_dict["answer_date"] = self.iso_date
         return ans_dict
 
-    def add(self, dbase: "database.DBase", replace: bool = True) -> bool:
+    def add(self, dbase: database.DBase, replace: bool = True) -> bool:
         """Add an answer to the answers table."""
         prior_answers = self.get_by_title_and_student(
             dbase, self.survey_title, self.student_id
         )
-        prior_dates = set(answer.answer_date for answer in prior_answers)
+        prior_dates = {answer.answer_date for answer in prior_answers}
         if len(prior_answers) == 0 or self.answer_date in prior_dates or not replace:
             query = """
                     INSERT INTO answers
@@ -271,7 +271,7 @@ class Answer(abstract.TableDef):
         conn.close()
         return rowcount == 1
 
-    def update(self, dbase: "database.DBase") -> bool:
+    def update(self, dbase: database.DBase) -> bool:
         """Update the answer in the database."""
         query = """
                 UPDATE answers
@@ -288,7 +288,7 @@ class Answer(abstract.TableDef):
         return rowcount == 1
 
     @staticmethod
-    def get_all(dbase: "database.DBase") -> list["Answer"]:
+    def get_all(dbase: database.DBase) -> list[Answer]:
         """Retrive all answers from the database."""
         query = """
                 SELECT student_id, survey_title, answer_date,
@@ -303,8 +303,8 @@ class Answer(abstract.TableDef):
 
     @staticmethod
     def get_by_title_and_student(
-        dbase: "database.DBase", survey_title: str, student_id: str
-    ) -> list["Answer"]:
+        dbase: database.DBase, survey_title: str, student_id: str
+    ) -> list[Answer]:
         """Get all answers for a specific survey and student."""
         query = """
                 SELECT student_id, survey_title, answer_date,

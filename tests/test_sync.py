@@ -1,11 +1,10 @@
 """Test synchronization between local app and Google workbook."""
 
-import pytest  # noqa: F401
+import pytest
 import rich  # noqa: F401
 
 from frcattend import model
 from frcattend.features import sync
-
 
 pytestmark = pytest.mark.skip(
     reason="Prevent exceeding Google sheet rate limits. Run tests one at a time."

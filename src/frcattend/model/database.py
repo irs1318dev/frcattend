@@ -1,13 +1,13 @@
 """Connect to the Sqlite database and run queries."""
 
-from collections.abc import Sequence
 import dataclasses
 import datetime
 import json
 import os
 import pathlib
 import sqlite3
-from typing import Any, Callable, Optional
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from frcattend import config
 from frcattend.model import abstract, events_checkins, students, surveys
@@ -242,7 +242,7 @@ class DBase:
     def backup(
         self,
         pages: int = 100,
-        status_callback: Optional[Callable[[int, int, int], Any]] = None,
+        status_callback: Callable[[int, int, int], Any] | None = None,
     ) -> pathlib.Path:
         """Backup the database file.
 

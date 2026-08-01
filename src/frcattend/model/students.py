@@ -6,7 +6,7 @@ import enum
 import random
 import re
 import sqlite3
-from typing import ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from frcattend.model import abstract
 
@@ -21,8 +21,6 @@ class Stage(enum.StrEnum):
     """A new student who has commenced fall training."""
     FORMER_PROSPECT = "former_prospect"
     """Student who did not complete fall training or chose not to join team."""
-    MEMBER = "member"
-    """To be replaced with veteran or rookie."""
     ROOKIE = "rookie"
     """Completed membeship requirments, joined team, in first season."""
     VETERAN = "veteran"
@@ -32,7 +30,7 @@ class Stage(enum.StrEnum):
     ALUMNI = "alumni"
     """Former member with significant participation (had a role, lettered, etc.)"""
 
-    valid_reasons: ClassVar[dict["Stage", list["Reason"]]]
+    valid_reasons: ClassVar[dict[Stage, list[Reason]]]
     """Maps each stage to the Reason values that are valid for it."""
 
 
@@ -52,7 +50,6 @@ class Reason(enum.StrEnum):
 Stage.valid_reasons = {
     Stage.PROSPECT: [],
     Stage.FORMER_PROSPECT: [Reason.CHOICE, Reason.INCOMPLETE, Reason.TRANSFERRED],
-    Stage.MEMBER: [],
     Stage.ROOKIE: [],
     Stage.VETERAN: [],
     Stage.FORMER_MEMBER: [
@@ -108,8 +105,8 @@ class Status(abstract.TableDef):
     student_id: str
     stage: Stage
     start_date: datetime.date
-    reason: Optional[Reason] = None
-    notes: Optional[str] = None
+    reason: Reason | None = None
+    notes: str | None = None
 
     table_name: ClassVar[str] = "statuses"
     table_def: ClassVar[str] = """
@@ -125,7 +122,7 @@ class Status(abstract.TableDef):
         );
     """
 
-    def add(self, dbase: "database.DBase") -> int:
+    def add(self, dbase: database.DBase) -> int:
         """Add the status record to the database.
 
         Returns:
@@ -155,7 +152,7 @@ class Status(abstract.TableDef):
         self.status_id = 0 if status_id is None else status_id
         return self.status_id
 
-    def update(self, dbase: "database.DBase") -> None:
+    def update(self, dbase: database.DBase) -> None:
         """Update the status record in the database."""
         query = """
                 UPDATE statuses
@@ -179,7 +176,7 @@ class Status(abstract.TableDef):
         conn.close()
 
     @staticmethod
-    def get_by_status_id(dbase: "database.DBase", status_id: int) -> "Status":
+    def get_by_status_id(dbase: database.DBase, status_id: int) -> Status:
         """Retrieve a single status record."""
         query = """
                   SELECT status_id, student_id, stage, start_date, reason, notes
@@ -192,7 +189,7 @@ class Status(abstract.TableDef):
         return status
 
     @staticmethod
-    def get_by_student_id(dbase: "database.DBase", student_id: str) -> "list[Status]":
+    def get_by_student_id(dbase: database.DBase, student_id: str) -> list[Status]:
         """Retrieve list of Status objects for specific student."""
         query = """
                 SELECT status_id, student_id, stage, start_date, reason, notes
@@ -216,7 +213,7 @@ class Status(abstract.TableDef):
         }
 
     @staticmethod
-    def get_all(dbase: "database.DBase") -> list["Status"]:
+    def get_all(dbase: database.DBase) -> list[Status]:
         """Retrieve a list of Student objects from the database."""
         query = """
                 SELECT status_id, student_id, stage, start_date, reason, notes
@@ -229,7 +226,7 @@ class Status(abstract.TableDef):
         return statuses
 
     @staticmethod
-    def get_current(dbase: "database.DBase") -> list["Status"]:
+    def get_current(dbase: database.DBase) -> list[Status]:
         """Get the most recent status for each student."""
         query = """
             WITH ranked_status AS (
@@ -261,7 +258,7 @@ class Student(abstract.TableDef):
     last_name: str
     grad_year: int
     email: str
-    status: Optional[Status] = dataclasses.field(default=None, kw_only=True)
+    status: Status | None = dataclasses.field(default=None, kw_only=True)
 
     table_name: ClassVar[str] = "students"
     table_def: ClassVar[str] = """
@@ -284,7 +281,7 @@ class Student(abstract.TableDef):
         first_name: str,
         last_name: str,
         grad_year: int,
-        email: str
+        email: str,
     ) -> None:
         """Pass an empty string to student_id to auto-generate a unique ID."""
         self.student_id = (
@@ -316,7 +313,7 @@ class Student(abstract.TableDef):
             f"-{grad_year}-{random.randint(1, 999):03}"
         )
 
-    def add(self, dbase: "database.DBase") -> None:
+    def add(self, dbase: database.DBase) -> None:
         """Add the Student to the database."""
         query = """
                 INSERT INTO students
@@ -336,7 +333,7 @@ class Student(abstract.TableDef):
             )
         conn.close()
 
-    def update(self, dbase: "database.DBase") -> None:
+    def update(self, dbase: database.DBase) -> None:
         """Update the Student in the database."""
         query = """
                 UPDATE students
@@ -360,7 +357,7 @@ class Student(abstract.TableDef):
         conn.close()
 
     @staticmethod
-    def get_all(dbase: "database.DBase") -> list["Student"]:
+    def get_all(dbase: database.DBase) -> list[Student]:
         """Retrieve a list of Student objects from the database."""
         query = """
                 SELECT student_id, last_name, first_name, grad_year, email
@@ -373,7 +370,7 @@ class Student(abstract.TableDef):
         return students
 
     @staticmethod
-    def get_by_id(dbase: "database.DBase", student_id: str) -> "Student | None":
+    def get_by_id(dbase: database.DBase, student_id: str) -> Student | None:
         """Retrieve a Student object by student_id."""
         query = """
                 SELECT student_id, last_name, first_name, grad_year, email
@@ -388,7 +385,7 @@ class Student(abstract.TableDef):
         return Student(**result)
 
     @staticmethod
-    def get_all_ids(dbase: "database.DBase") -> list[str]:
+    def get_all_ids(dbase: database.DBase) -> list[str]:
         """Retrieve a list of all student IDs from the database."""
         query = """
                 SELECT student_id
@@ -402,18 +399,20 @@ class Student(abstract.TableDef):
 
     @staticmethod
     def get_veteran_dates(
-        dbase: "database.DBase",
-        stages: Optional[list[Stage]] = None,
-        as_of: Optional[datetime.date] = None,
+        dbase: database.DBase,
+        stages: list[Stage] | None = None,
+        as_of: datetime.date | None = None,
     ) -> dict[str, datetime.date]:
         """Get dates on which student transitions from rookie to veteran."""
 
         query = """
             with ranked_status AS (
-                -- Assign integer ranks to statuses, from newest to oldest
+                -- Assign integer ranks to statuses on or before the as-of date,
+                -- from newest to oldest.
                 SELECT student_id, stage, start_date,
                        ROW_NUMBER() OVER student_window AS status_rank
                   FROM statuses
+                 WHERE start_date <= ?
                 WINDOW student_window AS (
                            PARTITION BY student_id
                            ORDER BY start_date DESC
@@ -424,16 +423,15 @@ class Student(abstract.TableDef):
                 SELECT student_id
                   FROM ranked_status
                  WHERE status_rank = 1
-                   AND start_date <= ?
                    <<STAGE-SELECTOR>>
-            ),   
+            ),
             ranked_start_dates AS (
                 -- Re-assign integer ranks to statuses, from oldest to newest
                 SELECT student_id, start_date, stage,
                        rank() OVER student_window AS date_rank
                   FROM statuses
                  WHERE student_id IN selected_students
-                   AND stage IN ('member', 'prospect')
+                   AND stage IN ('rookie', 'prospect')
                 WINDOW student_window AS (PARTITION BY student_id ORDER BY start_date)
             ),
             start_dates AS (
@@ -469,7 +467,7 @@ class Student(abstract.TableDef):
                 case _:
                     stage_values = tuple(stg.value for stg in stages)
                     query = query.replace(
-                        "<<STAGE-SELECTOR>>", f"AND stage in {repr(stage_values)}"
+                        "<<STAGE-SELECTOR>>", f"AND stage in {stage_values!r}"
                     )
         if as_of is None:
             as_of = datetime.date.today()
@@ -483,9 +481,9 @@ class Student(abstract.TableDef):
 
     @staticmethod
     def get_with_status(
-        dbase: "database.DBase",
-        asof_date: Optional[datetime.date] = None,
-        stages: Optional[list[Stage]] = None,
+        dbase: database.DBase,
+        asof_date: datetime.date | None = None,
+        stages: list[Stage] | None = None,
     ) -> list[Student]:
         """Get all students with their current status.
 
@@ -523,7 +521,6 @@ class Student(abstract.TableDef):
         students = []
         student_fields = frozenset(field.name for field in dataclasses.fields(Student))
         status_fields = frozenset(field.name for field in dataclasses.fields(Status))
-        veteran_dates = Student.get_veteran_dates(dbase, stages, as_of=asof_date)
         for row in conn.execute(query, [asof_date]):
             student_data = {
                 key: val for key, val in row.items() if key in student_fields
@@ -537,7 +534,7 @@ class Student(abstract.TableDef):
         return students
 
     @staticmethod
-    def grad_years(dbase: "database.DBase") -> list[int]:
+    def grad_years(dbase: database.DBase) -> list[int]:
         """Get available graduation years."""
         query = """
             SELECT DISTINCT(grad_year)
@@ -560,7 +557,7 @@ class Student(abstract.TableDef):
         }
 
     @staticmethod
-    def summary(dbase: "database.DBase") -> dict[str, int]:
+    def summary(dbase: database.DBase) -> dict[str, int]:
         """Get the number of students in the attendance system."""
         query = "SELECT count(*) AS total FROM students;"
         conn = dbase.get_db_connection()

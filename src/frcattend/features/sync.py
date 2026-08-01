@@ -5,15 +5,14 @@ import enum
 import json
 import pathlib
 import sqlite3
-from typing import Any, Optional
-import yaml
+from typing import Any
 
-from google.oauth2 import service_account
 import gspread
 import gspread.utils
+import yaml
+from google.oauth2 import service_account
 
 from frcattend import config, model
-
 
 # TODO: Check attendance name from roster.
 # TODO: Provide command-line feedback to user.
@@ -383,7 +382,7 @@ class RosterUpdater:
         ]
         return credentials.with_scopes(scope)
 
-    def get_mapped_col_number(self, field_name: str) -> Optional[int]:
+    def get_mapped_col_number(self, field_name: str) -> int | None:
         """Column number that maps to field."""
         col_number = None
         col_label = self.column_map[field_name]
@@ -394,7 +393,7 @@ class RosterUpdater:
                 pass
         return col_number
 
-    def get_mapped_col_data(self, field_name: str) -> Optional[list[Any]]:
+    def get_mapped_col_data(self, field_name: str) -> list[Any] | None:
         """Get column values"""
         col_num = self.get_mapped_col_number(field_name)
         if col_num is None:
@@ -403,7 +402,7 @@ class RosterUpdater:
             col_values = (self.mapped_sheet.col_values(col_num))[self.header_row :]
             return [v.strip() if isinstance(v, str) else v for v in col_values]
 
-    def get_mapped_col_ref(self, field_name: str, length: int) -> Optional[str]:
+    def get_mapped_col_ref(self, field_name: str, length: int) -> str | None:
         """A1 reference that maps to field's first data row."""
         col_number = self.get_mapped_col_number(field_name)
         if col_number is not None:

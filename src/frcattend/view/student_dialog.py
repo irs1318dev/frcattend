@@ -2,9 +2,9 @@
 
 from textual import app, containers, screen, widgets
 
-from frcattend import model
 import frcattend.view
-from frcattend.view import validators, status_table
+from frcattend import model
+from frcattend.view import status_table, validators
 
 
 class StudentDialog(screen.ModalScreen):

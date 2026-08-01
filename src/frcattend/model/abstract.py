@@ -5,7 +5,7 @@ Table dataclasses defined in other modules should inherit from TableDef.
 
 import abc
 import sqlite3
-from typing import ClassVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
     from frcattend.model import database
@@ -36,7 +36,7 @@ class TableDef(abc.ABC):
             conn.execute(f"DELETE FROM {cls.table_name}")
 
     @classmethod
-    def count(cls, dbase: "database.DBase") -> int:
+    def count(cls, dbase: database.DBase) -> int:
         """Get number of records in table."""
         query = f"SELECT COUNT(*) FROM {cls.table_name};"
         conn = dbase.get_db_connection()
@@ -45,7 +45,7 @@ class TableDef(abc.ABC):
         return row_count
 
     @classmethod
-    def get_nongenerated_columns(cls, dbase: "database.DBase") -> list[str]:
+    def get_nongenerated_columns(cls, dbase: database.DBase) -> list[str]:
         """Get list of non-generated columns used when importing and exporting."""
         query = f"PRAGMA table_info({cls.table_name});"
         conn = dbase.get_db_connection(as_dict=True)

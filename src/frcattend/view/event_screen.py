@@ -1,15 +1,12 @@
 """Manage team events."""
 
-import datetime
-
 import dateutil.parser
 import rich.text
-
 import textual
 from textual import app, binding, containers, reactive, screen, widgets
 
-from frcattend import config, model
 import frcattend.view
+from frcattend import config, model
 from frcattend.features import events
 from frcattend.view import validators
 
@@ -24,7 +21,7 @@ class EventsTable(widgets.DataTable):
 
     def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
         """Set link to database."""
-        super().__init__(zebra_stripes=True, *args, **kwargs)
+        super().__init__(*args, **kwargs, zebra_stripes=True)
         self.dbase = dbase
         self.checkin_events = {}
 
@@ -78,7 +75,7 @@ class StudentsTable(widgets.DataTable):
 
     def __init__(self, dbase: model.DBase, *args, **kwargs) -> None:
         """Set link to database."""
-        super().__init__(zebra_stripes=True, *args, **kwargs)
+        super().__init__(*args, **kwargs, zebra_stripes=True)
         self.dbase = dbase
         self.students = {}
 
@@ -131,6 +128,7 @@ class EventScreen(screen.Screen):
     """Contains the currently selected event."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "event_screen.tcss"
+    # ruff: ignore[RUF012]
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
     ]

@@ -1,6 +1,7 @@
 # Project level
 tests/output
 tests/data/private
+.claude/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

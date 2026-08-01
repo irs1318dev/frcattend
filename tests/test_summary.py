@@ -1,6 +1,6 @@
 """Test miscelaneous features."""
 
-import rich  # noqa: F401
+import rich
 
 from frcattend import model
 from frcattend.features import summary

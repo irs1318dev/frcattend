@@ -3,10 +3,9 @@
 import datetime
 import pathlib
 
-import rich  # noqa: F401
+import rich
 
 from frcattend import model
-
 
 DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 

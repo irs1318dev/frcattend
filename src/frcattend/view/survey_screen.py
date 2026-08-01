@@ -1,14 +1,14 @@
 """Create, edit, and view surveys."""
 
 import datetime
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import textual
 from textual import app, binding, containers, message, screen, validation, widgets
 from textual.widgets import option_list
 
-from frcattend import config, model
 import frcattend.view
+from frcattend import config, model
 from frcattend.view import validators
 
 if TYPE_CHECKING:
@@ -22,12 +22,13 @@ class SurveyScreen(screen.Screen):
     """Connection to Sqlite Database."""
     survey_table: widgets.DataTable
     """Table that holds survey data."""
-    _selected_survey_title: Optional[str]
+    _selected_survey_title: str | None
     """Currently selected survey."""
     _surveys: dict[str, model.Survey]
     """List of surveys currently loaded in the datatable."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "survey_screen.tcss"
+    # ruff: ignore[RUF012]
     BINDINGS = [
         binding.Binding("escape", "app.pop_screen", "Back to Main Screen", show=True),
     ]
@@ -348,12 +349,12 @@ class TakeSurveyDialog(screen.ModalScreen):
     """Database containing survey data."""
     _validator_results: dict[str, validation.ValidationResult | None]
     """Validation results for dialog inputs, [id: ValidationResult]."""
-    _scan_screen: "take_attendance.ScanScreen"
+    _scan_screen: take_attendance.ScanScreen
 
     def __init__(
         self,
         dbase: model.DBase,
-        scan_screen: "take_attendance.ScanScreen",
+        scan_screen: take_attendance.ScanScreen,
         survey: model.Survey,
         student: model.Student,
     ) -> None:

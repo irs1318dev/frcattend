@@ -2,7 +2,6 @@
 
 import dataclasses
 import datetime
-from typing import Optional
 
 from frcattend import model
 
@@ -19,14 +18,14 @@ class CheckinEvent(model.Event):
         event_date: datetime.date | str,
         event_type: str | model.EventType,
         checkin_count: int,
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> None:
         """Convert event-date and event_type if needed."""
         self.checkin_count = checkin_count
         super().__init__(event_date, event_type, description)
 
     @staticmethod
-    def get_checkin_events(dbase: model.DBase) -> list["CheckinEvent"]:
+    def get_checkin_events(dbase: model.DBase) -> list[CheckinEvent]:
         """Retrieve a events with number of students attending."""
         query = """
                 WITH event_attendance AS (
@@ -61,7 +60,7 @@ class EventStudent(model.Student):
     @staticmethod
     def get_students_for_event(
         dbase: model.DBase, event_key: str
-    ) -> list["EventStudent"]:
+    ) -> list[EventStudent]:
         """Retrieve students who attended the specified event."""
         event_date, event_type = tuple(event_key.split("::"))
         query = """

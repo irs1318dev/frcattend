@@ -19,7 +19,7 @@ import dataclasses
 import datetime
 import enum
 import sqlite3
-from typing import Any, ClassVar, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from frcattend.model import abstract
 
@@ -59,8 +59,6 @@ sqlite3.register_converter("EVENT_TYPE", convert_event_type)
 class EventUpateError(Exception):
     """Raised when an event update fails."""
 
-    pass
-
 
 @dataclasses.dataclass
 class Event(abstract.TableDef):
@@ -68,7 +66,7 @@ class Event(abstract.TableDef):
 
     event_date: datetime.date
     event_type: EventType
-    description: Optional[str]
+    description: str | None
 
     table_name: ClassVar[str] = "events"
     table_def: ClassVar[str] = """
@@ -85,7 +83,7 @@ class Event(abstract.TableDef):
         self,
         event_date: datetime.date | str,
         event_type: str | EventType,
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> None:
         """Ensure event_date is converted to datetime.date."""
         if isinstance(event_date, str):
@@ -116,7 +114,7 @@ class Event(abstract.TableDef):
         """String that uniquely identifies the event."""
         return f"{self.iso_date}::{self.event_type.value}"
 
-    def exists(self, dbase: "database.DBase") -> bool:
+    def exists(self, dbase: database.DBase) -> bool:
         """Check if the event exists in the database."""
         query = """
                 SELECT 1
@@ -131,7 +129,7 @@ class Event(abstract.TableDef):
         conn.close()
         return query_result is not None
 
-    def add(self, dbase: "database.DBase") -> bool:
+    def add(self, dbase: database.DBase) -> bool:
         """Add the event to the database.
 
         Return True if the event was added, False if it already existed.
@@ -155,7 +153,7 @@ class Event(abstract.TableDef):
         conn.close()
         return row_count == 1
 
-    def delete(self, dbase: "database.DBase") -> bool:
+    def delete(self, dbase: database.DBase) -> bool:
         """Delete the event from the database.
 
         Return True if the event was deleted, False if it did not exist.
@@ -176,8 +174,8 @@ class Event(abstract.TableDef):
 
     @staticmethod
     def select(
-        dbase: "database.DBase", event_date: datetime.date, event_type: EventType
-    ) -> "Event | None":
+        dbase: database.DBase, event_date: datetime.date, event_type: EventType
+    ) -> Event | None:
         """Retrieve a single event."""
         query = """
                 SELECT event_date, event_type, description
@@ -194,7 +192,7 @@ class Event(abstract.TableDef):
         return event
 
     @staticmethod
-    def get_all(dbase: "database.DBase") -> list["Event"]:
+    def get_all(dbase: database.DBase) -> list[Event]:
         """Retrieve a list of Student objects from the database."""
         query = """
                 SELECT event_date, event_type, description
@@ -207,7 +205,7 @@ class Event(abstract.TableDef):
         return events
 
     def update_description(
-        self, dbase: "database.DBase", description: str | None
+        self, dbase: database.DBase, description: str | None
     ) -> None:
         """Update the event in the database."""
         if self.description == description:
@@ -230,7 +228,7 @@ class Event(abstract.TableDef):
             )
         conn.close()
 
-    def update_event_type(self, dbase: "database.DBase", new_type: EventType) -> int:
+    def update_event_type(self, dbase: database.DBase, new_type: EventType) -> int:
         """Update the event type in the database.
 
         Returns:
@@ -268,9 +266,7 @@ class Event(abstract.TableDef):
         self.event_type = new_type
         return checkins_updated
 
-    def update_event_date(
-        self, dbase: "database.DBase", new_date: datetime.date
-    ) -> None:
+    def update_event_date(self, dbase: database.DBase, new_date: datetime.date) -> None:
         """Update the event date in the database.
 
         Raises:
@@ -308,7 +304,7 @@ class Event(abstract.TableDef):
         }
 
     @staticmethod
-    def summary(dbase: "database.DBase") -> dict[str, Any]:
+    def summary(dbase: database.DBase) -> dict[str, Any]:
         """Get a summary of events in database."""
         query = """
             SELECT count(*) AS total,
@@ -388,7 +384,7 @@ class Checkin(abstract.TableDef):
         """Event date as an iso-formatted string."""
         return self.to_iso_date(self.event_date)
 
-    def add(self, dbase: "database.DBase") -> int:
+    def add(self, dbase: database.DBase) -> int:
         """Add the checkin record to the database.
 
         Returns:
@@ -428,7 +424,7 @@ class Checkin(abstract.TableDef):
         ]
 
     @staticmethod
-    def get_all(dbase: "database.DBase") -> list["Checkin"]:
+    def get_all(dbase: database.DBase) -> list[Checkin]:
         """Retrieve a list of Checkin objects from the database."""
         query = """
                 SELECT checkin_id, student_id, event_type, timestamp
@@ -441,7 +437,7 @@ class Checkin(abstract.TableDef):
         return checkins
 
     @staticmethod
-    def get_time_of_last_checkin(dbase: "database.DBase") -> datetime.datetime | None:
+    def get_time_of_last_checkin(dbase: database.DBase) -> datetime.datetime | None:
         """Get the date and time of the most recent checkin in the database."""
         query = "SELECT MAX(timestamp) FROM checkins;"
         conn = dbase.get_db_connection()
@@ -456,7 +452,7 @@ class Checkin(abstract.TableDef):
     @classmethod
     def get_checkedin_students(
         cls,
-        dbase: "database.DBase",
+        dbase: database.DBase,
         event_date: datetime.date,
         event_type: EventType,
     ) -> list[str]:
@@ -476,8 +472,8 @@ class Checkin(abstract.TableDef):
 
     @classmethod
     def get_checkins_by_student(
-        cls, dbase: "database.DBase", student_id: str
-    ) -> list["Checkin"]:
+        cls, dbase: database.DBase, student_id: str
+    ) -> list[Checkin]:
         """Get a list of checkin objects for a single student."""
         query = """
                 SELECT checkin_id, student_id, event_type, timestamp
@@ -492,7 +488,7 @@ class Checkin(abstract.TableDef):
 
     @staticmethod
     def get_counts_by_student(
-        dbase: "database.DBase", since: datetime.date
+        dbase: database.DBase, since: datetime.date
     ) -> dict[str, int]:
         """Get a dictionary of student IDs and their checkin counts."""
         conn = dbase.get_db_connection()
@@ -512,7 +508,7 @@ class Checkin(abstract.TableDef):
 
     @staticmethod
     def get_count(
-        dbase: "database.DBase", event_date: datetime.date, event_type: EventType
+        dbase: database.DBase, event_date: datetime.date, event_type: EventType
     ) -> int:
         """Count the number of checkins for a given event."""
         query = """
@@ -530,8 +526,8 @@ class Checkin(abstract.TableDef):
 
     @staticmethod
     def get_checkin_by_student_and_date(
-        dbase: "database.DBase", student_id: str, event_date: datetime.date
-    ) -> "list[Checkin]":
+        dbase: database.DBase, student_id: str, event_date: datetime.date
+    ) -> list[Checkin]:
         """Get the checkin corresponding to a specific student and date.
 
         Returns:
@@ -562,7 +558,7 @@ class Checkin(abstract.TableDef):
         }
 
     @staticmethod
-    def summary(dbase: "database.DBase") -> dict[str, Any]:
+    def summary(dbase: database.DBase) -> dict[str, Any]:
         """Get a summary of checkins in database."""
         query = """
             SELECT count(*) AS total,
