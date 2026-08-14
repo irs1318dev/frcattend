@@ -150,6 +150,17 @@ class Status(abstract.TableDef):
         );
     """
 
+    @classmethod
+    def get_nongenerated_columns(cls, dbase: database.DBase) -> list[str]:
+        """Remove 'status_id' from list of nongenerated columns.
+
+        The status_id column is an auto-generated primary key that should not
+        be exported or imported.
+        """
+        return [
+            col for col in super().get_nongenerated_columns(dbase) if col != "status_id"
+        ]
+
     def add(self, dbase: database.DBase) -> int:
         """Add the status record to the database.
 
