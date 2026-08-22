@@ -23,6 +23,7 @@ class StatusSelector(widgets.SelectionList[model.Stage]):
         PROSPECT, ROOKIE, and VETERAN stages are checked by default.
         """
         all_stages = [
+            model.Stage.PROSPECT,
             model.Stage.ROOKIE,
             model.Stage.VETERAN,
             model.Stage.FORMER_PROSPECT,

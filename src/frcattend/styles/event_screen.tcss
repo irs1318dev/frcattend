@@ -5,9 +5,18 @@
     height: 30;
 }
 EventsTable {
-    max-height: 30%; 
+    max-height: 30%;
 }
 
+/* Students-at-event table on the left, filter widgets on the right. */
+#events-student-list-container {
+    width: 70%;
+}
 StudentsTable {
-    max-height: 50%;
+    height: 1fr;
+}
+
+#events-students-actions-container {
+    width: 30%;
+    align-horizontal: center;
 }

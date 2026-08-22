@@ -1,5 +1,7 @@
 """Manage team events."""
 
+import datetime
+
 import dateutil.parser
 import rich.text
 import textual
@@ -8,7 +10,7 @@ from textual import app, binding, containers, reactive, screen, widgets
 import frcattend.view
 from frcattend import config, model
 from frcattend.features import events
-from frcattend.view import validators
+from frcattend.view import selector_widgets, validators
 
 
 class EventsTable(widgets.DataTable):
@@ -70,6 +72,13 @@ class StudentsTable(widgets.DataTable):
     """Students who checked in at that selected event."""
     event_key = reactive.reactive("")
     """Contains the currently selected event."""
+    selected_stages: reactive.reactive[tuple[model.Stage, ...]] = reactive.reactive(())
+    """Only students with one of these stages are shown."""
+    grad_year: reactive.reactive[str] = reactive.reactive("")
+    """Only students with this graduation year are shown, if four digits."""
+    show_current_status: reactive.reactive[bool] = reactive.reactive(False)
+    """If True, the Status column shows each student's current status instead
+    of their status as of the selected event's date."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "event_screen.tcss"
 
@@ -86,16 +95,37 @@ class StudentsTable(widgets.DataTable):
     def initialize_table(self) -> None:
         """Define table columns."""
         for col in [
-            ("Student ID", "student_id"),
             ("First Name", "first_name"),
             ("Last Name", "last_name"),
-            ("Graduation Year", "grad_year"),
+            ("Grad Year", "grad_year"),
+            ("Status", "status"),
             ("Check-in time", "timestamp"),
         ]:
             self.add_column(col[0], key=col[1])
 
     def watch_event_key(self) -> None:
-        """Add events to the event table."""
+        """Reload the table when the selected event changes."""
+        self.update_table()
+
+    def watch_selected_stages(self) -> None:
+        """Reload the table when the stage filter changes."""
+        self.update_table()
+
+    def watch_grad_year(self) -> None:
+        """Reload the table when the graduation year filter changes."""
+        self.update_table()
+
+    def watch_show_current_status(self) -> None:
+        """Reload the table when the current-status toggle changes."""
+        self.update_table()
+
+    def update_table(self) -> None:
+        """Populate the table with students checked in to the selected event.
+
+        Only students whose displayed Status matches one of the selected
+        stages, and whose graduation year matches the graduation year
+        filter, are shown.
+        """
         if not self.event_key:
             return
         self.clear(columns=False)
@@ -105,16 +135,38 @@ class StudentsTable(widgets.DataTable):
                 self.dbase, self.event_key
             )
         }
+        if self.show_current_status:
+            status_asof_date = None
+        else:
+            status_asof_date = datetime.date.fromisoformat(
+                self.event_key.split("::")[0]
+            )
+        statuses = {
+            student.student_id: student.status
+            for student in model.Student.get_with_status(
+                self.dbase, asof_date=status_asof_date
+            )
+        }
+        self.students = {
+            student_id: student
+            for student_id, student in self.students.items()
+            if (status := statuses.get(student_id)) is not None
+            and status.stage in self.selected_stages
+        }
+        if len(self.grad_year) == 4:
+            self.students = {
+                student_id: student
+                for student_id, student in self.students.items()
+                if student.grad_year == int(self.grad_year)
+            }
         for key, student in self.students.items():
-            # if isinstance(student.timestamp, datetime.datetime):
-            #     timestamp = student.timestamp.replace()
-
+            status = statuses.get(key)
             self.add_row(
-                student.student_id,
                 student.first_name,
                 student.last_name,
                 student.grad_year,
-                student.timestamp,
+                status.stage.value if status else "",
+                student.timestamp.replace(microsecond=0),
                 key=key,
             )
 
@@ -126,6 +178,13 @@ class EventScreen(screen.Screen):
     """Connection to Sqlite Database."""
     event_key: reactive.reactive[str | None] = reactive.reactive(None)
     """Contains the currently selected event."""
+    selected_stages: reactive.reactive[tuple[model.Stage, ...]] = reactive.reactive(())
+    """Only students with one of these stages are shown."""
+    grad_year: reactive.reactive[str] = reactive.reactive("")
+    """Only students with this graduation year are shown, if four digits."""
+    show_current_status: reactive.reactive[bool] = reactive.reactive(False)
+    """If True, the Status column shows each student's current status instead
+    of their status as of the selected event's date."""
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "event_screen.tcss"
     # ruff: ignore[RUF012]
@@ -156,10 +215,58 @@ class EventScreen(screen.Screen):
             "Students at Selected Event",
             classes="separator emphasis",
         )
-        students_table = StudentsTable(dbase=self.dbase, id="events-students-table")
-        students_table.data_bind(EventScreen.event_key)
-        yield students_table
+        with containers.Horizontal(id="events-students-container"):
+            with containers.Vertical(id="events-student-list-container"):
+                students_table = StudentsTable(
+                    dbase=self.dbase, id="events-students-table"
+                )
+                students_table.data_bind(
+                    EventScreen.event_key,
+                    EventScreen.selected_stages,
+                    EventScreen.grad_year,
+                    EventScreen.show_current_status,
+                )
+                yield students_table
+            with containers.Vertical(id="events-students-actions-container"):
+                yield selector_widgets.StatusSelector(id="status-selector")
+                yield selector_widgets.GradYearSelector(
+                    self.dbase, id="grad-year-selector"
+                )
+                yield widgets.Checkbox(
+                    "Show Current Status",
+                    False,
+                    id="show-current-status-checkbox",
+                    tooltip=(
+                        "Check this box to show each student's current status "
+                        "instead of their status as of the selected event's date."
+                    ),
+                )
         yield widgets.Footer()
+
+    def on_mount(self) -> None:
+        """Initialize the stage filter to match the status selector's default."""
+        status_selector = self.query_one(
+            "#status-selector", selector_widgets.StatusSelector
+        )
+        self.selected_stages = tuple(status_selector.selected)
+
+    @textual.on(widgets.SelectionList.SelectedChanged, "#status-selector")
+    def on_status_selector_changed(self) -> None:
+        """Update the stage filter when the selected stages change."""
+        status_selector = self.query_one(
+            "#status-selector", selector_widgets.StatusSelector
+        )
+        self.selected_stages = tuple(status_selector.selected)
+
+    @textual.on(widgets.Input.Changed, "#grad-year-selector")
+    def on_grad_year_selector_changed(self, message: widgets.Input.Changed) -> None:
+        """Update the graduation year filter when its value changes."""
+        self.grad_year = message.value
+
+    @textual.on(widgets.Checkbox.Changed, "#show-current-status-checkbox")
+    def on_show_current_status_changed(self, message: widgets.Checkbox.Changed) -> None:
+        """Toggle between current status and status as of the event date."""
+        self.show_current_status = message.checkbox.value
 
     @textual.on(EventsTable.RowHighlighted)
     def on_events_table_row_highlighted(
