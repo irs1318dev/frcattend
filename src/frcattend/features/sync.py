@@ -2,8 +2,10 @@
 
 import datetime
 import enum
+import hashlib
 import json
 import pathlib
+import platform
 import sqlite3
 from typing import Any
 
@@ -205,6 +207,25 @@ class Synchronizer:
             )
         current_sheet.update(sheet_data)
         return len(sheet_data)
+
+    def _get_update_metadata(
+        self,
+        db_data: dict[str, list[dict[str, Any]]]
+    ) -> dict[str, Any]:
+        """Get table hashes and update times."""
+        metadata = {
+            "update_time": datetime.datetime.now().isoformat(),
+            "computer_name": platform.node(), 
+            "table_hashes":
+            {
+                table_name: hashlib.sha256(
+                    json.dumps(table_data).encode("UTF-8")
+                )
+                .hexdigest()
+                for table_name, table_data in db_data.items()
+            }
+        }
+        return metadata
 
     def _backup_and_clear_sheet(self, table_name: str) -> gspread.Worksheet:
         """Backup existing sheet with title table_name and clear contents."""

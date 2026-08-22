@@ -6,9 +6,9 @@ import rich  # noqa: F401
 from frcattend import model
 from frcattend.features import sync
 
-pytestmark = pytest.mark.skip(
-    reason="Prevent exceeding Google sheet rate limits. Run tests one at a time."
-)
+# pytestmark = pytest.mark.skip(
+#     reason="Prevent exceeding Google sheet rate limits. Run tests one at a time."
+# )
 
 
 def test_connect_to_sheet(empty_database: model.DBase) -> None:
@@ -17,6 +17,19 @@ def test_connect_to_sheet(empty_database: model.DBase) -> None:
     synker = sync.Synchronizer()
     # Assert
     assert isinstance(synker, sync.Synchronizer)
+
+
+def test_metadata(
+    full_synchro: sync.Synchronizer,
+    full_dbase: model.DBase
+) -> None:
+    """Generate metadata that describes database contents."""
+    # Arrange
+    # rich.print("DB PATH", full_dbase.db_path)
+    # Act
+    metadata = full_synchro._get_update_metadata(full_dbase.to_dict())
+    # Assert
+    rich.print(metadata)
 
 
 def test_write_surveys(
