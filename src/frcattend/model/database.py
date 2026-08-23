@@ -2,6 +2,7 @@
 
 import dataclasses
 import datetime
+import hashlib
 import json
 import os
 import pathlib
@@ -73,7 +74,8 @@ def dict_factory(cursor: sqlite3.Cursor, row: Sequence) -> dict[str, Any]:
 
 
 @dataclasses.dataclass
-class DbInfo:
+class DbTimeStamps:
+    """Sqlite file timestamps."""
     access_time: datetime.datetime
     modification_time: datetime.datetime
     creation_time: datetime.datetime
@@ -139,6 +141,28 @@ class DBase:
             for tabledef in self.tables
         }
 
+    def get_table_hashes(self) -> tuple[dict[str, str], str]:
+        """Get Sha256 hashes for the contents of each table and entire database.
+
+        Compare hash values for individual tables to determine if there were
+        any changes to that table. Compare the overall hash value to determine
+        if there were any changes anywhere in the database.
+        
+        Returns:
+            A tuple where the first item is a dictionary of hashes for the
+            contents of each table {table-name: hash} and the second item is a
+            hash of the first item.
+        """
+        table_hashes = {
+            table_name: hashlib.sha256(
+                json.dumps(table_data).encode("UTF-8")
+            )
+            .hexdigest()
+            for table_name, table_data in self.to_dict().items()
+        }
+        metahash = hashlib.sha256(json.dumps(table_hashes).encode("UTF-8")).hexdigest()
+        return table_hashes, metahash
+
     def to_dict(self) -> dict[str, list[dict[str, str | int | None]]]:
         """Save database contents to a JSON file.
 
@@ -165,11 +189,8 @@ class DBase:
             {col: val for col, val in row.items() if col not in excluded_columns}
             for row in event_data
         ]
-        checkins = [c.to_dict() for c in events_checkins.Checkin.get_all(self)]
-        excluded_columns = ["checkin_id"]
         db_data["checkins"] = [
-            {col: val for col, val in row.items() if col not in excluded_columns}
-            for row in checkins
+            c.to_dict() for c in events_checkins.Checkin.get_all(self)
         ]
         return db_data
 
@@ -230,10 +251,10 @@ class DBase:
             conn.executemany(answers_query, answer_data)
         conn.close()
 
-    def get_database_file_info(self) -> DbInfo:
+    def get_database_file_info(self) -> DbTimeStamps:
         """Get information about the currently-selected database file."""
         file_info = os.stat(self.db_path)
-        return DbInfo(
+        return DbTimeStamps(
             access_time=datetime.datetime.fromtimestamp(file_info.st_atime),
             modification_time=datetime.datetime.fromtimestamp(file_info.st_mtime),
             creation_time=datetime.datetime.fromtimestamp(file_info.st_birthtime),

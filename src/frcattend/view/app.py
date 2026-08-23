@@ -2,7 +2,7 @@
 
 import json
 import pathlib
-from typing import Any
+from typing import cast
 
 import textual
 from textual import app, containers, message, reactive, screen, widgets
@@ -463,21 +463,26 @@ class UploadConfirmation(screen.ModalScreen):
 
     CSS_PATH = frcattend.view.CSS_FOLDER / "root.tcss"
 
-    row_counts: dict[str, int]
-    """Number of records uploaded for each table."""
+    upload_status: dict[str, int | str]
+    """Number of records uploaded for each table or table upload status."""
 
-    def __init__(self, row_counts: dict[str, int]) -> None:
-        """Specify number of uploaded rows on initialization."""
+    def __init__(self, upload_status: dict[str, int | str]) -> None:
+        """Specify table upload status on initialization."""
         super().__init__()
-        self.row_counts = row_counts
+        self.upload_status = upload_status
 
     def compose(self) -> app.ComposeResult:
         """Build the dialog box."""
         with containers.Vertical(id="upload-confirm-dialog", classes="modal-dialog"):
-            yield widgets.Label("Uploaded Records!", classes="emphasis")
+            status_text = (
+                cast(str, self.upload_status["status"])
+                .replace("-", " ").title() + "!"
+            )
+            yield widgets.Label(status_text, classes="emphasis")
             markdown = ["# Rows Uploaded"]
-            for table_name, count in self.row_counts.items():
-                markdown.append(f"    * {table_name:>12} {count}")
+            for table_name, count in self.upload_status.items():
+                if table_name != "status":
+                    markdown.append(f"    * {table_name:>12} {count}")
             yield widgets.Markdown("\n".join(markdown))
             yield widgets.Button("Ok", id="confirm-upload", classes="ok-cancel-row")
 

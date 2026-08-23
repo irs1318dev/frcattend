@@ -19,17 +19,26 @@ def test_connect_to_sheet(empty_database: model.DBase) -> None:
     assert isinstance(synker, sync.Synchronizer)
 
 
-def test_metadata(
-    full_synchro: sync.Synchronizer,
-    full_dbase: model.DBase
-) -> None:
+def test_local_metadata(full_synchro: sync.Synchronizer) -> None:
     """Generate metadata that describes database contents."""
-    # Arrange
-    # rich.print("DB PATH", full_dbase.db_path)
     # Act
-    metadata = full_synchro._get_update_metadata(full_dbase.to_dict())
+    metadata = full_synchro._get_local_metadata()
     # Assert
-    rich.print(metadata)
+    for fieldname in ["update_time", "user", "computer_name", "db_hash"]:
+        assert isinstance(metadata[fieldname], str)
+    assert isinstance(metadata["table_hashes"], str)
+    assert len(metadata["table_hashes"]) == 6
+
+
+def test_remote_metadata(full_synchro: sync.Synchronizer) -> None:
+    """Read metadata from remote Google sheet."""
+    # Act
+    metadata = full_synchro._get_remote_metadata()
+    # Assert
+    for fieldname in ["update_time", "user", "computer_name", "db_hash"]:
+        assert isinstance(metadata[fieldname], str)
+    assert isinstance(metadata["table_hashes"], str)
+    assert len(metadata["table_hashes"]) == 6
 
 
 def test_write_surveys(
@@ -44,7 +53,7 @@ def test_write_surveys(
 
 
 def test_write_db(empty_synchro: sync.Synchronizer, full_dbase: model.DBase) -> None:
-    """Write the surveys table to the synchro sheet."""
+    """Write all database data table to the synchro sheet."""
     # Arrange
     data = full_dbase.to_dict()
     # Act

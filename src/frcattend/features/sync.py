@@ -2,7 +2,7 @@
 
 import datetime
 import enum
-import hashlib
+import getpass
 import json
 import pathlib
 import platform
@@ -132,13 +132,14 @@ class Synchronizer:
         self.dbase = model.DBase(config.settings.db_path)
         self.workbook = GoogleWorkbook(config.settings.sync_sheet_key)
         self.schema = self.dbase.get_schema()
+        self.schema["checkins"].append("checkin_id")
 
     def add_log_sheet(self) -> None:
         """Add a worksheet to log activities."""
         if "log" not in self.workbook.worksheet_titles:
             self.workbook.spreadsheet.add_worksheet("log", rows=10, cols=10)
 
-    def upload(self) -> dict[str, int]:
+    def upload(self, upload_all: bool = False) -> dict[str, int | str]:
         """Upload all attendance data to a Google spreadsheet.
 
         Returns:
@@ -146,11 +147,13 @@ class Synchronizer:
             table.
         """
         db_data = self.dbase.to_dict()
-        return self.write_data_to_workbook(db_data)
+        return self.write_data_to_workbook(db_data, upload_all)
 
     def write_data_to_workbook(
-        self, db_data: dict[str, list[dict[str, Any]]]
-    ) -> dict[str, int]:
+        self,
+        db_data: dict[str, list[dict[str, Any]]],
+        upload_all: bool = False
+    ) -> dict[str, int | str]:
         """Write attendance data to a Google workbook.
 
         Args:
@@ -164,13 +167,33 @@ class Synchronizer:
             A dictionary of table names and the number of rows written for each
             table.
         """
-        return {
-            table_name: self.write_table_to_sheet(table_name, table_data)
-            for table_name, table_data in db_data.items()
-        }
+        local_metadata = self._get_local_metadata()
+        remote_metadata = self._get_remote_metadata()
+        if (
+            not upload_all
+            and "db-hash" in remote_metadata
+            and local_metadata["db-hash"] == remote_metadata["db-hash"]
+        ):
+            return {"status": "no-upload-needed"}
+        self._write_metadata_to_sheet(local_metadata)
+        upload_results = {}
+        for table_name, table_data in  db_data.items():
+            if (
+                not upload_all
+                and "table-hashes" in remote_metadata and table_name in remote_metadata
+                and local_metadata["table-hashes"][table_name] ==
+                    remote_metadata["table-hashes"][table_name]
+            ):
+                upload_results[table_name] = "no-upload-needed"
+                continue
+            else:
+                self.write_table_to_sheet(table_name, table_data)
+        upload_results["status"] = "upload-complete"
+        return upload_results
 
     def write_table_to_sheet(
-        self, table_name: str, table_data: list[dict[str, Any]]
+        self, table_name: str,
+        table_data: list[dict[str, Any]]
     ) -> int:
         """Write a database table to a Google Sheets worksheet.
 
@@ -208,24 +231,68 @@ class Synchronizer:
         current_sheet.update(sheet_data)
         return len(sheet_data)
 
-    def _get_update_metadata(
-        self,
-        db_data: dict[str, list[dict[str, Any]]]
-    ) -> dict[str, Any]:
-        """Get table hashes and update times."""
-        metadata = {
-            "update_time": datetime.datetime.now().isoformat(),
-            "computer_name": platform.node(), 
-            "table_hashes":
-            {
-                table_name: hashlib.sha256(
-                    json.dumps(table_data).encode("UTF-8")
-                )
-                .hexdigest()
-                for table_name, table_data in db_data.items()
-            }
+    def _get_local_metadata(self) -> dict[str, Any]:
+        """Get table hashes, account into, and update times from local system."""
+        table_hashes, dbhash = self.dbase.get_table_hashes()
+        return {
+            "update-time": datetime.datetime.now().isoformat(),
+            "user": getpass.getuser(),
+            "computer-name": platform.node(), 
+            "db-hash": dbhash,
+            "table-hashes": table_hashes
         }
+
+    def _get_remote_metadata(self) -> dict[str, Any]:
+        """Get metadata from remote Google sheet.
+        
+        Assumes that metadata sheet has this structure (each line is a row,
+        cells are separated by commas, literal values in quotes):
+            label1, value1,
+            label2, value2,
+            ..., ...,
+            labelN, valueN,
+            "table-hashes",
+            table-name1, hash1,
+            table-name2, hash2,
+            ..., ...
+            table-nameM, hashM
+
+        All label-value pairs must precede table-hashes section.
+        """
+        try:
+            meta_sheet = self.workbook.spreadsheet.worksheet("metadata")
+        except gspread.WorksheetNotFound:
+            return {}
+        sheet_data = meta_sheet.get_all_values()
+        metadata = {"table-hashes": {}}
+        in_hash_section = False
+        for row in sheet_data:
+            if in_hash_section:
+                metadata["table-hashes"][row[0]] = row[1]
+            else:
+                if row[0] == "table-hashes":
+                    in_hash_section = True
+                    continue
+                metadata[row[0]] = row[1]
         return metadata
+
+
+
+    def _write_metadata_to_sheet(self, metadata: dict[str, Any]) -> None:
+        """Write table hashes and other data to Google Sheet."""
+        sheet_name = "metadata"
+        if sheet_name in self.workbook.worksheet_titles:
+            current_sheet = self._backup_and_clear_sheet(sheet_name)
+        else:
+            current_sheet = self.workbook.spreadsheet.add_worksheet(sheet_name, 15, 2)
+        sheet_data = []
+        for key, val in metadata.items():
+            if key != "table-hashes":
+                sheet_data.append([key, val])
+        sheet_data.append(["table-hashes"])
+        for table_name, hash_val in metadata["table-hashes"].items():
+            sheet_data.append([table_name, hash_val])
+        current_sheet.update(sheet_data, "a1")
 
     def _backup_and_clear_sheet(self, table_name: str) -> gspread.Worksheet:
         """Backup existing sheet with title table_name and clear contents."""
