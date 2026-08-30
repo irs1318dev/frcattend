@@ -3,6 +3,7 @@
 import datetime
 import enum
 import getpass
+import hashlib
 import json
 import pathlib
 import platform
@@ -111,6 +112,14 @@ class Synchronizer:
     """Sqlite database that contains student attendance data."""
     schema: dict[str, list[str]]
     """Table names and columns."""
+    table_hashes: dict[str, str]
+    """SHA256 hashes generated from JSON dump of each table. Key is table name."""
+    db_hash: str
+    """SHA256 Hash of table hashes."""
+    sheet_max_ids: dict[str, int]
+    """Max ID that's used for change tracking for each worksheet, or -1 if not used."""
+    sheet_max_rows: dict[str, int]
+    """Max non-empty row for each worksheet."""
 
     def __init__(self) -> None:
         """Connect to Google workbook identifyed in sync_sheet_key setting."""
@@ -146,7 +155,10 @@ class Synchronizer:
             A dictionary of table names and the number of rows written for each
             table.
         """
+        self.sheet_max_ids = {}
+        self.sheet_max_rows = {}
         db_data = self.dbase.to_dict()
+        self.table_hashes, self.db_hash = self.get_table_hashes(db_data)
         return self.write_data_to_workbook(db_data, upload_all)
 
     def write_data_to_workbook(
@@ -175,27 +187,90 @@ class Synchronizer:
             and local_metadata["db-hash"] == remote_metadata["db-hash"]
         ):
             return {"status": "no-upload-needed"}
-        self._write_metadata_to_sheet(local_metadata)
+        # self._write_metadata_to_sheet(local_metadata)
         upload_results = {}
+        data_uploaded = False
         for table_name, table_data in  db_data.items():
+            remote_table_meta = remote_metadata.get("table-hashes", {}).get(
+                table_name, {}
+            )
             if (
                 not upload_all
-                and "table-hashes" in remote_metadata and table_name in remote_metadata
+                and remote_table_meta
                 and local_metadata["table-hashes"][table_name] ==
-                    remote_metadata["table-hashes"][table_name]
+                    remote_table_meta["hash"]
             ):
                 upload_results[table_name] = "no-upload-needed"
                 continue
+            elif table_name == "checkins":
+                if upload_all:
+                    self.write_entire_table_to_sheet(table_name, table_data)
+                else:
+                    print("Uploading checkins table")
+                    self.write_new_records_to_sheet(
+                        table_name,
+                        "checkin_id",
+                        db_data[table_name],
+                        remote_table_meta.get("max-id", -1),
+                        remote_table_meta.get("max-row", -1)
+                    )
+                self.sheet_max_ids[table_name] = max(
+                    rec["checkin_id"] for rec in db_data[table_name]
+                )
+                data_uploaded = True
             else:
-                self.write_table_to_sheet(table_name, table_data)
+                self.write_entire_table_to_sheet(table_name, table_data)
+                data_uploaded = True
+        if data_uploaded:
+            self._write_metadata_to_sheet(local_metadata)
         upload_results["status"] = "upload-complete"
         return upload_results
 
-    def write_table_to_sheet(
-        self, table_name: str,
+    def write_new_records_to_sheet(
+            self,
+            table_name: str,
+            update_field_name: str,
+            records: list[dict[str, Any]],
+            max_update_id: int,
+            max_row: int
+    ) -> int:
+        """Append new records to a Google Sheets worksheet."""
+        col_names = self.schema[table_name]
+        sheet_data = [
+            [
+                json.dumps(row[col_name])
+                if isinstance(row[col_name], (list, dict))
+                else row[col_name]
+                for col_name in col_names
+            ]
+            for row in records
+            if row[update_field_name] > max_update_id
+        ]
+        if table_name in self.workbook.worksheet_titles:
+            current_sheet = self._backup_sheet(table_name, clear=False)
+        else:
+            current_sheet = self.workbook.spreadsheet.add_worksheet(
+                table_name, rows=len(sheet_data), cols=len(col_names)
+            )
+        num_rows = len(sheet_data)
+        res = current_sheet.append_rows(
+            sheet_data,
+            insert_data_option=gspread.utils.InsertDataOption.insert_rows,
+            table_range="A1"
+        )
+        print(res)
+        self.sheet_max_rows[table_name] = max_row + len(sheet_data)
+        self.sheet_max_ids[table_name] = max(rec[update_field_name] for rec in records)
+        return num_rows
+
+    def write_entire_table_to_sheet(
+        self,
+        table_name: str,
         table_data: list[dict[str, Any]]
     ) -> int:
         """Write a database table to a Google Sheets worksheet.
+
+        Makes a backup, clears all data in the sheet, then writes the new data.
 
         Args:
             table_name: The name of the SQL table with the data that will be
@@ -223,23 +298,49 @@ class Synchronizer:
                 ]
             )
         if table_name in self.workbook.worksheet_titles:
-            current_sheet = self._backup_and_clear_sheet(table_name)
+            current_sheet = self._backup_sheet(table_name, clear=True)
         else:
             current_sheet = self.workbook.spreadsheet.add_worksheet(
                 table_name, rows=len(table_data), cols=len(col_names)
             )
+        num_rows = len(sheet_data)
         current_sheet.update(sheet_data)
-        return len(sheet_data)
+        self.sheet_max_rows[table_name] = num_rows
+        return num_rows
+
+    @staticmethod
+    def get_table_hashes(
+        db_data: dict[str, list[dict[str, Any]]]
+    ) -> tuple[dict[str, str], str]:
+        """Get Sha256 hashes for the contents of each table and entire database.
+
+        Compare hash values for individual tables to determine if there were
+        any changes to that table. Compare the overall hash value to determine
+        if there were any changes anywhere in the database.
+        
+        Returns:
+            A tuple where the first item is a dictionary of hashes for the
+            contents of each table {table-name: hash} and the second item is a
+            hash of the first item.
+        """
+        table_hashes = {
+            table_name: hashlib.sha256(
+                json.dumps(table_data).encode("UTF-8")
+            )
+            .hexdigest()
+            for table_name, table_data in db_data.items()
+        }
+        metahash = hashlib.sha256(json.dumps(table_hashes).encode("UTF-8")).hexdigest()
+        return table_hashes, metahash
 
     def _get_local_metadata(self) -> dict[str, Any]:
         """Get table hashes, account into, and update times from local system."""
-        table_hashes, dbhash = self.dbase.get_table_hashes()
         return {
             "update-time": datetime.datetime.now().isoformat(),
             "user": getpass.getuser(),
             "computer-name": platform.node(), 
-            "db-hash": dbhash,
-            "table-hashes": table_hashes
+            "db-hash": self.db_hash,
+            "table-hashes": self.table_hashes
         }
 
     def _get_remote_metadata(self) -> dict[str, Any]:
@@ -258,6 +359,9 @@ class Synchronizer:
             table-nameM, hashM
 
         All label-value pairs must precede table-hashes section.
+
+        Table hash values are dictionaries with keys "hash", "max-id", and
+        "max-row".
         """
         try:
             meta_sheet = self.workbook.spreadsheet.worksheet("metadata")
@@ -268,7 +372,7 @@ class Synchronizer:
         in_hash_section = False
         for row in sheet_data:
             if in_hash_section:
-                metadata["table-hashes"][row[0]] = row[1]
+                metadata["table-hashes"][row[0]] = json.loads(row[1])
             else:
                 if row[0] == "table-hashes":
                     in_hash_section = True
@@ -276,13 +380,11 @@ class Synchronizer:
                 metadata[row[0]] = row[1]
         return metadata
 
-
-
     def _write_metadata_to_sheet(self, metadata: dict[str, Any]) -> None:
         """Write table hashes and other data to Google Sheet."""
         sheet_name = "metadata"
         if sheet_name in self.workbook.worksheet_titles:
-            current_sheet = self._backup_and_clear_sheet(sheet_name)
+            current_sheet = self._backup_sheet(sheet_name, clear=True)
         else:
             current_sheet = self.workbook.spreadsheet.add_worksheet(sheet_name, 15, 2)
         sheet_data = []
@@ -291,10 +393,13 @@ class Synchronizer:
                 sheet_data.append([key, val])
         sheet_data.append(["table-hashes"])
         for table_name, hash_val in metadata["table-hashes"].items():
-            sheet_data.append([table_name, hash_val])
+            max_id = self.sheet_max_ids.get(table_name, -1)
+            max_row = self.sheet_max_rows.get(table_name, -1)
+            table_data = {"hash": hash_val, "max-id": max_id, "max-row": max_row}
+            sheet_data.append([table_name, json.dumps(table_data)])
         current_sheet.update(sheet_data, "a1")
 
-    def _backup_and_clear_sheet(self, table_name: str) -> gspread.Worksheet:
+    def _backup_sheet(self, table_name: str, clear: bool = False) -> gspread.Worksheet:
         """Backup existing sheet with title table_name and clear contents."""
         current_sheet = self.workbook.spreadsheet.worksheet(table_name)
         backup_sheet_name = table_name + "_bu"
@@ -305,8 +410,38 @@ class Synchronizer:
         self.workbook.spreadsheet.duplicate_sheet(
             current_sheet.id, new_sheet_name=backup_sheet_name
         )
-        current_sheet.clear()
+        if clear:
+            current_sheet.clear()
         return current_sheet
+
+    def _get_max_change_id(self, table_name: str, column_name: str) -> tuple[int, int]:
+        """Get the worksheet's max change ID and first non-empty row number.
+
+        Assumes that the column_name column contains row ID values sorted in
+        ascending order, so its maximum value is the last non-empty cell.
+
+        Returns:
+            Two element tuple: (max change-id, first non-empty row number).
+            Returns (0, 0) if the column contains no data.
+        """
+        current_sheet = self.workbook.spreadsheet.worksheet(table_name)
+        header_row = current_sheet.row_values(1)
+        try:
+            col_num = header_row.index(column_name) + 1
+        except ValueError:
+            raise SynchronizerError(
+                SynchronizerError.ErrorType.COLUMN_MISMATCH,
+                f"Column {column_name} not found in {table_name} worksheet.",
+            )
+        col_values = current_sheet.col_values(col_num)[1:]
+        first_row = 0
+        max_id = 0
+        for offset, value in enumerate(col_values):
+            if value is not None and value != "":
+                if first_row == 0:
+                    first_row = offset + 2
+                max_id = int(value)
+        return max_id, first_row
 
     def download(self) -> dict[str, list[dict[str, Any]]]:
         """Read all sheets in the workbook.

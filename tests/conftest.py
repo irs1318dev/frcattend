@@ -104,10 +104,8 @@ def empty_synchro(
 
 
 @pytest.fixture
-def full_synchro(
-    empty_synchro: sync.Synchronizer, attendance_test_data: dict[str, list[Any]]
-) -> sync.Synchronizer:
+def full_synchro(empty_synchro: sync.Synchronizer) -> sync.Synchronizer:
     """A synchronizer that points to a full spreadsheet."""
     # data = full_dbase.to_dict()
-    empty_synchro.write_data_to_workbook(attendance_test_data)
+    empty_synchro.upload(upload_all=True)
     return empty_synchro
