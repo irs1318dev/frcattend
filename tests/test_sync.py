@@ -2,7 +2,6 @@
 
 import datetime
 
-import pytest
 import rich  # noqa: F401
 
 from frcattend import model
@@ -88,9 +87,7 @@ def test_append_checkins(full_synchro: sync.Synchronizer) -> None:
     """Append records to the checkins Google sheet."""
     # Arrange
     new_event = model.Event(
-        datetime.date(2026, 12, 25),
-        model.EventType.MEETING,
-        "test-append-checkins"
+        datetime.date(2026, 12, 25), model.EventType.MEETING, "test-append-checkins"
     )
     new_event.add(full_synchro.dbase)
     student_ids = model.Student.get_all_ids(full_synchro.dbase)
@@ -104,4 +101,3 @@ def test_append_checkins(full_synchro: sync.Synchronizer) -> None:
         checkin.add(full_synchro.dbase)
     # Act
     full_synchro.upload(upload_all=False)
-

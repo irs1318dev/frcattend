@@ -2,7 +2,6 @@
 
 import dataclasses
 import datetime
-import hashlib
 import json
 import os
 import pathlib
@@ -76,6 +75,7 @@ def dict_factory(cursor: sqlite3.Cursor, row: Sequence) -> dict[str, Any]:
 @dataclasses.dataclass
 class DbTimeStamps:
     """Sqlite file timestamps."""
+
     access_time: datetime.datetime
     modification_time: datetime.datetime
     creation_time: datetime.datetime

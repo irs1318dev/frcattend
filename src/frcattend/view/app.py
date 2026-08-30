@@ -2,7 +2,7 @@
 
 import json
 import pathlib
-from typing import cast
+from typing import Any, cast
 
 import textual
 from textual import app, containers, message, reactive, screen, widgets
@@ -475,8 +475,7 @@ class UploadConfirmation(screen.ModalScreen):
         """Build the dialog box."""
         with containers.Vertical(id="upload-confirm-dialog", classes="modal-dialog"):
             status_text = (
-                cast(str, self.upload_status["status"])
-                .replace("-", " ").title() + "!"
+                cast(str, self.upload_status["status"]).replace("-", " ").title() + "!"
             )
             yield widgets.Label(status_text, classes="emphasis")
             markdown = ["# Rows Uploaded"]

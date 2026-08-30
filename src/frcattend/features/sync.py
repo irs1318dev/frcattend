@@ -162,9 +162,7 @@ class Synchronizer:
         return self.write_data_to_workbook(db_data, upload_all)
 
     def write_data_to_workbook(
-        self,
-        db_data: dict[str, list[dict[str, Any]]],
-        upload_all: bool = False
+        self, db_data: dict[str, list[dict[str, Any]]], upload_all: bool = False
     ) -> dict[str, int | str]:
         """Write attendance data to a Google workbook.
 
@@ -190,15 +188,15 @@ class Synchronizer:
         # self._write_metadata_to_sheet(local_metadata)
         upload_results = {}
         data_uploaded = False
-        for table_name, table_data in  db_data.items():
+        for table_name, table_data in db_data.items():
             remote_table_meta = remote_metadata.get("table-hashes", {}).get(
                 table_name, {}
             )
             if (
                 not upload_all
                 and remote_table_meta
-                and local_metadata["table-hashes"][table_name] ==
-                    remote_table_meta["hash"]
+                and local_metadata["table-hashes"][table_name]
+                == remote_table_meta["hash"]
             ):
                 upload_results[table_name] = "no-upload-needed"
                 continue
@@ -210,12 +208,12 @@ class Synchronizer:
                     self.write_new_records_to_sheet(
                         table_name,
                         "checkin_id",
-                        db_data[table_name],
+                        table_data,
                         remote_table_meta.get("max-id", -1),
-                        remote_table_meta.get("max-row", -1)
+                        remote_table_meta.get("max-row", -1),
                     )
                 self.sheet_max_ids[table_name] = max(
-                    rec["checkin_id"] for rec in db_data[table_name]
+                    rec["checkin_id"] for rec in table_data
                 )
                 data_uploaded = True
             else:
@@ -227,12 +225,12 @@ class Synchronizer:
         return upload_results
 
     def write_new_records_to_sheet(
-            self,
-            table_name: str,
-            update_field_name: str,
-            records: list[dict[str, Any]],
-            max_update_id: int,
-            max_row: int
+        self,
+        table_name: str,
+        update_field_name: str,
+        records: list[dict[str, Any]],
+        max_update_id: int,
+        max_row: int,
     ) -> int:
         """Append new records to a Google Sheets worksheet."""
         col_names = self.schema[table_name]
@@ -256,7 +254,7 @@ class Synchronizer:
         res = current_sheet.append_rows(
             sheet_data,
             insert_data_option=gspread.utils.InsertDataOption.insert_rows,
-            table_range="A1"
+            table_range="A1",
         )
         print(res)
         self.sheet_max_rows[table_name] = max_row + len(sheet_data)
@@ -264,9 +262,7 @@ class Synchronizer:
         return num_rows
 
     def write_entire_table_to_sheet(
-        self,
-        table_name: str,
-        table_data: list[dict[str, Any]]
+        self, table_name: str, table_data: list[dict[str, Any]]
     ) -> int:
         """Write a database table to a Google Sheets worksheet.
 
@@ -310,14 +306,14 @@ class Synchronizer:
 
     @staticmethod
     def get_table_hashes(
-        db_data: dict[str, list[dict[str, Any]]]
+        db_data: dict[str, list[dict[str, Any]]],
     ) -> tuple[dict[str, str], str]:
         """Get Sha256 hashes for the contents of each table and entire database.
 
         Compare hash values for individual tables to determine if there were
         any changes to that table. Compare the overall hash value to determine
         if there were any changes anywhere in the database.
-        
+
         Returns:
             A tuple where the first item is a dictionary of hashes for the
             contents of each table {table-name: hash} and the second item is a
@@ -326,8 +322,7 @@ class Synchronizer:
         table_hashes = {
             table_name: hashlib.sha256(
                 json.dumps(table_data).encode("UTF-8")
-            )
-            .hexdigest()
+            ).hexdigest()
             for table_name, table_data in db_data.items()
         }
         metahash = hashlib.sha256(json.dumps(table_hashes).encode("UTF-8")).hexdigest()
@@ -338,14 +333,14 @@ class Synchronizer:
         return {
             "update-time": datetime.datetime.now().isoformat(),
             "user": getpass.getuser(),
-            "computer-name": platform.node(), 
+            "computer-name": platform.node(),
             "db-hash": self.db_hash,
-            "table-hashes": self.table_hashes
+            "table-hashes": self.table_hashes,
         }
 
     def _get_remote_metadata(self) -> dict[str, Any]:
         """Get metadata from remote Google sheet.
-        
+
         Assumes that metadata sheet has this structure (each line is a row,
         cells are separated by commas, literal values in quotes):
             label1, value1,
