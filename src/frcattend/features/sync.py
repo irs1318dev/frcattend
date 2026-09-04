@@ -201,7 +201,9 @@ class Synchronizer:
                 upload_results[table_name] = "no-upload-needed"
                 continue
             elif table_name == "checkins":
-                if upload_all:
+                remote_max_id = remote_table_meta.get("max-id", -1)
+                remote_max_row = remote_table_meta.get("max-row", -1)
+                if upload_all or remote_max_id < 0:
                     self.write_entire_table_to_sheet(table_name, table_data)
                 else:
                     print("Uploading checkins table")
@@ -209,8 +211,8 @@ class Synchronizer:
                         table_name,
                         "checkin_id",
                         table_data,
-                        remote_table_meta.get("max-id", -1),
-                        remote_table_meta.get("max-row", -1),
+                        remote_max_id,
+                        remote_max_row,
                     )
                 self.sheet_max_ids[table_name] = max(
                     rec["checkin_id"] for rec in table_data
@@ -367,7 +369,15 @@ class Synchronizer:
         in_hash_section = False
         for row in sheet_data:
             if in_hash_section:
-                metadata["table-hashes"][row[0]] = json.loads(row[1])
+                try:
+                    metadata["table-hashes"][row[0]] = json.loads(row[1])
+                except json.JSONDecodeError:
+                    # Legacy format: value is a bare hash string, not JSON.
+                    metadata["table-hashes"][row[0]] = {
+                        "hash": row[1],
+                        "max-id": -1,
+                        "max-row": -1,
+                    }
             else:
                 if row[0] == "table-hashes":
                     in_hash_section = True
