@@ -117,9 +117,7 @@ class StudentDialog(screen.ModalScreen):
         if (
             self._is_new_student
             and self.student is not None
-            and not model.Status.get_by_student_id(
-                self._dbase, self.student.student_id
-            )
+            and not model.Status.get_by_student_id(self._dbase, self.student.student_id)
         ):
             self.student.delete(self._dbase)
             self.student = None
