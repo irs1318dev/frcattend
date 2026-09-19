@@ -191,7 +191,13 @@ class EditStatusDialog(screen.ModalScreen):
             self.app.notify("Please select a stage.", severity="error")
             return
 
-        start_date = datetime.date.fromisoformat(date_input.value)
+        try:
+            start_date = datetime.date.fromisoformat(date_input.value)
+        except ValueError:
+            self.app.notify(
+                "Please enter the date in YYYY-MM-DD format.", severity="error"
+            )
+            return
         stage = stage_select.value
         reason = (
             reason_select.value

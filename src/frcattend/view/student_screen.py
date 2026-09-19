@@ -1,7 +1,6 @@
 """View roster and add new students."""
 
 import datetime
-import sqlite3
 
 import textual
 import textual.css.query
@@ -311,19 +310,10 @@ class StudentScreen(screen.Screen):
         def on_dialog_closed(student: model.Student | None):
             if student is None:
                 return
-            try:
-                student.add(self.dbase)
-            except sqlite3.IntegrityError as err:
-                self.update_status(
-                    "[red]Error adding student "
-                    f"{student.first_name} {student.last_name}.[/]\n"
-                    f"Error Description:\n{err}"
-                )
-            else:
-                self.load_student_data()
-                self.query_one("#status-message", widgets.Static).update(
-                    success(f"Student added successfully. ID: {student.student_id}")
-                )
+            self.load_student_data()
+            self.query_one("#status-message", widgets.Static).update(
+                success(f"Student added successfully. ID: {student.student_id}")
+            )
 
         await self.app.push_screen(
             student_dialog.StudentDialog(), callback=on_dialog_closed
@@ -347,7 +337,6 @@ class StudentScreen(screen.Screen):
         def on_dialog_closed(student: model.Student | None):
             if student is None or self._selected_student_id is None:
                 return
-            student.update(self.dbase)
             self.update_status(success("Student updated successfully."))
             self.load_student_data()
 

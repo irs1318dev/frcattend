@@ -436,6 +436,13 @@ class Student(abstract.TableDef):
             )
         conn.close()
 
+    def delete(self, dbase: database.DBase) -> None:
+        """Delete the Student from the database."""
+        query = "DELETE FROM students WHERE student_id = :student_id;"
+        with dbase.get_db_connection() as conn:
+            conn.execute(query, {"student_id": self.student_id})
+        conn.close()
+
     @staticmethod
     def get_all(dbase: database.DBase) -> list[Student]:
         """Retrieve a list of Student objects from the database."""
