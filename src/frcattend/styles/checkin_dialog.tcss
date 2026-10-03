@@ -1,0 +1,21 @@
+/* Styles for the add checkin dialog in view/checkin_dialog.py. */
+
+#add-checkin-dialog {
+    width: 50;
+    height: auto;
+}
+
+#checkin-warning {
+    height: auto;
+    margin-top: 1;
+}
+
+#add-checkin-actions {
+    align-horizontal: center;
+    height: auto;
+    margin-top: 1;
+}
+
+#add-checkin-actions Button {
+    margin: 0 1;
+}

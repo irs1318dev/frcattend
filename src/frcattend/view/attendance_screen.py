@@ -10,7 +10,7 @@ from textual import app, binding, containers, reactive, screen, widgets
 from textual.widgets.data_table import ColumnKey
 
 from frcattend import config, model, view
-from frcattend.view import selector_widgets
+from frcattend.view import checkin_dialog, selector_widgets
 
 
 def _sort_key_for_column(column_key: str | None) -> Callable[[Any], Any] | None:
@@ -210,6 +210,7 @@ class AttendanceScreen(screen.Screen):
                     self.dbase, id="grad-year-selector"
                 )
                 yield selector_widgets.GoBackSelector(value=None, id="asof-selector")
+                yield widgets.Button("Add Checkin", id="add-checkin-button")
         yield widgets.Static(
             "Events that Student Attended", classes="separator emphasis"
         )
@@ -264,3 +265,31 @@ class AttendanceScreen(screen.Screen):
     ) -> None:
         """Set the new student_id, which will trigger a checkin table update."""
         self.student_id = message.row_key.value
+
+    @textual.on(widgets.Button.Pressed, "#add-checkin-button")
+    def on_add_checkin_pressed(self) -> None:
+        """Open a dialog to add a checkin for the selected student."""
+        table = self.query_one("#attendance-students-table", StudentsTable)
+        student_id = self.student_id
+        if student_id is None or student_id not in table.students:
+            self.notify("Select a student first.", severity="warning")
+            return
+        status = str(table.get_cell(student_id, "status"))
+        self.app.push_screen(
+            checkin_dialog.AddCheckinDialog(
+                self.dbase, table.students[student_id], status
+            ),
+            self._on_add_checkin_closed,
+        )
+
+    def _on_add_checkin_closed(self, added: bool | None) -> None:
+        """Refresh both tables, keeping the same student highlighted."""
+        if not added:
+            return
+        student_id = self.student_id
+        table = self.query_one("#attendance-students-table", StudentsTable)
+        self.load_student_data()
+        if student_id is not None and student_id in table.students:
+            table.move_cursor(row=table.get_row_index(student_id))
+        self.query_one("#attendance-checkins-table", CheckinTable).watch_student_id()
+        self.notify("Checkin added.")

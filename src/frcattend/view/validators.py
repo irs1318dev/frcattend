@@ -1,5 +1,8 @@
 """Classes for verifying user enters valid input into Textual widgets."""
 
+import datetime
+import re
+
 import dateutil.parser
 from textual import validation
 
@@ -14,6 +17,23 @@ class DateValidator(validation.Validator):
             return self.success()
         except dateutil.parser.ParserError as err:
             return self.failure(str(err))
+
+
+class TimeValidator(validation.Validator):
+    """Validate a 24-hour time in HH:MM format."""
+
+    FORMAT = "%H:%M"
+    _format_re = re.compile(r"\d{2}:\d{2}")
+
+    def validate(self, value: str) -> validation.ValidationResult:
+        """Check the format and that the hour and minute are in range."""
+        if not self._format_re.fullmatch(value):
+            return self.failure("Must be in HH:MM format.", value)
+        try:
+            datetime.datetime.strptime(value, self.FORMAT)
+        except ValueError:
+            return self.failure("Not a valid time.", value)
+        return self.success()
 
 
 class IsPositiveInteger(validation.Validator):
