@@ -4,11 +4,13 @@ import datetime
 import json
 import pathlib
 import re
+import sqlite3
 
 import pytest
 import rich
 
-from frcattend import model
+from frcattend import config, model
+from frcattend.model import database
 
 DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 
@@ -39,6 +41,89 @@ def test_existing_database_raises_error_on_create_new(empty_database) -> None:
     # Act, Assert
     with pytest.raises(model.DBaseError):
         model.DBase(empty_database.db_path, create_new=True)
+
+
+def test_new_database_is_encrypted(empty_database: model.DBase) -> None:
+    """New database files are encrypted with SQLCipher."""
+    # Act, Assert
+    assert not database.is_unencrypted(empty_database.db_path)
+    with pytest.raises(sqlite3.DatabaseError):
+        conn = sqlite3.connect(empty_database.db_path)
+        try:
+            conn.execute("SELECT count(*) FROM sqlite_schema;")
+        finally:
+            conn.close()
+
+
+def test_unencrypted_database_raises_error(empty_output_folder: pathlib.Path) -> None:
+    """Raise an error if the database file is not encrypted."""
+    # Arrange
+    db_path = empty_output_folder / "plaintext.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute("CREATE TABLE test (id INTEGER);")
+    conn.close()
+    # Act, Assert
+    with pytest.raises(model.UnencryptedDBaseError):
+        model.DBase(db_path)
+
+
+def test_encrypt_file(empty_output_folder: pathlib.Path) -> None:
+    """Encrypt a plain-text Sqlite file in place, preserving its data."""
+    # Arrange
+    db_path = empty_output_folder / "plaintext.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute("CREATE TABLE test (id INTEGER);")
+    conn.executemany("INSERT INTO test (id) VALUES (?);", [(1,), (2,), (3,)])
+    conn.commit()
+    conn.close()
+    # Act
+    dbase = model.DBase.encrypt_file(db_path)
+    # Assert
+    assert not database.is_unencrypted(db_path)
+    assert not db_path.with_name(db_path.name + ".encrypting").exists()
+    conn = dbase.get_db_connection()
+    count = conn.execute("SELECT count(*) FROM test;").fetchone()[0]
+    conn.close()
+    assert count == 3
+
+
+def test_encrypt_file_already_encrypted_raises_error(
+    empty_database: model.DBase,
+) -> None:
+    """Raise an error when encrypting a file that is already encrypted."""
+    # Act, Assert
+    with pytest.raises(model.DBaseError):
+        model.DBase.encrypt_file(empty_database.db_path)
+
+
+def test_wrong_key_raises_error(
+    empty_database: model.DBase, settings: config.Settings
+) -> None:
+    """Raise an error if the encryption key cannot decrypt the database."""
+    # Arrange
+    correct_key = settings.encryption_key
+    settings.encryption_key = "not-the-right-key"
+    # Act, Assert
+    try:
+        with pytest.raises(model.DBaseError):
+            empty_database.get_db_connection()
+    finally:
+        settings.encryption_key = correct_key
+
+
+def test_missing_key_raises_error(
+    empty_database: model.DBase, settings: config.Settings
+) -> None:
+    """Raise an error if the encryption key is not set."""
+    # Arrange
+    correct_key = settings.encryption_key
+    settings.encryption_key = None
+    # Act, Assert
+    try:
+        with pytest.raises(model.DBaseError):
+            empty_database.get_db_connection()
+    finally:
+        settings.encryption_key = correct_key
 
 
 def test_attendance_table(full_dbase: model.DBase) -> None:
@@ -130,6 +215,8 @@ def test_backup_database(full_dbase: model.DBase) -> None:
     # Assert
     assert bu_path.exists()
     assert re.search(r"BU_\d{8}_\d{4}\.db", bu_path.name) is not None
+    assert not database.is_unencrypted(bu_path)
+    assert model.DBase(bu_path).get_record_counts() == full_dbase.get_record_counts()
 
 
 def test_record_counts(full_dbase: model.DBase) -> None:

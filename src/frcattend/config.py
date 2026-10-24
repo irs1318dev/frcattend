@@ -47,6 +47,8 @@ class Settings:
     """Filesystem path to Sqlite database file with student and attendance data."""
     config_path: pathlib.Path | None = None
     """Filesystem path to TOML configuration file."""
+    encryption_key: str | None = None
+    """Key for encrypting Sqlite database with SQLCipher."""
     qr_code_dir: pathlib.Path | None = None
     """Filesystem path to folder where QR codes are written."""
     backup_dir: pathlib.Path | None = None
@@ -95,6 +97,9 @@ class Settings:
     """
     sync_sheet_key: str | None = None
     """Key to Google sheet used for syncing data between different computers."""
+    s3_url: str | None = None
+    s3_access_key_id: str | None = None
+    s3_secret_access_key_id: str | None = None
 
     @functools.cached_property
     def schoolyear_start_date(self) -> datetime.date:
@@ -165,8 +170,8 @@ class Settings:
             return
         app_settings = dataclasses.asdict(self)
         with open(self.config_path, "rb") as toml_file:
-            file_settngs = tomllib.load(toml_file)
-        for setting_name, value in file_settngs.items():
+            file_settings = tomllib.load(toml_file)
+        for setting_name, value in self._flatten_config(file_settings).items():
             match setting_name:
                 case "qr_code_dir":
                     if setting_name is not None and value is not None:
@@ -184,10 +189,26 @@ class Settings:
                         )
                 case _:
                     if setting_name not in app_settings:
-                        return
+                        continue
                     if isinstance(value, str) and value.lower() in ["", "none", "null"]:
                         value = None
                     setattr(self, setting_name, value)
+
+    @classmethod
+    def _flatten_config(cls, file_settings: dict) -> dict:
+        """Flatten TOML tables into a single dict of setting names and values.
+
+        Keys inside tables (e.g., [app], [email]) are mapped to Settings
+        attribute names. Top-level keys outside of any table are also accepted.
+        """
+        flat_settings = {}
+        for table_name, table_values in file_settings.items():
+            if isinstance(table_values, dict):
+                for key, val in table_values.items():
+                    flat_settings[key] = val
+            else:
+                flat_settings[table_name] = table_values
+        return flat_settings
 
     def create_new_config_file(self, config_path: pathlib.Path) -> None:
         """Create a new configuration file with default settings."""

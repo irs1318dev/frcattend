@@ -1,8 +1,8 @@
 """Manually add a checkin for a single student."""
 
 import datetime
-import sqlite3
 
+import sqlcipher3
 import textual
 from textual import app, containers, screen, widgets
 
@@ -141,7 +141,7 @@ class AddCheckinDialog(screen.ModalScreen[bool]):
         )
         try:
             checkin.add(self._dbase)
-        except sqlite3.IntegrityError as err:
+        except sqlcipher3.IntegrityError as err:
             warning.update(f"[red]Unable to add checkin: {err}[/red]")
             return
         self.dismiss(True)

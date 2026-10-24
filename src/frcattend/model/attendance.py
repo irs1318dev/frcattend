@@ -2,7 +2,8 @@
 
 import dataclasses
 import datetime
-import sqlite3
+
+import sqlcipher3
 
 from frcattend import config, model
 
@@ -36,7 +37,7 @@ class Attendance:
     """Manage multi-table queries ana analysis."""
 
     @staticmethod
-    def get_student_attendance_cursor(dbase: model.DBase) -> sqlite3.Cursor:
+    def get_student_attendance_cursor(dbase: model.DBase) -> sqlcipher3.Cursor:
         """Join students and checkins table and get current season data.
 
         Caller must close the cursor.

@@ -2,10 +2,10 @@
 
 import datetime
 import pathlib
-import sqlite3
 
 import pytest
 import rich  # noqa: F401
+import sqlcipher3
 
 from frcattend import model
 
@@ -78,7 +78,7 @@ def test_add_status_invalid_student_id(full_dbase: model.DBase) -> None:
         notes=None,
     )
     # Act / Assert
-    with pytest.raises(sqlite3.IntegrityError):
+    with pytest.raises(sqlcipher3.IntegrityError):
         status.add(full_dbase)
 
 

@@ -5,16 +5,86 @@ import datetime
 import json
 import os
 import pathlib
-import sqlite3
 from collections.abc import Callable, Sequence
 from typing import Any
+
+import sqlcipher3
 
 from frcattend import config
 from frcattend.model import abstract, events_checkins, students, surveys
 
+SQLITE_HEADER = b"SQLite format 3\x00"
+"""First 16 bytes of every unencrypted Sqlite database file."""
+
 
 class DBaseError(Exception):
     """Error occurred when working with database."""
+
+
+class UnencryptedDBaseError(DBaseError):
+    """Database file exists but is not encrypted with SQLCipher."""
+
+
+def is_unencrypted(db_path: pathlib.Path) -> bool:
+    """Return True if the file is a plain-text (unencrypted) Sqlite database.
+
+    SQLCipher encrypts the entire file, including the header, so an encrypted
+    file never starts with the standard Sqlite header string.
+    """
+    with open(db_path, "rb") as db_file:
+        return db_file.read(len(SQLITE_HEADER)) == SQLITE_HEADER
+
+
+def _get_escaped_key() -> str:
+    """Get the configured encryption key, escaped as an SQL string literal.
+
+    PRAGMA and ATTACH ... KEY statements do not accept bound parameters, so the
+    key must be embedded in the SQL text.
+
+    Raises:
+        DBaseError: If the encryption key is not set.
+    """
+    key = config.settings.encryption_key
+    if not key:
+        raise DBaseError("The encryption_key setting is required to open the database.")
+    return key.replace("'", "''")
+
+
+def connect(db_path: pathlib.Path, **kwargs: Any) -> sqlcipher3.Connection:
+    """Open an SQLCipher connection keyed with the configured encryption key.
+
+    Raises:
+        DBaseError: If the encryption key is not set or the key cannot
+            decrypt the database file.
+    """
+    escaped_key = _get_escaped_key()
+    conn = sqlcipher3.connect(db_path, **kwargs)
+    conn.execute(f"PRAGMA key = '{escaped_key}';")
+    try:
+        # SQLCipher does not verify the key until the first read.
+        conn.execute("SELECT count(*) FROM sqlite_schema;").fetchone()
+    except sqlcipher3.DatabaseError as err:
+        conn.close()
+        raise DBaseError(
+            f"Unable to decrypt database at {db_path}. The encryption key is "
+            "incorrect or the file is not an SQLCipher database."
+        ) from err
+    return conn
+
+
+def _get_table_counts(conn: sqlcipher3.Connection) -> dict[str, int]:
+    """Get the number of rows in every user table of an open connection."""
+    query = """
+        SELECT name FROM sqlite_schema
+         WHERE type = 'table' AND name NOT LIKE 'sqlite_%';
+    """
+    counts = {}
+    for (name,) in conn.execute(query).fetchall():
+        quoted_name = '"' + name.replace('"', '""') + '"'
+        counts[name] = conn.execute(f"SELECT count(*) FROM {quoted_name};").fetchone()[
+            0
+        ]
+    return counts
 
 
 # Sqlite converts Python datetime.date and datetime.datetime objects to
@@ -25,8 +95,8 @@ class DBaseError(Exception):
 #   datetime and date objects and Sqlite text strings. All columns with type
 #   DATE will be converted to datetime.date objects and columns with type
 #   DATETIME will be converted to datetime.datetime objects.
-# NOTE: For all this to work, pass detect_types=sqlite3.PARSE_DECLTYPES
-#   to sqlite3.connect method.
+# NOTE: For all this to work, pass detect_types=sqlcipher3.PARSE_DECLTYPES
+#   to sqlcipher3.connect method.
 # See https://docs.python.org/3/library/sqlite3.html#how-to-convert-sqlite-values-to-custom-python-types
 
 
@@ -59,14 +129,14 @@ def convert_to_bool(val: bytes) -> bool:
     return int(val) != 0
 
 
-sqlite3.register_adapter(datetime.date, adapt_from_date)
-sqlite3.register_converter("DATE", convert_to_date)
-sqlite3.register_adapter(datetime.datetime, adapt_from_datetime)
-sqlite3.register_converter("DATETIME", convert_to_datetime)
-sqlite3.register_converter("BOOL", convert_to_bool)
+sqlcipher3.register_adapter(datetime.date, adapt_from_date)
+sqlcipher3.register_converter("DATE", convert_to_date)
+sqlcipher3.register_adapter(datetime.datetime, adapt_from_datetime)
+sqlcipher3.register_converter("DATETIME", convert_to_datetime)
+sqlcipher3.register_converter("BOOL", convert_to_bool)
 
 
-def dict_factory(cursor: sqlite3.Cursor, row: Sequence) -> dict[str, Any]:
+def dict_factory(cursor: sqlcipher3.Cursor, row: Sequence) -> dict[str, Any]:
     """Return Sqlite data as a dictionary."""
     fields = [column[0] for column in cursor.description]
     return {key: value for key, value in zip(fields, row)}
@@ -110,14 +180,77 @@ class DBase:
         else:
             if not db_path.exists():
                 raise DBaseError(f"Database file at {db_path} does not exist.")
+            if is_unencrypted(db_path):
+                raise UnencryptedDBaseError(
+                    f"Database file at {db_path} is not encrypted."
+                )
 
-    def get_db_connection(self, as_dict=False) -> sqlite3.Connection:
-        """Get connection to the SQLite database. Create DB if it doesn't exist."""
-        conn = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
+    @classmethod
+    def encrypt_file(cls, db_path: pathlib.Path) -> DBase:
+        """Encrypt an unencrypted Sqlite database file in place.
+
+        The database is exported to a temporary SQLCipher file keyed with the
+        configured encryption key. After verifying that the encrypted copy
+        contains the same tables and row counts as the original, the encrypted
+        copy replaces the original file.
+
+        Returns:
+            A DBase object for the newly-encrypted database file.
+
+        Raises:
+            DBaseError: If the file does not exist, is already encrypted, the
+                encryption key is not set, or the encrypted copy does not match
+                the original.
+        """
+        if not db_path.exists():
+            raise DBaseError(f"Database file at {db_path} does not exist.")
+        if not is_unencrypted(db_path):
+            raise DBaseError(f"Database file at {db_path} is already encrypted.")
+        escaped_key = _get_escaped_key()
+        temp_path = db_path.with_name(db_path.name + ".encrypting")
+        if temp_path.exists():
+            temp_path.unlink()
+        escaped_temp_path = str(temp_path).replace("'", "''")
+
+        # A connection without a key reads the file as plain-text Sqlite.
+        plain_conn = sqlcipher3.connect(db_path)
+        try:
+            original_counts = _get_table_counts(plain_conn)
+            user_version = plain_conn.execute("PRAGMA user_version;").fetchone()[0]
+            plain_conn.execute(
+                f"ATTACH DATABASE '{escaped_temp_path}' AS encrypted "
+                f"KEY '{escaped_key}';"
+            )
+            plain_conn.execute("SELECT sqlcipher_export('encrypted');")
+            plain_conn.execute(f"PRAGMA encrypted.user_version = {int(user_version)};")
+            plain_conn.execute("DETACH DATABASE encrypted;")
+        finally:
+            plain_conn.close()
+
+        try:
+            enc_conn = connect(temp_path)
+            try:
+                encrypted_counts = _get_table_counts(enc_conn)
+            finally:
+                enc_conn.close()
+            if encrypted_counts != original_counts:
+                raise DBaseError(
+                    f"Encrypted copy of {db_path} does not match the original. "
+                    "The original file was not changed."
+                )
+        except DBaseError:
+            temp_path.unlink(missing_ok=True)
+            raise
+        os.replace(temp_path, db_path)
+        return cls(db_path)
+
+    def get_db_connection(self, as_dict=False) -> sqlcipher3.Connection:
+        """Get connection to the encrypted database. Create DB if it doesn't exist."""
+        conn = connect(self.db_path, detect_types=sqlcipher3.PARSE_DECLTYPES)
         if as_dict:
             conn.row_factory = dict_factory
         else:
-            conn.row_factory = sqlite3.Row
+            conn.row_factory = sqlcipher3.Row
         conn.execute("PRAGMA foreign_keys = ON;")
         return conn
 
@@ -260,8 +393,8 @@ class DBase:
         backup_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.datetime.now().strftime("_BU_%Y%m%d_%H%M")
         backup_path = backup_dir / (self.db_path.stem + timestamp + ".db")
-        # Backup the database.
-        bu_conn = sqlite3.connect(backup_path)
+        # Backup the database. SQLCipher requires the backup to use the same key.
+        bu_conn = connect(backup_path)
         conn = self.get_db_connection()
         conn.backup(bu_conn, pages=pages, progress=status_callback)
         bu_conn.commit()

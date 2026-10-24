@@ -19,6 +19,6 @@ from frcattend.model.students import (
     Student,
 )
 from frcattend.model.attendance import Attendance, AttendanceStudent
-from frcattend.model.database import DBase, DBaseError
+from frcattend.model.database import DBase, DBaseError, UnencryptedDBaseError, connect
 from frcattend.model.events_checkins import Checkin, Event, EventType, EventUpateError
 from frcattend.model.surveys import Answer, Survey

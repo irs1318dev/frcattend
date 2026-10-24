@@ -5,8 +5,9 @@ import datetime
 import enum
 import random
 import re
-import sqlite3
 from typing import TYPE_CHECKING, ClassVar
+
+import sqlcipher3
 
 from frcattend.model import abstract
 
@@ -82,8 +83,8 @@ def convert_status(val: bytes) -> Stage:
     return Stage(val.decode())
 
 
-sqlite3.register_adapter(Stage, adapt_stage)
-sqlite3.register_converter("STAGE", convert_status)
+sqlcipher3.register_adapter(Stage, adapt_stage)
+sqlcipher3.register_converter("STAGE", convert_status)
 
 
 def adapt_reason(val: Reason | str) -> str:
@@ -98,8 +99,8 @@ def convert_reason(val: bytes) -> Reason:
     return Reason(val.decode())
 
 
-sqlite3.register_adapter(Reason, adapt_reason)
-sqlite3.register_converter("REASON", convert_reason)
+sqlcipher3.register_adapter(Reason, adapt_reason)
+sqlcipher3.register_converter("REASON", convert_reason)
 
 
 class StatusErrorTypes(enum.Enum):

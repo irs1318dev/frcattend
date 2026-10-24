@@ -4,8 +4,9 @@ Table dataclasses defined in other modules should inherit from TableDef.
 """
 
 import abc
-import sqlite3
 from typing import TYPE_CHECKING, ClassVar
+
+import sqlcipher3
 
 if TYPE_CHECKING:
     from frcattend.model import database
@@ -25,12 +26,12 @@ class TableDef(abc.ABC):
     """The CREATE TABLE SQL statement that creates the table."""
 
     @classmethod
-    def create(cls, conn: sqlite3.Connection) -> None:
+    def create(cls, conn: sqlcipher3.Connection) -> None:
         """Create the table and other associated items (views, indexes, etc.)."""
         conn.execute(cls.table_def)
 
     @classmethod
-    def delete_all(cls, conn: sqlite3.Connection) -> None:
+    def delete_all(cls, conn: sqlcipher3.Connection) -> None:
         """Delete all data in the table."""
         with conn:
             conn.execute(f"DELETE FROM {cls.table_name}")

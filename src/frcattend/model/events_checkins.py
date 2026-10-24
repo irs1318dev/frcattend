@@ -18,8 +18,9 @@ are tightly coupled.
 import dataclasses
 import datetime
 import enum
-import sqlite3
 from typing import TYPE_CHECKING, Any, ClassVar
+
+import sqlcipher3
 
 from frcattend.model import abstract
 
@@ -52,8 +53,8 @@ def convert_event_type(val: bytes) -> EventType:
     return EventType(val.decode())
 
 
-sqlite3.register_adapter(EventType, adapt_event_type)
-sqlite3.register_converter("EVENT_TYPE", convert_event_type)
+sqlcipher3.register_adapter(EventType, adapt_event_type)
+sqlcipher3.register_converter("EVENT_TYPE", convert_event_type)
 
 
 class EventUpateError(Exception):

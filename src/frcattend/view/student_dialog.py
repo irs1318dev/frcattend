@@ -1,7 +1,6 @@
 """Modal dialog definitions."""
 
-import sqlite3
-
+import sqlcipher3
 from textual import app, containers, screen, widgets
 
 import frcattend.view
@@ -132,7 +131,7 @@ class StudentDialog(screen.ModalScreen):
                 student = self._student_from_form()
                 try:
                     student.add(self._dbase)
-                except sqlite3.IntegrityError as err:
+                except sqlcipher3.IntegrityError as err:
                     self.app.notify(f"Error adding student: {err}", severity="error")
                     return
                 self.student = student
@@ -160,7 +159,7 @@ class StudentDialog(screen.ModalScreen):
             student = self._student_from_form()
             try:
                 student.update(self._dbase)
-            except sqlite3.IntegrityError as err:
+            except sqlcipher3.IntegrityError as err:
                 self.app.notify(f"Error saving student: {err}", severity="error")
                 return
             self.dismiss(student)
