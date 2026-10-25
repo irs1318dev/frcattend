@@ -99,7 +99,7 @@ class Settings:
     """Key to Google sheet used for syncing data between different computers."""
     s3_url: str | None = None
     s3_access_key_id: str | None = None
-    s3_secret_access_key_id: str | None = None
+    s3_secret_access_key: str | None = None
 
     @functools.cached_property
     def schoolyear_start_date(self) -> datetime.date:

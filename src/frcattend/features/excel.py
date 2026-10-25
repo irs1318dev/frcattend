@@ -35,6 +35,6 @@ def _write_sheet(
 ) -> None:
     """Write a table of data to a worksheet."""
     sheet = workbook.add_worksheet(sheet_name)
-    sheet.write_row(row=0, col=0, data=list(data[0].keys()))
+    sheet.write_row(0, 0, data=list(data[0].keys()))
     for row_number, row_values in enumerate(data):
-        sheet.write_row(row=row_number + 1, col=0, data=list(row_values.values()))
+        sheet.write_row(row_number + 1, 0, data=list(row_values.values()))

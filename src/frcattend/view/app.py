@@ -2,8 +2,10 @@
 
 import json
 import pathlib
-from typing import Any, cast
+from typing import cast
 
+import boto3.exceptions
+import botocore.exceptions
 import textual
 from textual import app, containers, message, reactive, screen, widgets
 
@@ -17,8 +19,19 @@ from frcattend.view import (
     pw_dialog,
     student_screen,
     survey_screen,
+    sync_dialogs,
     take_attendance,
 )
+
+UPLOAD_ERRORS = (
+    config.ConfigError,
+    boto3.exceptions.Boto3Error,
+    botocore.exceptions.BotoCoreError,
+    botocore.exceptions.ClientError,
+)
+"""Errors that can occur when uploading to or listing cloud object storage."""
+DOWNLOAD_ERRORS = (*UPLOAD_ERRORS, model.DBaseError, OSError)
+"""Errors that can occur when backing up, downloading, or replacing the database."""
 
 
 class EnableUiMessage(message.Message):
@@ -131,12 +144,12 @@ class FrcAttend(app.App):
                 yield widgets.Button(
                     "Upload",
                     id="main-upload-database",
-                    tooltip="Upload data to a Google Sheet.",
+                    tooltip="Upload the database to cloud storage.",
                 )
                 yield widgets.Button(
                     "Download",
                     id="main-download-database",
-                    tooltip="Download data from a Google Sheet.",
+                    tooltip="Replace the database with a file from cloud storage.",
                 )
 
         # Configuration Controls
@@ -302,73 +315,137 @@ class FrcAttend(app.App):
 
     @textual.on(widgets.Button.Pressed, "#main-upload-database")
     def upload_database(self) -> None:
-        """Prepare to upload attendance data to a Google spreadsheet."""
+        """Upload the current database to cloud object storage."""
         try:
             synchro = sync.Synchronizer()
         except config.ConfigError as err:
-            self._notify_config_errors(err)
-            return
-        except sync.SynchronizerError as err:
-            self._notify_synchro_errors(err)
+            self.notify(str(err), title="Cannot Upload", severity="warning")
             return
         self.set_button_status(enabled=False)
         self.notify("Starting upload...")
-        self.set_timer(0.1, lambda: self._do_upload(synchro))
+        self._do_upload(synchro)
 
-    @textual.work
-    async def _do_upload(self, synchro: sync.Synchronizer) -> None:
-        """Upload the database to a Google spreadsheet and show confirm dialog.
+    @textual.work(thread=True, exclusive=True, group="upload")
+    def _do_upload(self, synchro: sync.Synchronizer, force: bool = False) -> None:
+        """Upload the database and show results, or ask before overwriting.
 
-        Async work method is needed to allow UI notification to be displayed.
+        Runs in a thread because S3 calls block.
         """
-        row_counts = synchro.upload()
-        self.set_button_status(enabled=False)
-        confirm_prompt = UploadConfirmation(row_counts)
-        self.push_screen(confirm_prompt)
+        try:
+            object_key = synchro.upload(force=force)
+        except sync.SynchronizerError as err:
+            if err.error_type == sync.SynchronizerError.ErrorType.DUPLICATE_UPLOAD:
+                self.call_from_thread(
+                    self.push_screen,
+                    sync_dialogs.ForceUploadDialog(str(err)),
+                    lambda overwrite: self._on_force_upload(synchro, overwrite),
+                )
+                return
+            self._show_upload_results(synchro, success=False, message=str(err))
+            return
+        except UPLOAD_ERRORS as err:
+            self._show_upload_results(synchro, success=False, message=str(err))
+            return
+        self._show_upload_results(synchro, success=True, message=object_key)
 
-    @textual.work
+    def _on_force_upload(
+        self, synchro: sync.Synchronizer, overwrite: bool | None
+    ) -> None:
+        """Re-upload with force if user chose to overwrite, else re-enable UI."""
+        if overwrite:
+            self.notify("Overwriting existing upload...")
+            self._do_upload(synchro, force=True)
+        else:
+            self.set_button_status(enabled=True)
+
+    def _show_upload_results(
+        self, synchro: sync.Synchronizer, success: bool, message: str
+    ) -> None:
+        """List files in object storage and show the results dialog.
+
+        Must be called from the upload worker thread.
+        """
+        try:
+            uploads = synchro.list_uploads()
+        except UPLOAD_ERRORS:
+            uploads = None
+        self.call_from_thread(
+            self.push_screen,
+            sync_dialogs.UploadResultsDialog(success, message, uploads),
+            lambda _: self.set_button_status(enabled=True),
+        )
+
     @textual.on(widgets.Button.Pressed, "#main-download-database")
-    async def download_database(self) -> None:
-        """Display download dialog and download data."""
-        self.notify("Starting download...")
-        self.set_timer(0.1, self.push_screen(DownloadConfirmation()))
+    def download_database(self) -> None:
+        """Choose a database file in cloud object storage and download it."""
+        try:
+            synchro = sync.Synchronizer()
+        except config.ConfigError as err:
+            self.notify(str(err), title="Cannot Download", severity="warning")
+            return
+        self.set_button_status(enabled=False)
+        self.notify("Listing files in cloud storage...")
+        self._list_downloads(synchro)
 
-    def _notify_synchro_errors(self, err: sync.SynchronizerError) -> None:
-        """Notify user of synchronization errors."""
-        if err.error_type == sync.SynchronizerError.ErrorType.ACCESS_DENIED:
-            self.notify(
-                "Access to Google workbook was denied. "
-                "Did you share the workbook with your Google service account?",
-                title="Access Denied!",
-                severity="error",
-            )
+    @textual.work(thread=True, exclusive=True, group="download")
+    def _list_downloads(self, synchro: sync.Synchronizer) -> None:
+        """List files in object storage and ask the user which to download.
 
-    def _notify_config_errors(self, err: config.ConfigError) -> None:
-        """Notify user of missing or invalid configurations settings."""
-        if err.error_type == config.ConfigError.ErrorType.UNDEFINED_SETTING:
-            for setting in err.settings:
-                match setting:
-                    case "db_path":
-                        self.notify(
-                            "You must select a database before uploading attendance "
-                            "data. (db_path)",
-                            title="No Database Selected",
-                            severity="warning",
-                        )
-                    case "google_servie_account":
-                        self.notify(
-                            "Add a Google service account to the settings TOML file. "
-                            "(google_service_account)",
-                            title="No Google Service Account",
-                            severity="warning",
-                        )
-                    case "sync_sheet_key":
-                        self.notify(
-                            "Add synchronizer Google sheet key to the settings TOML "
-                            "file. (sync_sheet_key)",
-                            title="No Synchronizer Google Sheet Key",
-                            severity="warning",
-                        )
+        Runs in a thread because S3 calls block.
+        """
+        try:
+            keys = synchro.list_uploads()
+        except UPLOAD_ERRORS as err:
+            self._show_download_results(success=False, message=str(err))
+            return
+        self.call_from_thread(
+            self.push_screen,
+            sync_dialogs.DownloadChooseFileDialog(keys),
+            lambda object_key: self._on_download_file_chosen(synchro, object_key),
+        )
+
+    def _on_download_file_chosen(
+        self, synchro: sync.Synchronizer, object_key: str | None
+    ) -> None:
+        """Download the chosen file, or re-enable UI if the user cancelled."""
+        if object_key is None:
+            self.set_button_status(enabled=True)
+            return
+        self.notify(f"Downloading {object_key}...")
+        self._do_download(synchro, object_key)
+
+    @textual.work(thread=True, exclusive=True, group="download")
+    def _do_download(self, synchro: sync.Synchronizer, object_key: str) -> None:
+        """Back up the database, replace it with the download, and show results.
+
+        Runs in a thread because S3 calls block.
+        """
+        try:
+            backup_path = synchro.download(object_key)
+        except DOWNLOAD_ERRORS as err:
+            self._show_download_results(success=False, message=str(err))
+            return
+        self._show_download_results(
+            success=True, message=object_key, backup_path=backup_path
+        )
+
+    def _show_download_results(
+        self, success: bool, message: str, backup_path: pathlib.Path | None = None
+    ) -> None:
+        """Show the download results dialog, then refresh the main screen.
+
+        Must be called from a download worker thread.
+        """
+
+        def _on_dismiss(_: None) -> None:
+            self.set_button_status(enabled=True)
+            self.update_summary()
+
+        self.call_from_thread(
+            self.push_screen,
+            sync_dialogs.DownloadResultsDialog(success, message, backup_path),
+            _on_dismiss,
+        )
 
     @textual.on(widgets.Button.Pressed, "#main-select-settings")
     async def select_settings_file(self):
@@ -420,6 +497,10 @@ class FrcAttend(app.App):
     def watch_db_path(self, db_path: str) -> None:
         """Update the database path label."""
         self.query_one("#main-config-db-path", widgets.Label).update(str(db_path))
+        self.update_summary()
+
+    def update_summary(self) -> None:
+        """Refresh the database summary, e.g., after the database file changes."""
         self.query_one("#main-db-summary", widgets.Markdown).update(
             summary.get_summary()
         )
@@ -489,82 +570,4 @@ class UploadConfirmation(screen.ModalScreen):
     def on_button_pressed(self, event: widgets.Button.Pressed) -> None:
         """Dismiss the dialog."""
         self.post_message(EnableUiMessage(enable=True))
-        self.dismiss()
-
-
-class DownloadConfirmation(screen.ModalScreen):
-    """Show summary of downloaded info and have user confirm overrwriting DB."""
-
-    CSS_PATH = frcattend.view.CSS_FOLDER / "root.tcss"
-
-    synchro: sync.Synchronizer
-    """Object that downloads data from a Google spreadsheet."""
-    sheet_data: dict[str, list[dict[str, Any]]]
-    """Data downloaded from Google spreadsheet."""
-
-    def __init__(self) -> None:
-        """Set up database on initialization."""
-        super().__init__()
-        self.synchro = sync.Synchronizer()
-        self.sheet_data = self.synchro.download()
-
-    def compose(self) -> app.ComposeResult:
-        """Build the dialog box."""
-        with containers.Vertical(id="download-confirm-dialog", classes="modal-dialog"):
-            yield widgets.Label("Download Attendance Data", classes="emphasis")
-            yield widgets.Label("Record Counts")
-            yield self.build_counts_table()
-            yield widgets.Label("Time of Last Checkin")
-            yield self.build_tolc_table()
-            with containers.Horizontal(classes="dialog-row"):
-                yield widgets.Button("Ok", id="main-download-ok")
-                yield widgets.Button("Cancel", id="main-download-cancel")
-
-    def build_counts_table(self) -> widgets.DataTable:
-        """Build table showing record counts in current DB and downloaded data."""
-        db_counts = self.synchro.dbase.get_record_counts()
-        sheet_counts = self.synchro.count_rows(self.sheet_data)
-        table = widgets.DataTable(id="download-confirm-counts-table")
-        for col in [
-            ("Table", "table"),
-            ("Local DB Records", "db_count"),
-            ("Google Sheets Records", "sheet_count"),
-        ]:
-            table.add_column(col[0], key=col[1])
-        for table_name in db_counts:
-            table.add_row(table_name, db_counts[table_name], sheet_counts[table_name])
-        return table
-
-    def build_tolc_table(self) -> widgets.Markdown:
-        """Build table showing time of last checkin for DB and downloaded data."""
-        db_tolc = model.Checkin.get_time_of_last_checkin(self.synchro.dbase)
-        if db_tolc is None:
-            db_tolc_str = "None"
-        else:
-            db_tolc_str = db_tolc.replace(microsecond=0).isoformat()
-        sheet_tolc = self.synchro.time_of_last_change(self.sheet_data)
-        if sheet_tolc is None:
-            sheet_tolc_str = "None"
-        else:
-            sheet_tolc_str = sheet_tolc.replace(microsecond=0).isoformat()
-        mdown = "\n".join(
-            [
-                "| Local Database | Google Sheet |",
-                "|----------------|--------------|",
-                f"|{db_tolc_str}|{sheet_tolc_str}|",
-            ]
-        )
-        return widgets.Markdown(mdown)
-
-    @textual.on(widgets.Button.Pressed, "#main-download-cancel")
-    def cancel_dialog(self) -> None:
-        """Close the dialog and take no action."""
-        self.dismiss()
-
-    @textual.on(widgets.Button.Pressed, "#main-download-ok")
-    def ok_dialog(self) -> None:
-        """Write the downloaded data to the database."""
-        self.synchro.dbase.backup()
-        self.synchro.dbase.delete_all()
-        self.synchro.dbase.load_from_dict(self.sheet_data)
         self.dismiss()

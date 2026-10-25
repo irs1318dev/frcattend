@@ -1,0 +1,32 @@
+/* Styles for view.sync_dialogs. */
+
+#force-upload-dialog, #download-results-dialog {
+    width: 70;
+    height: auto;
+}
+
+#upload-results-dialog, #download-choose-dialog {
+    width: 70;
+    height: auto;
+    max-height: 80%;
+}
+
+#upload-results-files {
+    height: auto;
+    max-height: 20;
+    border: round $primary;
+}
+
+#download-choose-files {
+    width: 100%;
+    height: auto;
+    max-height: 20;
+    overflow-y: auto;
+}
+
+#force-upload-dialog Horizontal, #upload-results-dialog Horizontal,
+#download-choose-dialog Horizontal, #download-results-dialog Horizontal {
+    align-horizontal: center;
+    height: auto;
+    margin-top: 1;
+}

@@ -9,7 +9,6 @@ from typing import Any
 import pytest
 
 from frcattend import config, model
-from frcattend.features import sync
 
 TEST_FOLDER = pathlib.Path(__file__).parent
 DATA_FOLDER = TEST_FOLDER / "data"
@@ -91,21 +90,3 @@ def noevents_dbase(empty_database: model.DBase) -> model.DBase:
     attendance_data["checkins"] = []
     empty_database.load_from_dict(attendance_data)
     return empty_database
-
-
-@pytest.fixture
-def empty_synchro(
-    settings: config.Settings, full_dbase: model.DBase
-) -> sync.Synchronizer:
-    """A Synchronizer that points to an empty spreadsheet."""
-    synchro = sync.Synchronizer()
-    synchro.clear_all_sheets()
-    return synchro
-
-
-@pytest.fixture
-def full_synchro(empty_synchro: sync.Synchronizer) -> sync.Synchronizer:
-    """A synchronizer that points to a full spreadsheet."""
-    # data = full_dbase.to_dict()
-    empty_synchro.upload(upload_all=True)
-    return empty_synchro
