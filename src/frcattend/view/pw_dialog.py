@@ -1,7 +1,5 @@
 """Prompt user for a password."""
 
-import hashlib
-
 from textual import app, containers, screen, widgets
 
 import frcattend.view
@@ -49,7 +47,7 @@ class PasswordPrompt(screen.ModalScreen[bool]):
 
     def check_password(self) -> None:
         password = self.query_one("#password-input", widgets.Input).value
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        hashed_password = config.hash_password(password)
         error_msg = self.query_one("#password-error", widgets.Static)
         if hashed_password == config.settings.password_hash:
             self.dismiss(True)  # Dismiss with success

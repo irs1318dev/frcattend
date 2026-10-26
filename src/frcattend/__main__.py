@@ -2,6 +2,7 @@
 
 import argparse
 import pathlib
+import tomllib
 
 import rich
 
@@ -9,6 +10,8 @@ import frcattend.view.app
 from frcattend import config
 from frcattend.features import sync
 from frcattend.model import database
+
+TEMPLATE_FILE_NAME = "frcattend-config-template.toml"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -19,7 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_app_parser(subparsers)
     _add_sync_parser(subparsers)
     _add_encrypt_parser(subparsers)
-    add_pw_hash_parser(subparsers)
+    _add_config_parser(subparsers)
     return parser
 
 
@@ -86,13 +89,49 @@ def _add_encrypt_parser(subparsers: argparse._SubParsersAction) -> None:
     )
 
 
-def add_pw_hash_parser(subparsers: argparse._SubParsersAction) -> None:
-    """Define arguments for the pw-hash subcommand."""
-    pw_parser = subparsers.add_parser(
-        "pw-hash", help="Create a password hash for the coniguration TOML file."
+def _add_config_parser(subparsers: argparse._SubParsersAction) -> None:
+    """Define arguments for the secure subcommand."""
+    secure_parser = subparsers.add_parser(
+        "config",
+        help="Create a TOML config file template or move its credentials to keyring.",
     )
-    pw_parser.set_defaults(func=hash_password)
-    pw_parser.add_argument("password", help="Password to be hashed.")
+    secure_parser.set_defaults(func=run_config, db_path=None)
+    secure_group = secure_parser.add_mutually_exclusive_group()
+    secure_group.add_argument(
+        "-c",
+        "--create",
+        nargs="?",
+        const=pathlib.Path(TEMPLATE_FILE_NAME),
+        type=pathlib.Path,
+        metavar="CONFIG_PATH",
+        help=f"Create a new TOML config file template (default: {TEMPLATE_FILE_NAME}).",
+    )
+    secure_group.add_argument(
+        "-s",
+        "--secure",
+        dest="config_path",
+        type=pathlib.Path,
+        metavar="CONFIG_PATH",
+        help="Move credentials from the TOML config file to keyring.",
+    )
+    config_subparsers = secure_parser.add_subparsers()
+    _add_set_pin_parser(config_subparsers)
+
+
+def _add_set_pin_parser(subparsers: argparse._SubParsersAction) -> None:
+    """Define arguments for the config set-pin subcommand."""
+    pin_parser = subparsers.add_parser(
+        "set-pin", help="Hash a PIN and store it as password_hash in a config file."
+    )
+    pin_parser.set_defaults(func=set_pin)
+    pin_parser.add_argument("pin", help="PIN to be hashed.")
+    pin_parser.add_argument(
+        "-f",
+        "--config-file",
+        type=pathlib.Path,
+        required=True,
+        help="Path to the TOML config file that will store the hash.",
+    )
 
 
 def run_app(args: argparse.Namespace) -> None:
@@ -134,16 +173,56 @@ def encrypt_db(args: argparse.Namespace) -> None:
     rich.print(f"Encrypted {db_path}")
 
 
-def hash_password(args: argparse.Namespace) -> None:
-    """Hash a password."""
-    rich.print(config.hash_password(args.password))
+def run_config(args: argparse.Namespace) -> None:
+    """Run the option selected for the secure subcommand."""
+    if args.create is not None:
+        create_config(args)
+    elif args.config_path is not None:
+        secure_config(args)
+    else:
+        rich.print("[red]Specify -c/--create, -s/--secure, or set-pin.[/red]")
 
 
-# def to_absolute_path(path: pathlib.Path) -> pathlib.Path:
-#     """Convert relative paths to absolute paths."""
-#     if not path.is_absolute():
-#         path = path.resolve()
-#     return path
+def create_config(args: argparse.Namespace) -> None:
+    """Write a new TOML config file template."""
+    config_path = args.create.resolve()
+    try:
+        config.settings.write_new_config_file(config_path)
+    except FileExistsError:
+        rich.print(f"[red]File {config_path} already exists.[/red]")
+        return
+    rich.print(f"Created config file template: [bold]{config_path}[/bold]")
+
+
+def secure_config(args: argparse.Namespace) -> None:
+    """Move credentials from the TOML config file to the system keyring."""
+    config.settings.update_from_args(args)
+    if config.settings.config_path is None:
+        rich.print(f"[red]Config file at {args.config_path} not found. [/red]")
+        return
+    backup_path = config.settings.secure_config_file()
+    rich.print(
+        f"Credentials moved to keyring. Secured config file: "
+        f"{config.settings.config_path}\n"
+        f"The original config file was saved to [bold]{backup_path}[/bold]\n"
+        "[yellow]Save the credentials from the backup file in a different secure "
+        "location, such as a password manager, then delete the backup file."
+        "[/yellow]"
+    )
+
+
+def set_pin(args: argparse.Namespace) -> None:
+    """Hash a PIN and store it in the TOML config file."""
+    config_path = args.config_file.resolve()
+    try:
+        config.Settings.set_password_hash(config_path, args.pin)
+    except FileNotFoundError:
+        rich.print(f"[red]Config file at {config_path} not found.[/red]")
+        return
+    except tomllib.TOMLDecodeError as err:
+        rich.print(f"[red]Config file at {config_path} is not valid TOML: {err}[/red]")
+        return
+    rich.print(f"Updated password_hash in [bold]{config_path}[/bold]")
 
 
 def main() -> None:

@@ -75,6 +75,7 @@ def send_email(
         smtp_password = cast(str, config.settings.smtp_password)
         email_sender_name = cast(str, config.settings.email_sender_name)
         smtp_port = cast(int, config.settings.smtp_port)
+    team_prefix = f"{config.settings.team_name} " if config.settings.team_name else ""
     # Create email
     msg = multipart.MIMEMultipart("related")
     msg["Subject"] = "Your Attendance Pass"
@@ -139,7 +140,7 @@ def send_email(
     <body>
         <div class="container">
             <div class="header">
-                <h1>🤖 IRS 1318 Attendance System</h1>
+                <h1>🤖 {team_prefix}Attendance System</h1>
                 <p>Your Attendance Pass</p>
             </div>
             <div class="content">
@@ -158,7 +159,7 @@ def send_email(
                 You are not to share it with others.</p>
             </div>
             <div class="footer">
-                <p>IRS 1318 Robotics Team | Attendance Management System</p>
+                <p>{team_prefix}Robotics Team | Attendance Management System</p>
                 <p>If you have any questions, please speak with a mentor.</p>
             </div>
         </div>

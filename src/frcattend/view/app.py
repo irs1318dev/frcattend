@@ -481,7 +481,13 @@ class FrcAttend(app.App):
             """Select a new settings TOML file."""
             if config_path is None:
                 return
-            config.settings.create_new_config_file(config_path)
+            try:
+                config.settings.write_new_config_file(config_path)
+            except FileExistsError:
+                self.notify(
+                    f"{config_path} already exists. Using the existing file.",
+                    severity="warning",
+                )
             config.settings.config_path = config_path
             self.config_path = config_path
 
