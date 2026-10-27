@@ -2,7 +2,6 @@
 
 import argparse
 import pathlib
-import tomllib
 
 import rich
 
@@ -114,24 +113,6 @@ def _add_config_parser(subparsers: argparse._SubParsersAction) -> None:
         metavar="CONFIG_PATH",
         help="Move credentials from the TOML config file to keyring.",
     )
-    config_subparsers = secure_parser.add_subparsers()
-    _add_set_pin_parser(config_subparsers)
-
-
-def _add_set_pin_parser(subparsers: argparse._SubParsersAction) -> None:
-    """Define arguments for the config set-pin subcommand."""
-    pin_parser = subparsers.add_parser(
-        "set-pin", help="Hash a PIN and store it as password_hash in a config file."
-    )
-    pin_parser.set_defaults(func=set_pin)
-    pin_parser.add_argument("pin", help="PIN to be hashed.")
-    pin_parser.add_argument(
-        "-f",
-        "--config-file",
-        type=pathlib.Path,
-        required=True,
-        help="Path to the TOML config file that will store the hash.",
-    )
 
 
 def run_app(args: argparse.Namespace) -> None:
@@ -180,7 +161,7 @@ def run_config(args: argparse.Namespace) -> None:
     elif args.config_path is not None:
         secure_config(args)
     else:
-        rich.print("[red]Specify -c/--create, -s/--secure, or set-pin.[/red]")
+        rich.print("[red]Specify -c/--create or -s/--secure.[/red]")
 
 
 def create_config(args: argparse.Namespace) -> None:
@@ -209,20 +190,6 @@ def secure_config(args: argparse.Namespace) -> None:
         "location, such as a password manager, then delete the backup file."
         "[/yellow]"
     )
-
-
-def set_pin(args: argparse.Namespace) -> None:
-    """Hash a PIN and store it in the TOML config file."""
-    config_path = args.config_file.resolve()
-    try:
-        config.Settings.set_password_hash(config_path, args.pin)
-    except FileNotFoundError:
-        rich.print(f"[red]Config file at {config_path} not found.[/red]")
-        return
-    except tomllib.TOMLDecodeError as err:
-        rich.print(f"[red]Config file at {config_path} is not valid TOML: {err}[/red]")
-        return
-    rich.print(f"Updated password_hash in [bold]{config_path}[/bold]")
 
 
 def main() -> None:

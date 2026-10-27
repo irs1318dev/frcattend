@@ -8,7 +8,6 @@ import functools
 import hashlib
 import json
 import pathlib
-import re
 import shutil
 import tomllib
 from typing import ClassVar
@@ -56,7 +55,7 @@ class SecurityPin:
     @classmethod
     def set_pin(cls, current_pin: str, new_pin: str) -> bool:
         """Set a new PIN.
-        
+
         Requires that the current_pin be supplied.
 
         Returns:
@@ -79,7 +78,7 @@ class SecurityPin:
     @classmethod
     def get_pin_hash(cls) -> str:
         """Get the SHA256 hash of the security PIN.
-        
+
         Raise a SecurityError if the PIN is not defined in the keyring.
         """
         pin_hash = keyring.get_password(KEYRING_SERVICE_NAME, cls.keyring_user_name)
@@ -90,12 +89,7 @@ class SecurityPin:
 
 @dataclasses.dataclass
 class Settings:
-    """Configuration data for frcattend application.
-
-    password_hash is a SHA256 hash created with the hashlib library. The
-    default PIN is 0000. Change the PIN with the `attend config set-pin`
-    command.
-    """
+    """Configuration data for frcattend application."""
 
     team_name: str | None = None
     """Team name that appears on QR code emails (e.g., IRS 1318)."""
@@ -119,10 +113,6 @@ class Settings:
     
     Used for calculating attendance during build and competition season.
     """
-    password_hash: str | None = (
-        "9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0"  # 0000
-    )
-    """Sets the password for opening application and leaving QR code scan mode."""
     camera_number: int = 0
     """Identifies which camera on computer is used for scanning QR codes.
     
@@ -297,9 +287,7 @@ class Settings:
             return value
         chunks = []
         for idx in range(chunk_count):
-            chunk = keyring.get_password(
-                KEYRING_SERVICE_NAME, f"{setting_name}.{idx}"
-            )
+            chunk = keyring.get_password(KEYRING_SERVICE_NAME, f"{setting_name}.{idx}")
             if chunk is None:
                 return None
             chunks.append(chunk)
@@ -330,9 +318,7 @@ class Settings:
         # Remove leftover chunks from a previously stored, longer value.
         for idx in range(len(chunks), old_chunk_count):
             try:
-                keyring.delete_password(
-                    KEYRING_SERVICE_NAME, f"{setting_name}.{idx}"
-                )
+                keyring.delete_password(KEYRING_SERVICE_NAME, f"{setting_name}.{idx}")
             except keyring.errors.PasswordDeleteError:
                 pass
 
@@ -444,12 +430,6 @@ schoolyear_start_month_and_day = {schoolyear_start}
 # calculating attendance during build and competition season.
 build_start_month_and_day = {build_start}
 
-# SHA256 hash of the password for opening the application and leaving QR code
-# scan mode. The default hash corresponds to the default PIN 0000. Change the
-# PIN by running:
-#   attend config set-pin <new PIN> -f <path to this file>
-password_hash = "9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0"
-
 # Identifies which camera is used for scanning QR codes. Camera 0 is usually
 # the front-facing camera on Windows.
 camera_number = {defaults.camera_number}
@@ -488,36 +468,6 @@ s3_secret_access_key = "null"
         with open(config_path, "x", encoding="utf-8") as toml_file:
             toml_file.write(content)
 
-    @staticmethod
-    def set_password_hash(config_path: pathlib.Path, pin: str) -> None:
-        """Hash a PIN and store it as password_hash in a TOML config file.
-
-        The file is edited as text so comments and formatting are preserved.
-        An existing password_hash line is replaced. Otherwise the setting is
-        added after the [app] table header, or at the top of the file if there
-        is no [app] table. Raises FileNotFoundError if config_path does not
-        exist.
-        """
-        if not config_path.is_file():
-            raise FileNotFoundError(f"Config file {config_path} not found.")
-        content = config_path.read_text(encoding="utf-8")
-        hash_line = f'password_hash = "{hash_password(pin)}"'
-        content, count = re.subn(
-            r"^[ \t]*password_hash[ \t]*=.*$", hash_line, content, flags=re.MULTILINE
-        )
-        if count == 0:
-            content, count = re.subn(
-                r"^[ \t]*\[app\][ \t]*$",
-                lambda match: f"{match.group(0)}\n{hash_line}",
-                content,
-                count=1,
-                flags=re.MULTILINE,
-            )
-        if count == 0:
-            content = f"{hash_line}\n{content}"
-        tomllib.loads(content)  # Ensure the edited file is still valid TOML.
-        config_path.write_text(content, encoding="utf-8")
-
 
 # Store settings in a module-level variable, which will be available from any
 # other module that imports frcattend.config. This pattern is sometimes referred
@@ -529,7 +479,7 @@ settings = Settings()
 def hash_password(pw: str) -> str:
     """Calculate the sha256 hash of a password.
 
-    Used by `Settings.set_password_hash` (the `attend config set-pin` command)
-    and to check passwords entered in the application.
+    Used to store the security PIN in the keyring and to check passwords
+    entered in the application.
     """
     return hashlib.sha256(pw.encode("utf-8")).hexdigest()

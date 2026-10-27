@@ -170,6 +170,11 @@ class FrcAttend(app.App):
                     id="main-select-settings",
                     tooltip="Select a different settings file.",
                 )
+                yield widgets.Button(
+                    "Change PIN",
+                    id="main-change-pin",
+                    tooltip="Change the management PIN.",
+                )
         yield widgets.Markdown(summary.get_summary(), id="main-db-summary")
         yield widgets.Footer()
 
@@ -469,6 +474,16 @@ class FrcAttend(app.App):
             id="main-select-settings-file",
         )
         await self.app.push_screen(file_selector, _select_settings)
+
+    @textual.on(widgets.Button.Pressed, "#main-change-pin")
+    def change_pin(self) -> None:
+        """Display a dialog for changing the management PIN."""
+
+        def _on_pin_set(pin_set: bool | None) -> None:
+            if pin_set:
+                self.notify("PIN changed.")
+
+        self.push_screen(pw_dialog.SetPinDialog(), _on_pin_set)
 
     @textual.on(widgets.Button.Pressed, "#main-create-settings")
     async def create_settings_file(self):

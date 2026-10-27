@@ -20,3 +20,19 @@
     column-span: 2;
     content-align: center middle;
 }
+
+#set-pin-dialog {
+    padding: 0 1;
+    width: 60;
+    height: auto;
+}
+
+#set-pin-dialog Label.emphasis {
+    width: 100%;
+    content-align: center middle;
+}
+
+#set-pin-error {
+    width: 100%;
+    content-align: center middle;
+}
