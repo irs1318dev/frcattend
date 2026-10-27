@@ -18,7 +18,11 @@ import keyring.errors
 import tomli_w
 
 DB_FILE_NAME = "frc-attend.db"
+"""Default database name."""
 CONFIG_FILE_NAME = "frc-attend.toml"
+"""Default configuration file name."""
+KEYRING_SERVICE_NAME = "frcattend"
+"""Service name used when storing credentials with the keyring package."""
 
 
 class ConfigError(Exception):
@@ -38,6 +42,50 @@ class ConfigError(Exception):
         super().__init__(message)
         self.error_type = error_type
         self.settings = []
+
+
+class SecurityError(Exception):
+    """An error related to the security PIN occurred."""
+
+
+class SecurityPin:
+    """Set and check the security PIN."""
+
+    keyring_user_name: str = "security_pin"
+
+    @classmethod
+    def set_pin(cls, current_pin: str, new_pin: str) -> bool:
+        """Set a new PIN.
+        
+        Requires that the current_pin be supplied.
+
+        Returns:
+            Return True if the current_pin is correct and the new_pin is
+            successfully set. Return False if the current_pin is incorrect.
+        """
+        try:
+            current_pin_hash = cls.get_pin_hash()
+        except SecurityError:
+            current_pin_hash = None  # No PIN saved yet, so allow setting one.
+        if current_pin_hash is not None and current_pin_hash != hash_password(
+            current_pin
+        ):
+            return False
+        keyring.set_password(
+            KEYRING_SERVICE_NAME, cls.keyring_user_name, hash_password(new_pin)
+        )
+        return True
+
+    @classmethod
+    def get_pin_hash(cls) -> str:
+        """Get the SHA256 hash of the security PIN.
+        
+        Raise a SecurityError if the PIN is not defined in the keyring.
+        """
+        pin_hash = keyring.get_password(KEYRING_SERVICE_NAME, cls.keyring_user_name)
+        if pin_hash is None:
+            raise SecurityError("Security PIN is not defined in the keyring.")
+        return pin_hash
 
 
 @dataclasses.dataclass
@@ -109,8 +157,6 @@ class Settings:
     s3_access_key_id: str | None = None
     s3_secret_access_key: str | None = None
 
-    keyring_service_name: ClassVar[str] = "frcattend"
-    """Service name used when storing credentials with the keyring package."""
     keyring_settings: ClassVar[tuple[str, ...]] = (
         "encryption_key",
         "smtp_password",
@@ -245,14 +291,14 @@ class Settings:
 
     def _get_keyring_password(self, setting_name: str) -> str | None:
         """Get a password from keyring, joining chunks if it was split."""
-        value = keyring.get_password(self.keyring_service_name, setting_name)
+        value = keyring.get_password(KEYRING_SERVICE_NAME, setting_name)
         chunk_count = self._get_chunk_count(value)
         if chunk_count == 0:
             return value
         chunks = []
         for idx in range(chunk_count):
             chunk = keyring.get_password(
-                self.keyring_service_name, f"{setting_name}.{idx}"
+                KEYRING_SERVICE_NAME, f"{setting_name}.{idx}"
             )
             if chunk is None:
                 return None
@@ -262,7 +308,7 @@ class Settings:
     def _set_keyring_password(self, setting_name: str, value: str) -> None:
         """Save a password to keyring, splitting it into chunks if too long."""
         old_chunk_count = self._get_chunk_count(
-            keyring.get_password(self.keyring_service_name, setting_name)
+            keyring.get_password(KEYRING_SERVICE_NAME, setting_name)
         )
         chunks = [
             value[idx : idx + self.keyring_chunk_size]
@@ -271,21 +317,21 @@ class Settings:
         if len(chunks) > 1:
             for idx, chunk in enumerate(chunks):
                 keyring.set_password(
-                    self.keyring_service_name, f"{setting_name}.{idx}", chunk
+                    KEYRING_SERVICE_NAME, f"{setting_name}.{idx}", chunk
                 )
             keyring.set_password(
-                self.keyring_service_name,
+                KEYRING_SERVICE_NAME,
                 setting_name,
                 f"{self.keyring_chunk_prefix}{len(chunks)}",
             )
         else:
             chunks = []
-            keyring.set_password(self.keyring_service_name, setting_name, value)
+            keyring.set_password(KEYRING_SERVICE_NAME, setting_name, value)
         # Remove leftover chunks from a previously stored, longer value.
         for idx in range(len(chunks), old_chunk_count):
             try:
                 keyring.delete_password(
-                    self.keyring_service_name, f"{setting_name}.{idx}"
+                    KEYRING_SERVICE_NAME, f"{setting_name}.{idx}"
                 )
             except keyring.errors.PasswordDeleteError:
                 pass
