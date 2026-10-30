@@ -13,6 +13,7 @@ import frcattend.view
 from frcattend import config, model
 from frcattend.features import excel, summary, sync
 from frcattend.view import (
+    answers_screen,
     attendance_screen,
     event_screen,
     file_widgets,
@@ -102,9 +103,14 @@ class FrcAttend(app.App):
                 classes="ok",
             )
             yield widgets.Button(
-                "Surveys",
+                "Manage Surveys",
                 id="main-manage-surveys",
                 tooltip="Create and edit surveys.",
+            )
+            yield widgets.Button(
+                "View Survey Results",
+                id="main-view-survey-results",
+                tooltip="View students' answers to each survey.",
             )
 
         # Database Controls
@@ -215,6 +221,11 @@ class FrcAttend(app.App):
     def action_manage_surveys(self) -> None:
         """Go to survey management screen."""
         self.app.push_screen(survey_screen.SurveyScreen())
+
+    @textual.on(widgets.Button.Pressed, "#main-view-survey-results")
+    def action_view_survey_results(self) -> None:
+        """Go to survey results screen."""
+        self.app.push_screen(answers_screen.SurveyResults())
 
     @textual.on(widgets.Button.Pressed, "#main-select-database")
     async def action_select_database(self) -> None:

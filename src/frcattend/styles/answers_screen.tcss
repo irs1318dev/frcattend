@@ -1,0 +1,26 @@
+/* Styles for view/answers_screen.py */
+
+SurveysTable {
+    height: 1fr;
+}
+
+/* Answers table on the left, filter widgets on the right. */
+#answers-container {
+    height: 2fr;
+}
+
+#answers-container AnswersTable {
+    width: 70%;
+    height: 100%;
+}
+
+#answers-actions-container {
+    width: 30%;
+    height: 100%;
+    align-horizontal: center;
+}
+
+#export-csv-button {
+    width: 100%;
+    margin-top: 1;
+}

@@ -302,6 +302,22 @@ class Answer(abstract.TableDef):
         return answers
 
     @staticmethod
+    def get_by_title(dbase: database.DBase, survey_title: str) -> list[Answer]:
+        """Get all answers for a specific survey."""
+        query = """
+                SELECT student_id, survey_title, answer_date,
+                       choices, freetext_answer
+                  FROM answers
+                 WHERE survey_title = :survey_title
+              ORDER BY student_id, answer_date DESC;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        cursor = conn.execute(query, {"survey_title": survey_title})
+        answers = [Answer(**answer) for answer in cursor]
+        conn.close()
+        return answers
+
+    @staticmethod
     def get_by_title_and_student(
         dbase: database.DBase, survey_title: str, student_id: str
     ) -> list[Answer]:
