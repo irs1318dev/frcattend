@@ -389,6 +389,12 @@ class TakeSurveyDialog(screen.ModalScreen):
                 yield widgets.Button("Ok", id="take-survey-ok-button")
                 yield widgets.Button("Cancel", id="take-survey-cancel-button")
 
+    def on_mount(self) -> None:
+        """Clear the default highlight so no choice appears preselected."""
+        if self.survey.multiselect:
+            selector = self.query_one("#take-survey-multi", widgets.SelectionList)
+            selector.highlighted = None
+
     @textual.on(widgets.Button.Pressed, "#take-survey-cancel-button")
     def on_cancel_button_pressed(self) -> None:
         """Close the dialog and return to the main screen."""
@@ -412,6 +418,9 @@ class TakeSurveyDialog(screen.ModalScreen):
             freetext = freetext_input.value if freetext_input.value else None
         else:
             freetext = None
+        if not choices and freetext is None:
+            self.notify("Please make a selection.", severity="warning")
+            return
         """Close the dialog and return to the main screen."""
         answer = model.Answer(
             self.student.student_id,
