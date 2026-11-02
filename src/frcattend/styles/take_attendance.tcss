@@ -1,6 +1,6 @@
 #event-type-dialog {
-    width: 100;
-    height: 40;
+    width: 125;
+    height: 95%;
 }
 
 #attendance-survey-details {

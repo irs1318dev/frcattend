@@ -3,8 +3,9 @@
 import asyncio
 import dataclasses
 import datetime
+import enum
 import time
-from typing import cast
+from typing import Literal, cast
 
 import cv2
 import textual
@@ -13,7 +14,7 @@ from textual.widgets import option_list
 
 import frcattend.view
 from frcattend import config, model
-from frcattend.view import pw_dialog, survey_screen
+from frcattend.view import pw_dialog, selector_widgets, survey_screen
 
 
 class ScanScreen(screen.Screen):
@@ -31,6 +32,8 @@ class ScanScreen(screen.Screen):
     """Type of event at which we're taking attendance."""
     survey: model.Survey | None
     """Students can be asked to complete a survey when they checkin."""
+    _survey_students: set[str] | None
+    """IDs of students who will take the survey. None means all students."""
     _checkedin_students: set[str]
     """Recently scanned student IDs."""
     _scanned_students: set[str]
@@ -51,6 +54,7 @@ class ScanScreen(screen.Screen):
         if config.settings.db_path is None:
             raise model.DBaseError("No database file selected.")
         self.dbase = model.DBase(config.settings.db_path)
+        # TODO: Filter students to prospects, rookies, and veterans.
         self._students = {
             student.student_id: student for student in model.Student.get_all(self.dbase)
         }
@@ -82,6 +86,11 @@ class ScanScreen(screen.Screen):
             return
         self.event_type = result.event_type
         self.survey = result.survey
+        self._survey_students = (
+            None
+            if result.survey_student_ids is None
+            else set(result.survey_student_ids)
+        )
         today = datetime.date.today()
         event = model.Event(today, result.event_type)
         event.add(self.dbase)
@@ -94,7 +103,11 @@ class ScanScreen(screen.Screen):
 
     @textual.work(exclusive=False)
     async def scan_qr_codes(self) -> None:
-        """Open video window and capture QR codes."""
+        """Open video window and capture QR codes.
+
+        Students are asked to take the survey only if their student ID is in
+        _survey_students, or if _survey_students is None.
+        """
         vcap = cv2.VideoCapture(config.settings.camera_number)
         detector = cv2.QRCodeDetector()
         qr_data: str | None = None
@@ -113,7 +126,14 @@ class ScanScreen(screen.Screen):
             if qr_data and qr_data not in self._scanned_students:
                 self._scanned_students.add(qr_data)
                 self.post_message(self.QrCodeFound(qr_data))
-                if self.survey is not None and qr_data in self._students:
+                if (
+                    self.survey is not None
+                    and qr_data in self._students
+                    and (
+                        self._survey_students is None
+                        or qr_data in self._survey_students
+                    )
+                ):
                     self.app.push_screen(
                         survey_screen.TakeSurveyDialog(
                             self.dbase,
@@ -206,12 +226,39 @@ class ScanScreen(screen.Screen):
         )
 
 
+class SurveyTarget(enum.StrEnum):
+    """Which students should be asked to take the survey."""
+
+    ALL = "All"
+    NEVER_TAKEN = "Never took the survey"
+    NOT_THIS_SEASON = "Haven't taken the survey this year"
+    SINCE_DATE = "Haven't taken the survey since a specified date"
+
+    @property
+    def model_target(
+        self,
+    ) -> Literal["all", "never", "not-this-year", "not-since"]:
+        """Target value expected by Answer.get_students_to_be_surveyed."""
+        return _model_targets[self]
+
+
+_model_targets: dict[
+    SurveyTarget, Literal["all", "never", "not-this-year", "not-since"]
+] = {
+    SurveyTarget.ALL: "all",
+    SurveyTarget.NEVER_TAKEN: "never",
+    SurveyTarget.NOT_THIS_SEASON: "not-this-year",
+    SurveyTarget.SINCE_DATE: "not-since",
+}
+
+
 @dataclasses.dataclass
 class DialogResult:
     """The Event type and survey selected in the dialog."""
 
     event_type: model.EventType | None
     survey: model.Survey | None
+    survey_student_ids: list[str] | None
 
 
 class ChooseTypeAndSurveyDialog(screen.ModalScreen[DialogResult | None]):
@@ -258,6 +305,32 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[DialogResult | None]):
                         prompt="No Survey",
                         id="attendance-survey-select",
                     )
+                    survey_options = containers.Vertical(id="survey-options-container")
+                    survey_options.display = False
+                    with survey_options:
+                        yield widgets.Label(
+                            "Students to be Surveyed", classes="emphasis"
+                        )
+                        target_options = widgets.OptionList(
+                            *[
+                                option_list.Option(target.value, id=target)
+                                for target in SurveyTarget
+                            ],
+                            id="survey-target-option",
+                        )
+                        yield target_options
+                        yield widgets.Label("Specified Date", classes="emphasis")
+                        yield widgets.Input(
+                            placeholder="YYYY-MM-DD",
+                            restrict=r"[\d-]{0,10}",
+                            max_length=10,
+                            validators=[selector_widgets.AsOfValidator()],
+                            disabled=True,
+                            id="survey-since-date",
+                        )
+                        yield selector_widgets.StatusSelector(
+                            id="survey-status-selector"
+                        )
                 yield widgets.Static(
                     self._default_survey_status_message,
                     id="attendance-survey-details",
@@ -268,11 +341,15 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[DialogResult | None]):
                 yield widgets.Button("Cancel", id="event-type-select-cancel-button")
         type_map = {opt.id: idx for idx, opt in enumerate(event_options.options)}
         event_options.highlighted = type_map[model.EventType.MEETING]
+        target_options.highlighted = 0  # SurveyTarget.ALL
 
     @textual.on(widgets.Select.Changed, "#attendance-survey-select")
     def update_survey_details(self, message: widgets.Select.Changed) -> None:
         """Update the survey details panel."""
         status_widget = self.query_one("#attendance-survey-details", widgets.Static)
+        self.query_one("#survey-options-container").display = (
+            message.value != widgets.Select.BLANK
+        )
         if message.value == widgets.Select.BLANK:
             status_widget.update(self._default_survey_status_message)
             return
@@ -299,6 +376,14 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[DialogResult | None]):
             details.append(f"[bold]Max Length:[/bold] {survey.max_length}")
         status_widget.update("\n".join(details))
 
+    @textual.on(widgets.OptionList.OptionHighlighted, "#survey-target-option")
+    def update_since_date_enabled(
+        self, message: widgets.OptionList.OptionHighlighted
+    ) -> None:
+        """Enable the date input only when surveying students since a date."""
+        date_input = self.query_one("#survey-since-date", widgets.Input)
+        date_input.disabled = message.option.id != SurveyTarget.SINCE_DATE
+
     @textual.on(widgets.Button.Pressed, "#event-type-select-ok-button")
     def on_ok_button_pressed(self) -> None:
         """Close the dialog and display the QR code scanning screen."""
@@ -315,7 +400,45 @@ class ChooseTypeAndSurveyDialog(screen.ModalScreen[DialogResult | None]):
                 survey = None
             else:
                 survey = self.surveys.get(survey_select.selection)
-            self.dismiss(DialogResult(selected_event, survey))
+            student_ids = None
+            if survey is not None:
+                student_ids = self._get_survey_student_ids(survey)
+                if student_ids is None:
+                    return  # Invalid input. Keep dialog open.
+            self.dismiss(DialogResult(selected_event, survey, student_ids))
+
+    def _get_survey_student_ids(self, survey: model.Survey) -> list[str] | None:
+        """Get IDs of students who should take the survey.
+
+        Returns:
+            A list of student IDs, or None if the since date is invalid.
+        """
+        target_list = self.query_one("#survey-target-option", widgets.OptionList)
+        date_input = self.query_one("#survey-since-date", widgets.Input)
+        status_selector = self.query_one(
+            "#survey-status-selector", selector_widgets.StatusSelector
+        )
+        target_index = target_list.highlighted
+        target = (
+            SurveyTarget.ALL
+            if target_index is None
+            else cast(SurveyTarget, target_list.options[target_index].id)
+        )
+        since_date = None
+        if target == SurveyTarget.SINCE_DATE:
+            validation_result = date_input.validate(date_input.value)
+            if validation_result is not None and not validation_result.is_valid:
+                self.notify("Enter a valid date (YYYY-MM-DD).", severity="warning")
+                date_input.focus()
+                return None
+            since_date = datetime.date.fromisoformat(date_input.value)
+        return model.Answer.get_students_to_be_surveyed(
+            self.dbase,
+            survey.title,
+            target.model_target,
+            list(status_selector.selected),
+            since_date,
+        )
 
     @textual.on(widgets.Button.Pressed, "#event-type-select-cancel-button")
     def on_cancel_button_pressed(self) -> None:

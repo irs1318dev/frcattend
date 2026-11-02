@@ -3,9 +3,10 @@
 import dataclasses
 import datetime
 import json
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
-from frcattend.model import abstract
+from frcattend import config
+from frcattend.model import abstract, students
 
 if TYPE_CHECKING:
     from frcattend.model import database
@@ -337,3 +338,69 @@ class Answer(abstract.TableDef):
         answers = [Answer(**answer) for answer in cursor]
         conn.close()
         return answers
+
+    @staticmethod
+    def get_students_to_be_surveyed(
+        dbase: database.DBase,
+        survey_title: str,
+        target: Literal["all", "never", "not-this-year", "not-since"],
+        stages: list[students.Stage],
+        since_date: datetime.date | None = None,
+    ) -> list[str]:
+        """Get a list of students to be surveyed.
+
+        #### The target argument:
+        * "all": Have every student in the selected stages take the survey.
+        * "never": Only students who have never taken the survey before will
+          take it.
+        * "not-this-year": Only students who have not yet taken the survey
+          since the start of the current school year will take it.
+        * "not-since": Only students who have not taken the survey since the
+          date specified in the since_date argument will take the survey.
+
+        Args:
+            dbase: the database to connect to.
+            survey_title: Title of the survey to be taken.
+            target: The rule for selecting students that will take the survey.
+            stages: Only students in these stages will take the survey.
+            since_date: If target is "not-since", only students who have not
+                taken the survey on or after this date will take the survey.
+
+        Returns:
+            A list of student_id values.
+        """
+        student_ids = [
+            student.student_id
+            for student in students.Student.get_with_status(dbase, stages=stages)
+        ]
+        match target:
+            case "all":
+                return student_ids
+            case "never":
+                cutoff_date = datetime.date.min
+            case "not-this-year":
+                cutoff_date = config.settings.schoolyear_start_date
+            case "not-since":
+                if since_date is None:
+                    raise SurveyError(
+                        "since_date is required when target is 'not-since'."
+                    )
+                cutoff_date = since_date
+            case _:
+                raise SurveyError(f"Invalid target argument: {target}.")
+        query = """
+                SELECT DISTINCT student_id
+                  FROM answers
+                 WHERE survey_title = :survey_title
+                   AND answer_date >= :cutoff_date;
+        """
+        conn = dbase.get_db_connection(as_dict=True)
+        cursor = conn.execute(
+            query,
+            {"survey_title": survey_title, "cutoff_date": cutoff_date.isoformat()},
+        )
+        respondents = {row["student_id"] for row in cursor}
+        conn.close()
+        return [
+            student_id for student_id in student_ids if student_id not in respondents
+        ]
