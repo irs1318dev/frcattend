@@ -110,19 +110,29 @@ class ScanScreen(screen.Screen):
         """
         vcap = cv2.VideoCapture(config.settings.camera_number)
         detector = cv2.QRCodeDetector()
-        qr_data: str | None = None
+        window_title = "Scan QR Codes (Click on window and press q to exit)"
         self._scanned_students = set()
-        while True:
-            try:
-                _, img = vcap.read()
-                window_title = "Scan QR Codes (Click on window and press q to exit)"
-                # Mirror view for display
-                disp_img = cv2.flip(img, 1)
-                cv2.imshow(window_title, disp_img)
 
-                qr_data, _bbox, _straight_code = detector.detectAndDecode(img)
+        def _read_and_decode() -> tuple[cv2.typing.MatLike | None, str | None]:
+            """Grab a frame and decode any QR code (blocking; runs in a thread)."""
+            ok, img = vcap.read()
+            if not ok or img is None:
+                return None, None
+            try:
+                data, _bbox, _straight_code = detector.detectAndDecode(img)
             except cv2.error:
-                continue
+                data = None
+            return img, data
+
+        while True:
+            # Blocking camera I/O and decoding run in a thread so Textual's event
+            #   loop stays free to process messages and redraw the log.
+            img, qr_data = await asyncio.to_thread(_read_and_decode)
+            if img is not None:
+                try:
+                    cv2.imshow(window_title, cv2.flip(img, 1))  # Mirror view
+                except cv2.error:
+                    pass
             if qr_data and qr_data not in self._scanned_students:
                 self._scanned_students.add(qr_data)
                 self.post_message(self.QrCodeFound(qr_data))
@@ -145,8 +155,7 @@ class ScanScreen(screen.Screen):
                     vcap.release()
                     cv2.destroyAllWindows()
                     return
-                await asyncio.sleep(0.1)  # Allow log to update.
-            wait_key = cv2.waitKey(50)  # Wait 50 miliseconds for key press.
+            wait_key = cv2.waitKey(1)  # Pump OpenCV window events / check keys.
             if wait_key in [ord("q"), ord("Q")]:
                 break
         vcap.release()
